@@ -114,6 +114,7 @@ set( vital_public_headers
   algo/optimize_cameras.h
   algo/track_features.h
   algo/triangulate_landmarks.h
+  algo/video_input.h
 
   exceptions.h
   exceptions/algorithm.h
@@ -121,6 +122,7 @@ set( vital_public_headers
   exceptions/image.h
   exceptions/io.h
   exceptions/math.h
+  exceptions/video.h
 
   io/camera_io.h
   io/camera_map_io.h
@@ -186,12 +188,14 @@ set( vital_sources
   algo/optimize_cameras.cxx
   algo/track_features.cxx
   algo/triangulate_landmarks.cxx
+  algo/video_input.cxx
 
   exceptions/algorithm.cxx
   exceptions/base.cxx
   exceptions/image.cxx
   exceptions/io.cxx
   exceptions/math.cxx
+  exceptions/video.cxx
 
   io/camera_io.cxx
   io/camera_map_io.cxx
