@@ -43,7 +43,7 @@
 namespace kwiver {
 namespace vital {
 
-
+// ------------------------------------------------------------------
 /// Generic image exception
 class VITAL_EXPORT image_exception
   : public vital_core_base_exception
@@ -51,11 +51,13 @@ class VITAL_EXPORT image_exception
 public:
   /// Constructor
   image_exception() VITAL_NOTHROW;
+
   /// Destructor
   virtual ~image_exception() VITAL_NOTHROW;
 };
 
 
+// ------------------------------------------------------------------
 /// Exception for image sizing mismatch
 /**
  * For when image shape/size equality must be asserted.
@@ -65,6 +67,13 @@ class VITAL_EXPORT image_size_mismatch_exception
 {
 public:
   /// Constructor
+  /**
+   * \param message     Description of circumstances surrounding error.
+   * \param correct_w   Correct image width
+   * \param correct_h   Correct image height
+   * \param given_w     Actual image width
+   * \param given_h     Actual image height
+   */
   image_size_mismatch_exception(std::string message,
                                 size_t correct_w, size_t correct_h,
                                 size_t given_w, size_t given_h) VITAL_NOTHROW;
@@ -73,9 +82,11 @@ public:
 
   /// Given error message string
   std::string m_message;
+
   /// The correct pixel width and height
   size_t m_correct_w,
          m_correct_h;
+
   /// The incorrect, given pixel width and height
   size_t m_given_w,
          m_given_h;
