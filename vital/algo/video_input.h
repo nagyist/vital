@@ -63,7 +63,7 @@ namespace algo {
  *
  * A note about some traits
  *
- * HAS_EOF - This trait is set to true if the video source can
+ * HAS_EOV - This trait is set to true if the video source can
  *     determine end of video. This is usually the case if the video
  *     is being read from a file, but may not be known if the video is
  *     coming from a streaming source.
