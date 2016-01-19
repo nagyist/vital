@@ -171,6 +171,13 @@ set( vital_public_headers
   util/demangle.h
   util/any_converter.h
   util/enumerate_matrix.h
+  util/cpu_timer.h
+  util/wall_timer.h
+  util/enumerate_matrix.h
+
+  plugin_loader/plugin_factory.h
+  plugin_loader/plugin_manager.h
+  plugin_loader/plugin_config_util.h
 )
 
 # ----------------------
@@ -237,6 +244,10 @@ set( vital_sources
 
   util/get_paths.cxx
   util/demangle.cxx
+
+  plugin_loader/plugin_manager.cxx
+  plugin_loader/plugin_factory.cxx
+  plugin_loader/plugin_config_util.cxx
 )
 
 kwiver_install_headers(
