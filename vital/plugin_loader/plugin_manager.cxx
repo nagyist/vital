@@ -36,11 +36,8 @@
 #include <vital/logger/logger.h>
 
 #include <sstream>
-#include <mutex>
-
 
 #include <kwiversys/SystemTools.hxx>
-#include <kwiversys/DynamicLoader.hxx>
 #include <kwiversys/Directory.hxx>
 
 //+ kwiversys has a demangle but it is private
@@ -60,23 +57,11 @@ typedef DL::LibraryHandle          library_t;
 typedef DL::SymbolPointer          function_t;
 
 
-static char const* environment_variable_name( "VITAL_PLUGIN_PATH" );
-
 // Platform specific plugin library file (set as compile definition in CMake)
 static std::string const shared_library_suffix = std::string( SHARED_LIB_SUFFIX );
 
-// Default module directory locations. Values defined in CMake configuration.
-static std::string const default_module_paths = std::string( DEFAULT_MODULE_PATHS );
-
 } // end anon namespace
 
-
-
-// ================================================================
-//
-// Static data for singleton
-//
-plugin_manager* plugin_manager::s_instance = 0;
 
 
 // ==================================================================
@@ -87,8 +72,10 @@ plugin_manager* plugin_manager::s_instance = 0;
 class plugin_manager_impl
 {
 public:
-  plugin_manager_impl( plugin_manager* parent)
+  plugin_manager_impl( plugin_manager* parent,
+    std::string const& init_fucntion)
     : m_parent( parent ),
+      m_init_function( init_fucntion ),
       m_logger( kwiver::vital::get_logger( "vital.plugin_manager" ) )
   { }
 
@@ -101,6 +88,7 @@ public:
   void print( std::ostream& str ) const;
 
   plugin_manager* m_parent;
+  const std::string m_init_function;
 
   /// Paths in which to search for module libraries
   typedef std::vector< path_t > search_paths_t;
@@ -111,7 +99,7 @@ public:
   plugin_map_t m_plugin_map;
 
   // Map to keep track of the modules we have opened and loaded.
-  typedef std::map< std::string, kwiversys::DynamicLoader::LibraryHandle > library_map_t;
+  typedef std::map< std::string, DL::LibraryHandle > library_map_t;
   library_map_t m_library_map;
 
   // Name of current module file we are processing
@@ -122,49 +110,21 @@ public:
 }; // end class plugin_manager_impl
 
 
-// ==================================================================
-plugin_manager*
-plugin_manager::
-instance()
-{
-  static std::mutex instance_lock;
-
-  if ( 0 == s_instance )
-  {
-    std::lock_guard< std::mutex > lock( instance_lock );
-
-    if ( 0 == s_instance )
-    {
-      s_instance = new plugin_manager();
-    }
-  }
-
-  return s_instance;
-}
-
-
 // ------------------------------------------------------------------
 plugin_manager
-::plugin_manager()
-  : m_impl( new plugin_manager_impl( this ) )
-{
-  const char * env_ptr = kwiversys::SystemTools::GetEnv(environment_variable_name  );
-  if ( 0 != env_ptr )
-  {
-    std::string const extra_module_dirs( env_ptr );
-
-    // Split supplied path into separate items using PATH_SEPARATOR_CHAR as delimiter
-    ST::Split( extra_module_dirs, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
-  }
-
-  // Then add default paths
-  ST::Split( default_module_paths, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
-}
+::plugin_manager(std::string const& init_function )
+  : m_impl( new plugin_manager_impl( this, init_function ) )
+{ }
 
 
 plugin_manager
 ::~plugin_manager()
-{ }
+{
+  VITAL_FOREACH( auto entry, m_impl->m_library_map )
+  {
+    DL::CloseLibrary( entry.second );
+  }
+}
 
 
 // ------------------------------------------------------------------
@@ -189,24 +149,34 @@ plugin_factory_handle_t
 plugin_manager
 ::add_factory( plugin_factory* fact )
 {
+  plugin_factory_handle_t fact_handle( fact );
+
+  // Add the current file name as an attribute.
   fact->add_attribute( plugin_factory::PLUGIN_FILE_NAME, m_impl->m_current_filename );
 
   std::string interface_type;
   fact->get_attribute( plugin_factory::INTERFACE_TYPE, interface_type );
 
-  /// @todo make sure factory is not already in the list
-  /// Check the two types as a signature.
-  plugin_factory_handle_t fact_handle( fact );
-  m_impl->m_plugin_map[interface_type].push_back( fact_handle );
-
-  std::string ift;
-  fact->get_attribute( plugin_factory::INTERFACE_TYPE, ift );
-
   std::string ct;
   fact->get_attribute( plugin_factory::CONCRETE_TYPE, ct );
 
+  // If the hook has declined to register the factory, just return.
+  if ( ! this->add_factory_hook( fact_handle ) )
+  {
+    LOG_TRACE( m_impl->m_logger, "add_factory_hook() declined to have this factory registered"
+               << " from file \"" << m_impl->m_current_filename << "\""
+               << " for interface: \"" << interface_type
+               << "\" for derived type: \"" << ct << "\""
+      );
+    return fact_handle;
+  }
+
+  /// @todo make sure factory is not already in the list
+  /// Check the two types as a signature.
+  m_impl->m_plugin_map[interface_type].push_back( fact_handle );
+
   LOG_TRACE( m_impl->m_logger,
-             "Adding plugin to create interface: " << ift
+             "Adding plugin to create interface: " << interface_type
              << " from derived type: " << ct
              << " from file: " << m_impl->m_current_filename );
 
@@ -227,7 +197,8 @@ void
 plugin_manager
 ::add_search_path( path_t const& path)
 {
-  this->m_impl->m_search_paths.push_back( path );
+  // Split supplied path into separate items using PATH_SEPARATOR_CHAR as delimiter
+  ST::Split( path, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
 }
 
 
@@ -347,14 +318,13 @@ plugin_manager_impl
   lib_handle = DL::OpenLibrary( path );
   if ( ! lib_handle )
   {
-    std::stringstream str;
     LOG_WARN( m_logger, "plugin_manager::Unable to load shared library \""  << path << "\" : "
               << DL::LastError() );
     return;
   }
 
   DL::SymbolPointer fp =
-    DL::GetSymbolAddress( lib_handle, "register_factories" );
+    DL::GetSymbolAddress( lib_handle, m_init_function );
   if ( 0 == fp )
   {
     std::string str("Unknown error");
@@ -371,6 +341,14 @@ plugin_manager_impl
     return;
   }
 
+  // Check with the load hook to see if there are any last minute
+  // objections to loading this plugin.
+  if ( ! m_parent->load_plugin_hook( path, lib_handle ) )
+  {
+    DL::CloseLibrary( lib_handle );
+    return;
+  }
+
   // Save currently opened library in map
   m_library_map[path] = lib_handle;
 
@@ -381,5 +359,22 @@ plugin_manager_impl
   ( *reg_fp )( m_parent ); // register plugins
 }
 
+
+// ------------------------------------------------------------------
+bool
+plugin_manager
+::load_plugin_hook( path_t const& path, DL::LibraryHandle lib_handle ) const
+{
+  return true; // default is to always load
+}
+
+
+// ------------------------------------------------------------------
+bool
+plugin_manager
+::add_factory_hook( plugin_factory_handle_t fact ) const
+{
+  return true; // default is to always register factory
+}
 
 } } // end namespace
