@@ -49,7 +49,8 @@ int main( int argc, char** argv )
 
   if( argc == 1 )
   {
-    std::cout << "Usage: " << argv[0] << " video-file-name\n" << std::endl;
+    std::cout << "Missing file name.\n"
+      << "Usage: " << argv[0] << " video-file-name\n" << std::endl;
 
       return EXIT_FAILURE;
   }
