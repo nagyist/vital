@@ -38,31 +38,32 @@ namespace kwiver {
 namespace vital {
 
 // ------------------------------------------------------------------
-template <unsigned int LEN>
-klv_key<LEN>
-::klv_key()
+template < unsigned int LEN >
+klv_key< LEN >
+  ::klv_key()
 {
-  std::fill(key_, key_+LEN, 0);
+  std::fill( key_, key_ + LEN, 0 );
 }
 
 
 // ------------------------------------------------------------------
-template <unsigned int LEN>
-klv_key<LEN>
-::klv_key(const uint8_t data[LEN])
+template < unsigned int LEN >
+klv_key< LEN >
+  ::klv_key( const uint8_t data[LEN] )
 {
-  std::copy(data, data+LEN, key_);
+  std::copy( data, data + LEN, key_ );
 }
 
 
 // ------------------------------------------------------------------
-template <unsigned int LEN>
-bool klv_key<LEN>
-::operator ==(const klv_key& rhs) const
+template < unsigned int LEN >
+bool
+klv_key< LEN >
+  ::operator==( const klv_key& rhs ) const
 {
-  for(unsigned int i=0; i<LEN; ++i)
+  for ( unsigned int i = 0; i < LEN; ++i )
   {
-    if( key_[i] != rhs.key_[i] )
+    if ( key_[i] != rhs.key_[i] )
     {
       return false;
     }
@@ -73,13 +74,14 @@ bool klv_key<LEN>
 
 // ------------------------------------------------------------------
 /// Less than operator
-template <unsigned int LEN>
-bool klv_key<LEN>
-::operator <(const klv_key& rhs) const
+template < unsigned int LEN >
+bool
+klv_key< LEN >
+  ::operator<( const klv_key& rhs ) const
 {
-  for(unsigned int i=0; i<LEN; ++i)
+  for ( unsigned int i = 0; i < LEN; ++i )
   {
-    if( key_[i] != rhs.key_[i] )
+    if ( key_[i] != rhs.key_[i] )
     {
       return key_[i] < rhs.key_[i];
     }
