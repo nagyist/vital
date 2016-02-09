@@ -71,7 +71,7 @@ public:
    */
   klv_data(container_t const& raw_packet,
            size_t key_offset, size_t key_len,
-           size_t m_value_offse, size_t value_len);
+           size_t m_value_offset, size_t value_len);
 
   ~klv_data();
 
@@ -100,7 +100,7 @@ private:
   std::vector< uint8_t > m_raw_data;
   std::size_t m_key_offset;
   std::size_t key_len_;
-  std::size_t m_value_offse_;
+  std::size_t m_value_offset;
   std::size_t m_value_len;
 };
 

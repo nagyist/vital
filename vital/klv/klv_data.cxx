@@ -41,7 +41,7 @@ namespace vital {
   ::klv_data()
     : m_key_offset( 0 ),
       key_len_( 0 ),
-      m_value_offse_( 0 ),
+      m_value_offset( 0 ),
       m_value_len ( 0 )
   { }
 
@@ -49,11 +49,11 @@ namespace vital {
 klv_data
 ::klv_data(container_t const& raw_packet,
          std::size_t key_offset, std::size_t key_len,
-         std::size_t m_value_offse, std::size_t value_len)
+         std::size_t m_value_offset, std::size_t value_len)
   : m_raw_data( raw_packet ),
     m_key_offset( key_offset ),
     key_len_( key_len ),
-    m_value_offse_( m_value_offse ),
+    m_value_offset( m_value_offset ),
     m_value_len ( value_len )
 { }
 
@@ -123,7 +123,7 @@ klv_data::const_iterator_t
 klv_data
 ::value_begin() const
 {
-  return this->m_raw_data.begin() + m_value_offse_;
+  return this->m_raw_data.begin() + m_value_offset;
 }
 
 
@@ -131,7 +131,7 @@ klv_data::const_iterator_t
 klv_data
 ::value_end() const
 {
-  return this->m_raw_data.begin() + m_value_offse_ + m_value_len;
+  return this->m_raw_data.begin() + m_value_offset + m_value_len;
 }
 
 
@@ -139,6 +139,8 @@ std::ostream & operator<<( std::ostream& str, klv_data const& obj )
 {
   std::ostream::fmtflags f( str.flags() );
   int i = 0;
+  // format the whole raw package
+  str << "Raw packet: ";
   for (klv_data::const_iterator_t it = obj.klv_begin();
        it != obj.klv_end(); it++)
   {
@@ -146,6 +148,23 @@ std::ostream & operator<<( std::ostream& str, klv_data const& obj )
     if (i % 4 == 3) str << " "; i++;
   }
 
+  str << "\n\nKey bytes: ";
+  for (klv_data::const_iterator_t it = obj.key_begin();
+       it != obj.key_end(); it++)
+  {
+    str << std::hex << std::setfill( '0' ) << std::setw( 2 ) << int(*it);
+    if (i % 4 == 3) str << " "; i++;
+  }
+
+  str << "\n\nValue bytes: ";
+  for (klv_data::const_iterator_t it = obj.value_begin();
+       it != obj.value_end(); it++)
+  {
+    str << std::hex << std::setfill( '0' ) << std::setw( 2 ) << int(*it);
+    if (i % 4 == 3) str << " "; i++;
+  }
+
+  str << std::endl;
   str.flags( f );
   return str;
 }
