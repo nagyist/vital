@@ -91,6 +91,7 @@ set( vital_public_headers
   vital_types.h
   vital_foreach.h
   noncopyable.h
+  any.h
 
   algo/algorithm.txx
   algo/algorithm.h
