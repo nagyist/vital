@@ -40,7 +40,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <boost/function.hpp>
+#include <functional>
 #include <boost/bind.hpp>
 
 namespace kwiver {
@@ -228,7 +228,7 @@ struct construct_traits
     t.num_bytes = sizeof( type );
     t.decode_func = klv_decode_func_t( klv_convert< type > );
     t.has_double = klv_0601_convert< tag >::has_double;
-    t.double_func = boost::bind( klv_as_double< type >,
+    t.double_func = std::bind( klv_as_double< type >,
                                  klv_0601_convert< tag >::as_double, _1 );
     t.any_hex_func = klv_any_format_hex_func_t( format_hex< type > );
     return construct_traits< klv_0601_tag( tag - 1 ) >::init( data );
