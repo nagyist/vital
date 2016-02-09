@@ -419,4 +419,4 @@ template double klv_0104::get_value< double > ( tag tg, kwiver::vital::any const
 template uint64_t klv_0104::get_value< uint64_t > ( tag tg, kwiver::vital::any const& data ) const;
 template std::string klv_0104::get_value< std::string > ( tag tg, kwiver::vital::any const& data ) const;
 
-}}   // end namespace
+} }   // end namespace

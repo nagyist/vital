@@ -119,7 +119,6 @@ enum klv_0601_tag {KLV_0601_UNKNOWN                 = 0,
                    KLV_0601_ENUM_END };
 
 
-
 /// Return a string representation of the name of a KLV 0601 tag
 std::string
 klv_0601_tag_to_string(klv_0601_tag t);

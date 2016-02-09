@@ -55,7 +55,8 @@ template < class ITERATOR >
 bool
 klv_ber_length( ITERATOR buffer,
                 unsigned int buffer_len,
-                uint8_t& offset, unsigned int& value_len )
+                uint8_t& offset,
+                unsigned int& value_len )
 {
   // handle the short form with 1 byte length description, first bit is 0
   if ( ! ( 0x80 & *buffer ) )
@@ -108,7 +109,7 @@ klv_ber_length( ITERATOR buffer,
  */
 bool
 klv_pop_next_packet( std::deque< unsigned char >&  data,
-                     klv_data&                klv_packet )
+                     klv_data&                     klv_packet )
 {
   const std::size_t klv_key_length = klv_uds_key::size();
 

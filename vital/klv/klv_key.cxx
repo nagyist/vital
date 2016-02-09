@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 namespace kwiver {
 namespace vital {
 
+// ------------------------------------------------------------------
 template <unsigned int LEN>
 klv_key<LEN>
 ::klv_key()
@@ -45,6 +46,7 @@ klv_key<LEN>
 }
 
 
+// ------------------------------------------------------------------
 template <unsigned int LEN>
 klv_key<LEN>
 ::klv_key(const uint8_t data[LEN])
@@ -53,6 +55,7 @@ klv_key<LEN>
 }
 
 
+// ------------------------------------------------------------------
 template <unsigned int LEN>
 bool klv_key<LEN>
 ::operator ==(const klv_key& rhs) const
@@ -68,6 +71,7 @@ bool klv_key<LEN>
 }
 
 
+// ------------------------------------------------------------------
 /// Less than operator
 template <unsigned int LEN>
 bool klv_key<LEN>
@@ -84,6 +88,7 @@ bool klv_key<LEN>
 }
 
 
+// ------------------------------------------------------------------
 template < unsigned int LEN >
 std::ostream&
 operator<<( std::ostream& os, const klv_key< LEN >& key )
@@ -101,8 +106,6 @@ operator<<( std::ostream& os, const klv_key< LEN >& key )
 }
 
 
-
-
 //============================================================================
 
 /// All UDS keys start with this 4 byte prefix
@@ -117,9 +120,7 @@ const uint32_t klv_uds_key
                   ( static_cast< uint32_t > ( klv_uds_key::prefix[2] ) << 8 )  |
                     static_cast< uint32_t > ( klv_uds_key::prefix[3] );
 
-// ----------------------
-
-
+// ------------------------------------------------------------------
 // Create key from raw klv data
 klv_uds_key
 ::klv_uds_key(klv_data const& raw_packet)
@@ -133,6 +134,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( const uint8_t data[16] )
   : klv_key< 16 > ( data )
@@ -140,6 +142,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( const uint16_t data[8] )
 {
@@ -151,6 +154,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( const uint32_t data[4] )
 {
@@ -164,6 +168,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( const uint64_t data[2] )
 {
@@ -175,6 +180,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( uint64_t d1, uint64_t d2 )
 {
@@ -186,6 +192,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 klv_uds_key
 ::klv_uds_key( uint32_t d1, uint32_t d2,
                uint32_t d3, uint32_t d4 )
@@ -200,6 +207,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Check if this is a valid 16-byte SMPTE-administered Universal Label
 bool klv_uds_key
 ::is_valid() const
@@ -237,6 +245,7 @@ bool klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return true if this key has the required 4 byte prefix
 bool
 klv_uds_key
@@ -249,6 +258,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the category represented by this key
 klv_uds_key::category_t
 klv_uds_key
@@ -259,6 +269,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the type of single item (aka dictionary) used.
 /// Only valid for keys with CATEGORY_SINGLE
 klv_uds_key::single_t
@@ -273,6 +284,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the type of grouping used.
 /// Only valid for keys with CATEGORY_GROUP
 klv_uds_key::group_t
@@ -289,6 +301,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the type of wrapper used.
 /// Only valid for keys with CATEGORY_WRAPPER
 klv_uds_key::wrapper_t
@@ -303,6 +316,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the number of bytes used to represent length of each group item.
 /// Valid only for GROUP_GLOBAL_SET, GROUP_LOCAL_SET, GROUP_VARIABLE_PACK
 /// \note return value of 0 indicates BER encoding in either long or short
@@ -327,6 +341,7 @@ klv_uds_key
 }
 
 
+// ------------------------------------------------------------------
 /// Return the number of bytes used to represent the local tags.
 /// Valid only for GROUP_LOCAL_SET
 /// \note return value of 0 indicates OID BER encoding
@@ -365,9 +380,9 @@ klv_lds_key
 //============================================================================
 
 
-#define INSTANTIATE_KLV_KEY(NUM) \
-template class klv_key<NUM>; \
-template std::ostream& operator <<(std::ostream& os, const klv_key<NUM>& key)
+#define INSTANTIATE_KLV_KEY(NUM)                                        \
+template class klv_key<NUM>;                                            \
+template std::ostream& operator <<(std::ostream& os, klv_key<NUM> const& key)
 
 INSTANTIATE_KLV_KEY(1);
 INSTANTIATE_KLV_KEY(16);

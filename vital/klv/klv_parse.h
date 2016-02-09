@@ -28,6 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** @file
+ * Interface to the KLV parsing functions
+ */
+
 #ifndef KWIVER_VITAL_KLV_PARSE_H_
 #define KWIVER_VITAL_KLV_PARSE_H_
 
@@ -35,6 +39,8 @@
 #include <deque>
 #include <ostream>
 #include <cstdint>
+
+#include <vital/vital_export.h>
 
 #include <vital/klv/klv_key.h>
 
@@ -65,7 +71,8 @@ typedef std::vector< klv_uds_pair > klv_uds_vector_t;
  *
  * @return \c true if packet returned; \c false if no packet returned.
  */
-bool klv_pop_next_packet( std::deque< uint8_t >& data, klv_data& klv_packet);
+VITAL_EXPORT bool
+klv_pop_next_packet( std::deque< uint8_t >& data, klv_data& klv_packet);
 
 
 /**
@@ -78,7 +85,7 @@ bool klv_pop_next_packet( std::deque< uint8_t >& data, klv_data& klv_packet);
  *
  * @return A vector of klv LDS packets.
  */
-klv_lds_vector_t
+VITAL_EXPORT klv_lds_vector_t
 parse_klv_lds(klv_data const& data);
 
 
@@ -92,7 +99,7 @@ parse_klv_lds(klv_data const& data);
  *
  * @return A vector of klv UDS packets.
  */
-klv_uds_vector_t
+VITAL_EXPORT klv_uds_vector_t
 parse_klv_uds( klv_data const& data );
 
 
@@ -104,10 +111,9 @@ parse_klv_uds( klv_data const& data );
  * @param str stream to format on
  * @param klv packet to decode
  */
-std::ostream &
-print_klv( std::ostream & str, klv_data const& klv );
+VITAL_EXPORT std::ostream&
+print_klv( std::ostream& str, klv_data const& klv );
 
 } } // end namespace
-
 
 #endif

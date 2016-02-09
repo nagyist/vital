@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,24 +37,24 @@
 namespace kwiver {
 namespace vital {
 
-klv_data
-::klv_data()
-:     key_offset_( 0 ),
-    key_len_( 0 ),
-    value_offset_( 0 ),
-    value_len_ ( 0 )
-{ }
+  klv_data
+  ::klv_data()
+    : m_key_offset( 0 ),
+      key_len_( 0 ),
+      m_value_offse_( 0 ),
+      m_value_len ( 0 )
+  { }
 
 
 klv_data
 ::klv_data(container_t const& raw_packet,
          std::size_t key_offset, std::size_t key_len,
-         std::size_t value_offset, std::size_t value_len)
-  : raw_data_( raw_packet ),
-    key_offset_( key_offset ),
+         std::size_t m_value_offse, std::size_t value_len)
+  : m_raw_data( raw_packet ),
+    m_key_offset( key_offset ),
     key_len_( key_len ),
-    value_offset_( value_offset ),
-    value_len_ ( value_len )
+    m_value_offse_( m_value_offse ),
+    m_value_len ( value_len )
 { }
 
 
@@ -74,7 +74,7 @@ std::size_t
 klv_data
 ::value_size() const
 {
-  return this->value_len_;
+  return this->m_value_len;
 }
 
 
@@ -82,7 +82,7 @@ std::size_t
 klv_data
 ::klv_size() const
 {
-  return this->raw_data_.size();
+  return this->m_raw_data.size();
 }
 
 
@@ -90,7 +90,7 @@ klv_data::const_iterator_t
 klv_data
 ::klv_begin() const
 {
-  return this->raw_data_.begin();
+  return this->m_raw_data.begin();
 }
 
 
@@ -98,7 +98,7 @@ klv_data::const_iterator_t
 klv_data
 ::klv_end() const
 {
-  return this->raw_data_.end();
+  return this->m_raw_data.end();
 }
 
 
@@ -106,7 +106,7 @@ klv_data::const_iterator_t
 klv_data
 ::key_begin() const
 {
-  return this->raw_data_.begin() + key_offset_;
+  return this->m_raw_data.begin() + m_key_offset;
 }
 
 
@@ -114,7 +114,7 @@ klv_data::const_iterator_t
 klv_data
 ::key_end() const
 {
-  return this->raw_data_.begin() + key_offset_ + key_len_;
+  return this->m_raw_data.begin() + m_key_offset + key_len_;
 
 }
 
@@ -123,7 +123,7 @@ klv_data::const_iterator_t
 klv_data
 ::value_begin() const
 {
-  return this->raw_data_.begin() + value_offset_;
+  return this->m_raw_data.begin() + m_value_offse_;
 }
 
 
@@ -131,7 +131,7 @@ klv_data::const_iterator_t
 klv_data
 ::value_end() const
 {
-  return this->raw_data_.begin() + value_offset_ + value_len_;
+  return this->m_raw_data.begin() + m_value_offse_ + m_value_len;
 }
 
 

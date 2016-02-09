@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 
 namespace kwiver {
@@ -70,9 +71,9 @@ public:
    */
   klv_data(container_t const& raw_packet,
            size_t key_offset, size_t key_len,
-           size_t value_offset, size_t value_len);
+           size_t m_value_offse, size_t value_len);
 
-  virtual ~klv_data();
+  ~klv_data();
 
   /// The number of bytes in the key
   std::size_t key_size() const;
@@ -95,12 +96,12 @@ public:
   const_iterator_t value_begin() const;
   const_iterator_t value_end() const;
 
-protected:
-  std::vector< unsigned char > raw_data_;
-  std::size_t key_offset_;
+private:
+  std::vector< uint8_t > m_raw_data;
+  std::size_t m_key_offset;
   std::size_t key_len_;
-  std::size_t value_offset_;
-  std::size_t value_len_;
+  std::size_t m_value_offse_;
+  std::size_t m_value_len;
 };
 
 
@@ -108,6 +109,5 @@ protected:
 std::ostream& operator<< (std::ostream& str, klv_data const& obj);
 
 } } // end namespace
-
 
 #endif
