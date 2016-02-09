@@ -28,11 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <klv/klv_data.h>
+#include <vital/klv/klv_data.h>
 
 #include <algorithm>
 #include <iomanip>
-
 
 
 namespace kwiver {

@@ -101,7 +101,7 @@ protected:
  * @param E       Exception type.
  * @param MSG     Stream constructed exception message.
  */
-#define VITAL_THROW_MSG(E, MSG) do {           \
+#define VITAL_THROW_MSG(E, MSG) do {            \
     std::stringstream _oss_;                    \
     _oss_ << MSG;                               \
     E except;                                   \

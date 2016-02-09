@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,9 @@
 #ifndef KWIVER_VITAL_KLV_KEY_H_
 #define KWIVER_VITAL_KLV_KEY_H_
 
-#include <vxl_config.h>
 #include <cstddef>
 #include <iostream>
+#include <cstdint>
 
 
 namespace kwiver {
@@ -49,13 +49,13 @@ public:
   klv_key();
   virtual ~klv_key() { }
 
-  klv_key(const vxl_byte data[LEN]);
+  klv_key(const unsigned char data[LEN]);
 
   /// The number of bytes in the key
   static std::size_t size() { return LEN; }
 
   /// Access a byte of the key
-  inline vxl_byte operator[](unsigned int i) const
+  inline unsigned char operator[](unsigned int i) const
   {
     return (i < LEN) ? key_[i] : 0;
   }
@@ -67,7 +67,7 @@ public:
   bool operator <(const klv_key& rhs) const;
 
 protected:
-  vxl_byte key_[LEN];
+  unsigned char key_[LEN];
 };
 
 
@@ -91,12 +91,12 @@ public:
   virtual ~klv_uds_key() { }
 
   klv_uds_key( klv_data const& raw_packet );
-  explicit klv_uds_key( const vxl_byte data[16] );
-  explicit klv_uds_key( const vxl_uint_16 data[8] );
-  explicit klv_uds_key( const vxl_uint_32 data[4] );
-  explicit klv_uds_key( const vxl_uint_64 data[2] );
-  explicit klv_uds_key( vxl_uint_64 d1, vxl_uint_64 d2 );
-  explicit klv_uds_key( vxl_uint_32 d1, vxl_uint_32 d2, vxl_uint_32 d3, vxl_uint_32 d4 );
+  explicit klv_uds_key( const unsigned char data[16] );
+  explicit klv_uds_key( const uint16_t data[8] );
+  explicit klv_uds_key( const uint32_t data[4] );
+  explicit klv_uds_key( const uint64_t data[2] );
+  explicit klv_uds_key( uint64_t d1, uint64_t d2 );
+  explicit klv_uds_key( uint32_t d1, uint32_t d2, uint32_t d3, uint32_t d4 );
 
   /// Check if this is a valid 16-byte SMPTE-administered Universal Label
   bool is_valid() const;
@@ -163,10 +163,10 @@ public:
   /// Usage is to compare against a std::dequeue
 
   /// All UDS keys start with this 4 byte prefix
-  static const vxl_byte prefix[4];
+  static const unsigned char prefix[4];
 
   /// The UDS 4 byte prefix represted as a uint32 (MSB first)
-  static const vxl_uint_32 prefix_uint32;
+  static const uint32_t prefix_uint32;
 };
 
 
@@ -179,11 +179,11 @@ public:
   klv_lds_key() {}
   virtual ~klv_lds_key() {}
 
-  klv_lds_key(vxl_byte data);
-  klv_lds_key(const vxl_byte data[1]);
+  klv_lds_key(unsigned char data);
+  klv_lds_key(const unsigned char data[1]);
 
-  /// Operator to cast to a vxl_byte
-  operator vxl_byte() const { return key_[0]; }
+  /// Operator to cast to a unsigned char
+  operator unsigned char() const { return key_[0]; }
 };
 
 } } // end namespace

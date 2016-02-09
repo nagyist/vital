@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <klv/klv_0601.h>
-#include <klv/klv_0601_traits.h>
-#include <klv/klv_data.h>
+#include "klv_0601.h"
+#include "klv_0601_traits.h"
+#include "klv_data.h"
 
 #include <vital/logger/logger.h>
 
@@ -43,15 +43,18 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+namespace kwiver {
+namespace vital {
+
 namespace {
 
-/// A function type that converts raw byte streams to boost::any
-typedef boost::function< boost::any( const vxl_byte*, std::size_t ) > klv_decode_func_t;
+/// A function type that converts raw byte streams to kwiver::vital::any
+typedef boost::function< kwiver::vital::any( const unsigned char*, std::size_t ) > klv_decode_func_t;
 
 /// Parse type T from a raw byte stream in MSB (most significant byte first) order
 template < typename T >
-boost::any
-klv_convert( const vxl_byte* data, std::size_t length )
+kwiver::vital::any
+klv_convert( const unsigned char* data, std::size_t length )
 {
   if ( sizeof( T ) != length )
   {
@@ -71,8 +74,8 @@ klv_convert( const vxl_byte* data, std::size_t length )
 
 /// Specialization for extracting strings from a raw byte stream
 template < >
-boost::any
-klv_convert< std::string > ( const vxl_byte* data, std::size_t length )
+kwiver::vital::any
+klv_convert< std::string > ( const unsigned char* data, std::size_t length )
 {
   std::string value( reinterpret_cast< const char* > ( data ), length );
 
@@ -83,43 +86,43 @@ klv_convert< std::string > ( const vxl_byte* data, std::size_t length )
 /// Specialization for extracting STD 0102 LSD from raw byte stream
 /// \note this is a place holder for now.
 template < >
-boost::any
-klv_convert< std_0102_lds > ( const vxl_byte* data, std::size_t length )
+kwiver::vital::any
+klv_convert< kwiver::vital::std_0102_lds > ( const unsigned char* data, std::size_t length )
 {
-  std::vector< vxl_byte > value( data, data + length );
+  std::vector< unsigned char > value( data, data + length );
 
   return value;
 }
 
 
-/// A function type that converts a boost::any to a double
-typedef boost::function< double ( const boost::any& ) > klv_any_to_double_func_t;
+/// A function type that converts a kwiver::vital::any to a double
+typedef boost::function< double ( kwiver::vital::any const& ) > klv_any_to_double_func_t;
 
 
-/// Take a "convert T to double" function apply to a boost::any
-/// This is used with boost bind to make a boost::any to double conversion function
+/// Take a "convert T to double" function apply to a kwiver::vital::any
+/// This is used with boost bind to make a kwiver::vital::any to double conversion function
 template < typename T >
 double
-klv_as_double( const boost::function< double(const T& val) >& func,
-               const boost::any&                              data )
+klv_as_double( const boost::function< double(T const& val) >& func,
+               kwiver::vital::any const& data )
 {
-  return func( boost::any_cast< T > ( data ) );
+  return func( kwiver::vital::any_cast< T > ( data ) );
 }
 
 
-/// A function type to format boost::any raw data in hex and write to the ostream
-typedef boost::function< void ( std::ostream& os, const boost::any& ) > klv_any_format_hex_func_t;
+/// A function type to format kwiver::vital::any raw data in hex and write to the ostream
+typedef boost::function< void ( std::ostream& os, kwiver::vital::any const& ) > klv_any_format_hex_func_t;
 
 
-/// Write boost::any (with underlying type T) in hex
+/// Write kwiver::vital::any (with underlying type T) in hex
 template < typename T >
 void
-format_hex( std::ostream& os, const boost::any& data )
+format_hex( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
 
   os  << std::hex << std::setfill( '0' ) << std::setw( sizeof( T ) * 2 )
-      << boost::any_cast< T > ( data );
+      << kwiver::vital::any_cast< T > ( data );
   os.flags( f );
 }
 
@@ -127,12 +130,12 @@ format_hex( std::ostream& os, const boost::any& data )
 /// Specialization for writing a byte in hex (so it doesn't print ASCII)
 template < >
 void
-format_hex< vxl_byte > ( std::ostream& os, const boost::any& data )
+format_hex< unsigned char > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
 
   os  << std::hex << std::setfill( '0' ) << std::setw( 2 )
-      << static_cast< unsigned int > ( boost::any_cast< vxl_byte > ( data ) );
+      << static_cast< unsigned int > ( kwiver::vital::any_cast< unsigned char > ( data ) );
   os.flags( f );
 }
 
@@ -140,12 +143,12 @@ format_hex< vxl_byte > ( std::ostream& os, const boost::any& data )
 /// Specialization for writing a byte in hex (so it doesn't print ASCII)
 template < >
 void
-format_hex< vxl_int_8 > ( std::ostream& os, const boost::any& data )
+format_hex< int8_t > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
 
   os  << std::hex << std::setfill( '0' ) << std::setw( 2 )
-      << static_cast< unsigned int > ( boost::any_cast< vxl_int_8 > ( data ) );
+      << static_cast< unsigned int > ( kwiver::vital::any_cast< int8_t > ( data ) );
   os.flags( f );
 }
 
@@ -153,9 +156,9 @@ format_hex< vxl_int_8 > ( std::ostream& os, const boost::any& data )
 /// Specialization for writing a string as a sequence of hex bytes
 template < >
 void
-format_hex< std::string > ( std::ostream& os, const boost::any& data )
+format_hex< std::string > ( std::ostream& os, kwiver::vital::any const& data )
 {
-  std::string s = boost::any_cast< std::string > ( data );
+  std::string s = kwiver::vital::any_cast< std::string > ( data );
   std::iostream::fmtflags f( os.flags() );
 
   for ( unsigned int k = 0; k < s.size(); ++k )
@@ -170,10 +173,10 @@ format_hex< std::string > ( std::ostream& os, const boost::any& data )
 /// Specialization for writing a STD 0102 LDS in hex bytes
 template < >
 void
-format_hex< std_0102_lds > ( std::ostream& os, const boost::any& data )
+format_hex< kwiver::vital::std_0102_lds > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
-  std::vector< vxl_byte > d = boost::any_cast< std::vector< vxl_byte > > ( data );
+  std::vector< unsigned char > d = kwiver::vital::any_cast< std::vector< unsigned char > > ( data );
 
   for ( unsigned int k = 0; k < d.size(); ++k )
   {
@@ -253,7 +256,7 @@ std::vector< klv_0601_dyn_traits > init_traits_array()
 
 static const std::vector< klv_0601_dyn_traits > traits_array = init_traits_array();
 
-static const vxl_byte key_data[16] =
+static const unsigned char key_data[16] =
 {
   0x06, 0x0e, 0x2b, 0x34,
   0x02, 0x0B, 0x01, 0x01,
@@ -269,9 +272,6 @@ static const klv_uds_key klv_0601_uds_key( key_data );
 //=============================================================================
 // Public function implementations below
 //=============================================================================
-namespace kwiver {
-namespace vital {
-
 
 /** Globally available 0601 key.
  *
@@ -328,9 +328,9 @@ klv_0601_checksum( klv_data const& data )
   }
 
   // Retrieve checksum from raw data
-  vxl_uint_16 cksum = ( *( eit - 2 ) << 8 ) | ( *( eit - 1 ) );
+  uint16_t cksum = ( *( eit - 2 ) << 8 ) | ( *( eit - 1 ) );
 
-  vxl_uint_16 bcc( 0 );
+  uint16_t bcc( 0 );
   size_t len = data.klv_size() - 2;
   klv_data::const_iterator_t cit = data.klv_begin();
 
@@ -354,9 +354,9 @@ klv_0601_tag_to_string( klv_0601_tag t )
 }
 
 
-/// Extract the appropriate data type from raw bytes as a boost::any
-boost::any
-klv_0601_value( klv_0601_tag t, const vxl_byte* data, std::size_t length )
+/// Extract the appropriate data type from raw bytes as a kwiver::vital::any
+kwiver::vital::any
+klv_0601_value( klv_0601_tag t, const unsigned char* data, std::size_t length )
 {
   return traits_array[t].decode_func( data, length );
 }
@@ -364,7 +364,7 @@ klv_0601_value( klv_0601_tag t, const vxl_byte* data, std::size_t length )
 
 /// Return the tag data as a double
 double
-klv_0601_value_double( klv_0601_tag t, const boost::any& data )
+klv_0601_value_double( klv_0601_tag t, kwiver::vital::any const& data )
 {
   return traits_array[t].double_func( data );
 }
@@ -372,13 +372,13 @@ klv_0601_value_double( klv_0601_tag t, const boost::any& data )
 
 /// Format the tag data as a string
 std::string
-klv_0601_value_string( klv_0601_tag t, const boost::any& data )
+klv_0601_value_string( klv_0601_tag t, kwiver::vital::any const& data )
 {
-  const klv_0601_dyn_traits& traits = traits_array[t];
+  klv_0601_dyn_traits const& traits = traits_array[t];
 
   if ( traits.type == &typeid( std::string ) )
   {
-    return boost::any_cast< std::string > ( data );
+    return kwiver::vital::any_cast< std::string > ( data );
   }
   if ( traits.has_double )
   {
@@ -391,7 +391,7 @@ klv_0601_value_string( klv_0601_tag t, const boost::any& data )
   {
     std::stringstream ss;
     typedef klv_0601_traits< KLV_0601_UNIX_TIMESTAMP >::type time_type;
-    ss << boost::any_cast< time_type > ( data );
+    ss << kwiver::vital::any_cast< time_type > ( data );
     return ss.str();
   }
   return "Unknown";
@@ -400,7 +400,7 @@ klv_0601_value_string( klv_0601_tag t, const boost::any& data )
 
 /// Format the tag data as a hex string
 std::string
-klv_0601_value_hex_string( klv_0601_tag t, const boost::any& data )
+klv_0601_value_hex_string( klv_0601_tag t, kwiver::vital::any const& data )
 {
   std::stringstream ss;
 
@@ -409,4 +409,4 @@ klv_0601_value_hex_string( klv_0601_tag t, const boost::any& data )
 }
 
 
-] } // end namespace
+} } // end namespace

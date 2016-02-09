@@ -124,6 +124,7 @@ set( vital_public_headers
   exceptions/io.h
   exceptions/math.h
   exceptions/video.h
+  exceptions/klv.h
 
   io/camera_io.h
   io/camera_map_io.h
@@ -197,6 +198,7 @@ set( vital_sources
   exceptions/io.cxx
   exceptions/math.cxx
   exceptions/video.cxx
+  exceptions/klv.cxx
 
   io/camera_io.cxx
   io/camera_map_io.cxx
@@ -358,6 +360,7 @@ configure_file(
 add_subdirectory( bindings )
 add_subdirectory( logger )
 add_subdirectory( config )
+add_subdirectory( klv )
 
 if (VITAL_ENABLE_TOOLS)
   add_subdirectory( tools )

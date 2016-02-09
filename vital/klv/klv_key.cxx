@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <klv/klv_key.h>
-#include <klv/klv_data.h>
+#include "klv_key.h"
+#include "klv_data.h"
 #include <algorithm>
 #include <iomanip>
 
@@ -47,7 +47,7 @@ klv_key<LEN>
 
 template <unsigned int LEN>
 klv_key<LEN>
-::klv_key(const vxl_byte data[LEN])
+::klv_key(const uint8_t data[LEN])
 {
   std::copy(data, data+LEN, key_);
 }
@@ -106,16 +106,16 @@ operator<<( std::ostream& os, const klv_key< LEN >& key )
 //============================================================================
 
 /// All UDS keys start with this 4 byte prefix
-const vxl_byte klv_uds_key
+const uint8_t klv_uds_key
 ::prefix[] = { 0x06, 0x0e, 0x2b, 0x34 };
 
 
 /// The UDS 4 byte prefix represted as a uint32 (MSB first)
-const vxl_uint_32 klv_uds_key
-::prefix_uint32 = ( static_cast< vxl_uint_32 > ( klv_uds_key::prefix[0] ) << 24 ) |
-                  ( static_cast< vxl_uint_32 > ( klv_uds_key::prefix[1] ) << 16 ) |
-                  ( static_cast< vxl_uint_32 > ( klv_uds_key::prefix[2] ) << 8 )  |
-                    static_cast< vxl_uint_32 > ( klv_uds_key::prefix[3] );
+const uint32_t klv_uds_key
+::prefix_uint32 = ( static_cast< uint32_t > ( klv_uds_key::prefix[0] ) << 24 ) |
+                  ( static_cast< uint32_t > ( klv_uds_key::prefix[1] ) << 16 ) |
+                  ( static_cast< uint32_t > ( klv_uds_key::prefix[2] ) << 8 )  |
+                    static_cast< uint32_t > ( klv_uds_key::prefix[3] );
 
 // ----------------------
 
@@ -134,68 +134,68 @@ klv_uds_key
 
 
 klv_uds_key
-::klv_uds_key( const vxl_byte data[16] )
+::klv_uds_key( const uint8_t data[16] )
   : klv_key< 16 > ( data )
 {
 }
 
 
 klv_uds_key
-::klv_uds_key( const vxl_uint_16 data[8] )
+::klv_uds_key( const uint16_t data[8] )
 {
   for ( unsigned int i = 0; i < 8; ++i )
   {
-    key_[2 * i]     = static_cast< vxl_byte > ( data[i] >> 8 );
-    key_[2 * i + 1] = static_cast< vxl_byte > ( data[i] );
+    key_[2 * i]     = static_cast< uint8_t > ( data[i] >> 8 );
+    key_[2 * i + 1] = static_cast< uint8_t > ( data[i] );
   }
 }
 
 
 klv_uds_key
-::klv_uds_key( const vxl_uint_32 data[4] )
+::klv_uds_key( const uint32_t data[4] )
 {
   for ( unsigned int i = 0; i < 4; ++i )
   {
-    key_[4 * i]     = static_cast< vxl_byte > ( data[i] >> 24 );
-    key_[4 * i + 1] = static_cast< vxl_byte > ( data[i] >> 16 );
-    key_[4 * i + 2] = static_cast< vxl_byte > ( data[i] >> 8 );
-    key_[4 * i + 3] = static_cast< vxl_byte > ( data[i] );
+    key_[4 * i]     = static_cast< uint8_t > ( data[i] >> 24 );
+    key_[4 * i + 1] = static_cast< uint8_t > ( data[i] >> 16 );
+    key_[4 * i + 2] = static_cast< uint8_t > ( data[i] >> 8 );
+    key_[4 * i + 3] = static_cast< uint8_t > ( data[i] );
   }
 }
 
 
 klv_uds_key
-::klv_uds_key( const vxl_uint_64 data[2] )
+::klv_uds_key( const uint64_t data[2] )
 {
   for ( unsigned int i = 0; i < 8; ++i )
   {
-    key_[i]     = static_cast< vxl_byte > ( data[0] >> ( 7 - i ) * 8 );
-    key_[i + 8] = static_cast< vxl_byte > ( data[1] >> ( 7 - i ) * 8 );
+    key_[i]     = static_cast< uint8_t > ( data[0] >> ( 7 - i ) * 8 );
+    key_[i + 8] = static_cast< uint8_t > ( data[1] >> ( 7 - i ) * 8 );
   }
 }
 
 
 klv_uds_key
-::klv_uds_key( vxl_uint_64 d1, vxl_uint_64 d2 )
+::klv_uds_key( uint64_t d1, uint64_t d2 )
 {
   for ( unsigned int i = 0; i < 8; ++i )
   {
-    key_[i]   = static_cast< vxl_byte > ( d1 >> ( 7 - i ) * 8 );
-    key_[i + 8] = static_cast< vxl_byte > ( d2 >> ( 7 - i ) * 8 );
+    key_[i]   = static_cast< uint8_t > ( d1 >> ( 7 - i ) * 8 );
+    key_[i + 8] = static_cast< uint8_t > ( d2 >> ( 7 - i ) * 8 );
   }
 }
 
 
 klv_uds_key
-::klv_uds_key( vxl_uint_32 d1, vxl_uint_32 d2,
-                 vxl_uint_32 d3, vxl_uint_32 d4 )
+::klv_uds_key( uint32_t d1, uint32_t d2,
+               uint32_t d3, uint32_t d4 )
 {
   for ( unsigned int i = 0; i < 4; ++i )
   {
-    key_[i]    = static_cast< vxl_byte > ( d1 >> ( 3 - i ) * 8 );
-    key_[i + 4]  = static_cast< vxl_byte > ( d2 >> ( 3 - i ) * 8 );
-    key_[i + 8]  = static_cast< vxl_byte > ( d3 >> ( 3 - i ) * 8 );
-    key_[i + 12] = static_cast< vxl_byte > ( d4 >> ( 3 - i ) * 8 );
+    key_[i]    = static_cast< uint8_t > ( d1 >> ( 3 - i ) * 8 );
+    key_[i + 4]  = static_cast< uint8_t > ( d2 >> ( 3 - i ) * 8 );
+    key_[i + 8]  = static_cast< uint8_t > ( d3 >> ( 3 - i ) * 8 );
+    key_[i + 12] = static_cast< uint8_t > ( d4 >> ( 3 - i ) * 8 );
   }
 }
 
@@ -280,7 +280,7 @@ klv_uds_key
 ::group_type() const
 {
   // group type encoded in the lower 3 bits
-  vxl_byte g = key_[5] & 0x07;
+  uint8_t g = key_[5] & 0x07;
   if (this->category() != CATEGORY_GROUP || g > 0x05)
   {
     return GROUP_INVALID;
@@ -311,7 +311,7 @@ std::size_t
 klv_uds_key
 ::group_item_length_size() const
 {
-  vxl_byte s = (key_[5] & 0x60) >> 5;
+  uint8_t s = (key_[5] & 0x60) >> 5;
   // the two-bit number from bits 6 and 7 map to 0, 1, 2, 4
   s = (s == 3) ? 4 : s;
   switch(this->group_type())
@@ -349,14 +349,14 @@ klv_uds_key
 
 
 klv_lds_key
-::klv_lds_key(vxl_byte data)
+::klv_lds_key(uint8_t data)
 {
   key_[0] = data;
 }
 
 
 klv_lds_key
-::klv_lds_key(const vxl_byte data[1])
+::klv_lds_key(const uint8_t data[1])
 {
   key_[0] = *data;
 }

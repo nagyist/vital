@@ -27,4 +27,7 @@ kwiver_install_headers(
   SUBDIR   vital/klv
   )
 
-target_link_libraries( vital_klv vital_logger )
+target_link_libraries( vital_klv
+  PRIVATE       vital
+                vital_logger
+  )

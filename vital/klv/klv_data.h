@@ -31,7 +31,8 @@
 #ifndef KWIVER_VITAL_KLV_DATA_H_
 #define KWIVER_VITAL_KLV_DATA_H_
 
-#include <vxl_config.h>
+#include <vital/toolkits/klv/vital_klv_export.h>
+
 #include <cstddef>
 #include <iostream>
 #include <vector>
@@ -50,10 +51,10 @@ namespace vital {
  * An object of this class is immutable. Once it is created, it can
  * not be changed, only querried.
  */
-class klv_data
+class VITAL_KLV_EXPORT klv_data
 {
 public:
-  typedef std::vector< vxl_byte > container_t;
+  typedef std::vector< unsigned char > container_t;
   typedef container_t::const_iterator const_iterator_t;
 
 
@@ -95,7 +96,7 @@ public:
   const_iterator_t value_end() const;
 
 protected:
-  std::vector<vxl_byte> raw_data_;
+  std::vector< unsigned char > raw_data_;
   std::size_t key_offset_;
   std::size_t key_len_;
   std::size_t value_offset_;

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,34 @@
 #ifndef KWIVER_VITAL_KLV_0104_H_
 #define KWIVER_VITAL_KLV_0104_H_
 
-#include <klv/klv_key.h>
-#include <vxl_config.h>
+#include <vital/klv/vital_klv_export.h>
+#include <vital/klv/klv_key.h>
+#include <vital/any.h>
+
 #include <vector>
 #include <string>
 #include <cstddef>
 #include <map>
 #include <exception>
-
-#include <boost/any.hpp>
-
+#include <cstdint>
 
 namespace kwiver {
 namespace vital {
 
-class klv_0104
+// ----------------------------------------------------------------
+/**
+ * @brief klv 0104 metadata representation.
+ *
+ */
+class VITAL_KLV_EXPORT klv_0104
 {
 public:
-
   static klv_uds_key key();
 
   /// Test to see if a 0104 key
-  static bool is_key( klv_uds_key const& key);
+  static bool is_key( klv_uds_key const& key );
 
-  static klv_0104 *inst();
+  static klv_0104* instance();
 
   enum tag {  PLATFORM_DESIGNATION = 0,
               PLATFORM_DESIGNATION_ALT,
@@ -102,88 +106,59 @@ public:
               PLATFORM_TAIL_NUMBER,
               MISSION_NUMBER,
               SENSOR_ROLL_ANGLE,
+
               UNKNOWN //must be last
   };
 
 
-  class klv_exception : public std::exception
-  {
-  public:
+  /// Lookup the cooresponding tag with this key.
+  /**
+   *
+   * @param key
+   *
+   * @return
+   */
+  tag get_tag( klv_uds_key const& key ) const;
 
-    klv_exception(const std::string &str) : name(str) {}
-    virtual const char* what() const throw()
-    {
-      return name.c_str();
-    }
-    virtual ~klv_exception() throw() {}
+  /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
+  kwiver::vital::any get_value( tag tg, uint8_t const* data, std::size_t length );
 
-    std::string name;
-  };
-
-  /// Lookup the cooresponding tag with this key
-  tag get_tag(const klv_uds_key &key) const;
-
-  /// Extract the appropriate data type from raw bytes as a boost::any
-  boost::any get_value(tag tg, const vxl_byte* data, std::size_t length);
-
-  /// Cast the boost::any to appropriate data type
-  template <class T>
-  T get_value(tag tg, const boost::any &data) const;
+  /// Cast the tag to appropriate data type
+  /**
+   * Convert klv 0104 metadata tag to desired type. The only supported
+   * types are std::string, double, uint64.
+   *
+   * @param tag Metadata tag enum
+   * @param data
+   *
+   * @tparam T data type (string, double, uint64_t)
+   *
+   * @return
+   */
+  template < class T >
+  T get_value( tag tag, kwiver::vital::any const& data ) const;
 
   /// Get the value of the data in the format of a string for any type
-  std::string get_string(tag tg, const boost::any &data) const;
+  std::string get_string( tag tg, kwiver::vital::any const& data ) const;
 
   /// Get the name of the tag as a string
-  std::string get_tag_name(tag tg) const;
+  std::string get_tag_name( tag tg ) const;
+
 
 private:
-
-  /// Class to store the tag name and a base class for different
-  /// types of values that can come from the klv
-  class traits_base
-  {
-  public:
-
-    virtual ~traits_base() {}
-
-    virtual std::string to_string(const boost::any&) const = 0;
-    virtual boost::any convert(const vxl_byte*, std::size_t) = 0;
-
-    std::string name_;
-
-  protected:
-
-    traits_base(const std::string &name) :  name_(name) {}
-
-  };
-
-
-  /// Provides interpretation of raw data to boost::any and can also
-  /// convert the any to a string
-  template <class T>
-  class traits : public traits_base
-  {
-  public:
-
-    traits(const std::string &name) : traits_base(name) {}
-
-    std::string to_string(const boost::any &data) const;
-
-    /// Parse type T from a raw byte stream in MSB (most significant byte first) order
-    boost::any convert(const vxl_byte* data, std::size_t length);
-  };
-
   klv_0104();
   ~klv_0104();
 
-  static klv_0104 *inst_;
+  static klv_0104* s_instance;
 
-  std::map<klv_uds_key, tag> key_to_tag_;
-  std::vector<traits_base *> traitsvec_;
+  class traits_base;
+
+  std::map< klv_uds_key, tag > m_key_to_tag;
+  std::vector< traits_base* > m_traitsvec;
 };
 
 
-} } // end namespace
 
+} }   // end namespace
 
 #endif

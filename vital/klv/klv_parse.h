@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,12 @@
 #ifndef KWIVER_VITAL_KLV_PARSE_H_
 #define KWIVER_VITAL_KLV_PARSE_H_
 
-#include <vxl_config.h>
 #include <vector>
 #include <deque>
 #include <ostream>
+#include <cstdint>
 
-#include <klv/klv_key.h>
+#include <vital/klv/klv_key.h>
 
 
 namespace kwiver {
@@ -45,11 +45,11 @@ namespace vital {
 class klv_data;
 
 /// Define a type for KLV LDS key-value pairs
-typedef std::pair<klv_lds_key, std::vector<vxl_byte> > klv_lds_pair;
+typedef std::pair<klv_lds_key, std::vector<uint8_t> > klv_lds_pair;
 typedef std::vector< klv_lds_pair > klv_lds_vector_t;
 
 /// Define a type for KLV UDS key-value pairs
-typedef std::pair<klv_uds_key, std::vector<vxl_byte> > klv_uds_pair;
+typedef std::pair<klv_uds_key, std::vector<uint8_t> > klv_uds_pair;
 typedef std::vector< klv_uds_pair > klv_uds_vector_t;
 
 
@@ -65,7 +65,7 @@ typedef std::vector< klv_uds_pair > klv_uds_vector_t;
  *
  * @return \c true if packet returned; \c false if no packet returned.
  */
-bool klv_pop_next_packet( std::deque< vxl_byte >& data, klv_data& klv_packet);
+bool klv_pop_next_packet( std::deque< uint8_t >& data, klv_data& klv_packet);
 
 
 /**

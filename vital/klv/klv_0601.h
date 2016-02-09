@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,13 @@
 #ifndef KWIVER_VITAL_KLV_0601_H_
 #define KWIVER_VITAL_KLV_0601_H_
 
-#include <klv/klv_key.h>
-#include <vxl_config.h>
+#include "klv_key.h"
+
+#include <vital/any.h>
+
 #include <vector>
 #include <string>
 #include <cstddef>
-#include <boost/any.hpp>
 
 
 namespace kwiver {
@@ -132,24 +133,24 @@ bool is_klv_0601_key( klv_uds_key const& key);
 klv_uds_key klv_0601_key();
 
 
-/// Extract the appropriate data type from raw bytes as a boost::any
-boost::any
-klv_0601_value(klv_0601_tag t, const vxl_byte* data, std::size_t length);
+/// Extract the appropriate data type from raw bytes as a kwiver::vital::any
+kwiver::vital::any
+klv_0601_value(klv_0601_tag t, unsigned char const* data, std::size_t length);
 
 
 /// Return the tag data as a double
 double
-klv_0601_value_double(klv_0601_tag t, const boost::any& data);
+klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
 
 
 /// Format the tag data as a string
 std::string
-klv_0601_value_string(klv_0601_tag t, const boost::any& data);
+klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 
 /// Format the tag data as a hex string
 std::string
-klv_0601_value_hex_string(klv_0601_tag t, const boost::any& data);
+klv_0601_value_hex_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 } } // end namespace
 

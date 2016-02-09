@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <klv/klv_parse.h>
-#include <klv/klv_data.h>
-#include <klv/klv_key.h>
-#include <klv/klv_0601.h>
-#include <klv/klv_0104.h>
+#include "klv_parse.h"
+#include "klv_data.h"
+#include "klv_key.h"
+#include "klv_0601.h"
+#include "klv_0104.h"
+
+#include <vital/exceptions/klv.h>
 
 #include <vital/logger/logger.h>
 
@@ -53,7 +55,7 @@ template < class ITERATOR >
 bool
 klv_ber_length( ITERATOR buffer,
                 unsigned int buffer_len,
-                vxl_byte& offset, unsigned int& value_len )
+                uint8_t& offset, unsigned int& value_len )
 {
   // handle the short form with 1 byte length description, first bit is 0
   if ( ! ( 0x80 & *buffer ) )
@@ -80,7 +82,7 @@ klv_ber_length( ITERATOR buffer,
   }
 
   value_len = 0;
-  for ( vxl_byte i = 1; i < offset; ++i )
+  for ( uint8_t i = 1; i < offset; ++i )
   {
     value_len <<= 8;
     value_len += *( buffer + i );
@@ -105,7 +107,7 @@ klv_ber_length( ITERATOR buffer,
  * @return \c true if packet returned; \c false if no packet returned.
  */
 bool
-klv_pop_next_packet( std::deque< vxl_byte >&  data,
+klv_pop_next_packet( std::deque< unsigned char >&  data,
                      klv_data&                klv_packet )
 {
   const std::size_t klv_key_length = klv_uds_key::size();
@@ -128,7 +130,7 @@ klv_pop_next_packet( std::deque< vxl_byte >&  data,
       //
       // We are guaranteed enough bytes in the dqueue because of the
       // preceeding test in while()
-      vxl_byte temp[16];
+      uint8_t temp[16];
       for ( int i = 0; i < 16; ++i )
       {
         temp[i] = data[i];
@@ -148,7 +150,7 @@ klv_pop_next_packet( std::deque< vxl_byte >&  data,
           return true;
         }
 
-        vxl_byte offset;
+        uint8_t offset;
         unsigned int length;
         if ( klv_ber_length( data.begin() + klv_key_length,
                              data.size() - klv_key_length,
@@ -201,7 +203,7 @@ std::vector< klv_lds_pair >
 parse_klv_lds( klv_data const& data )
 {
   std::vector< klv_lds_pair > lds_pairs;
-  vxl_byte offset;
+  uint8_t offset;
   unsigned int value_len;
   size_t len = data.value_size();
   klv_data::const_iterator_t it = data.value_begin();
@@ -211,7 +213,7 @@ parse_klv_lds( klv_data const& data )
           ( offset + 1 + value_len <= len ) )
   {
     klv_lds_key key( *it ); // one byte key
-    std::vector< vxl_byte > value( it + offset + 1, it + offset + 1 + value_len );
+    std::vector< uint8_t > value( it + offset + 1, it + offset + 1 + value_len );
     lds_pairs.push_back( klv_lds_pair( key, value ) );
 
     // update pointer into data
@@ -237,13 +239,13 @@ parse_klv_uds( klv_data const& data )
   std::vector< klv_uds_pair > uds_pairs;
 
   klv_data pk;
-  std::deque< vxl_byte > deq( data.value_begin(), data.value_end() );
+  std::deque< uint8_t > deq( data.value_begin(), data.value_end() );
 
   while ( klv_pop_next_packet( deq, pk ) )
   {
     klv_uds_key uds_key( pk );
     uds_pairs.push_back( klv_uds_pair( uds_key,
-                                       std::vector< vxl_byte > ( pk.value_begin(), pk.value_end() ) ) );
+                                       std::vector< uint8_t > ( pk.value_begin(), pk.value_end() ) ) );
   }
 
   return uds_pairs;
@@ -279,9 +281,9 @@ print_klv( std::ostream& str, klv_data const& klv )
         continue;
       }
 
-      const klv_0601_tag tag( static_cast< klv_0601_tag > ( vxl_byte( itr->first ) ) );
-      boost::any data = klv_0601_value( tag,
-                                        &itr->second[0], itr->second.size() );
+      const klv_0601_tag tag( static_cast< klv_0601_tag > ( uint8_t( itr->first ) ) );
+      kwiver::vital::any data = klv_0601_value( tag,
+                                                &itr->second[0], itr->second.size() );
 
       str << "    #" << int(itr->first) << " - "
           << klv_0601_tag_to_string( tag )
@@ -302,22 +304,23 @@ print_klv( std::ostream& str, klv_data const& klv )
       try
       {
 
-        klv_0104::tag tag = klv_0104::inst()->get_tag( itr->first );
+        klv_0104::tag tag = klv_0104::instance()->get_tag( itr->first );
         if ( tag == klv_0104::UNKNOWN )
         {
           str << "Unknown key: " << itr->first << "Length: " << itr->second.size() << "\n";
           continue;
         }
 
-        boost::any data = klv_0104::inst()->get_value( tag, &itr->second[0], itr->second.size() );
+        //+ get value as string
+        kwiver::vital::any data = klv_0104::instance()->get_value( tag, &itr->second[0], itr->second.size() );
 
         str << "    #" << tag << " - "
-            << klv_0104::inst()->get_tag_name( tag )
-            << ": " << klv_0104::inst()->get_string( tag, data ) << " "
+            << klv_0104::instance()->get_tag_name( tag )
+            << ": " << klv_0104::instance()->get_string( tag, data ) << " "
             << std::endl;
 
       }
-      catch ( const klv_0104::klv_exception& e )
+      catch ( kwiver::vital::klv_exception const& e )
       {
         str << "Error in 0104 klv: " << e.what() << "\n";
       }
