@@ -49,13 +49,13 @@ public:
   klv_key();
   virtual ~klv_key() { }
 
-  klv_key(const unsigned char data[LEN]);
+  klv_key(const uint8_t data[LEN]);
 
   /// The number of bytes in the key
   static std::size_t size() { return LEN; }
 
   /// Access a byte of the key
-  inline unsigned char operator[](unsigned int i) const
+  inline uint8_t operator[](unsigned int i) const
   {
     return (i < LEN) ? key_[i] : 0;
   }
@@ -67,7 +67,7 @@ public:
   bool operator <(const klv_key& rhs) const;
 
 protected:
-  unsigned char key_[LEN];
+  uint8_t key_[LEN];
 };
 
 
@@ -91,7 +91,7 @@ public:
   virtual ~klv_uds_key() { }
 
   klv_uds_key( klv_data const& raw_packet );
-  explicit klv_uds_key( const unsigned char data[16] );
+  explicit klv_uds_key( const uint8_t data[16] );
   explicit klv_uds_key( const uint16_t data[8] );
   explicit klv_uds_key( const uint32_t data[4] );
   explicit klv_uds_key( const uint64_t data[2] );
@@ -163,7 +163,7 @@ public:
   /// Usage is to compare against a std::dequeue
 
   /// All UDS keys start with this 4 byte prefix
-  static const unsigned char prefix[4];
+  static const uint8_t prefix[4];
 
   /// The UDS 4 byte prefix represted as a uint32 (MSB first)
   static const uint32_t prefix_uint32;
@@ -179,11 +179,11 @@ public:
   klv_lds_key() {}
   virtual ~klv_lds_key() {}
 
-  klv_lds_key(unsigned char data);
-  klv_lds_key(const unsigned char data[1]);
+  klv_lds_key(uint8_t data);
+  klv_lds_key(const uint8_t data[1]);
 
-  /// Operator to cast to a unsigned char
-  operator unsigned char() const { return key_[0]; }
+  /// Operator to cast to a uint8_t
+  operator uint8_t() const { return key_[0]; }
 };
 
 } } // end namespace

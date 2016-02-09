@@ -55,7 +55,7 @@ namespace vital {
 class VITAL_KLV_EXPORT klv_data
 {
 public:
-  typedef std::vector< unsigned char > container_t;
+  typedef std::vector< uint8_t > container_t;
   typedef container_t::const_iterator const_iterator_t;
 
 

@@ -134,7 +134,7 @@ klv_uds_key klv_0601_key();
 
 /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
 kwiver::vital::any
-klv_0601_value(klv_0601_tag t, unsigned char const* data, std::size_t length);
+klv_0601_value(klv_0601_tag t, uint8_t const* data, std::size_t length);
 
 
 /// Return the tag data as a double

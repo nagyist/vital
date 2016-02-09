@@ -49,13 +49,13 @@ namespace vital {
 namespace {
 
 /// A function type that converts raw byte streams to kwiver::vital::any
-typedef boost::function< kwiver::vital::any( const unsigned char*, std::size_t ) > klv_decode_func_t;
+typedef std::function< kwiver::vital::any( const uint8_t*, std::size_t ) > klv_decode_func_t;
 
 // ------------------------------------------------------------------
 /// Parse type T from a raw byte stream in MSB (most significant byte first) order
 template < typename T >
 kwiver::vital::any
-klv_convert( const unsigned char* data, std::size_t length )
+klv_convert( const uint8_t* data, std::size_t length )
 {
   if ( sizeof( T ) != length )
   {
@@ -77,7 +77,7 @@ klv_convert( const unsigned char* data, std::size_t length )
 /// Specialization for extracting strings from a raw byte stream
 template < >
 kwiver::vital::any
-klv_convert< std::string > ( const unsigned char* data, std::size_t length )
+klv_convert< std::string > ( const uint8_t* data, std::size_t length )
 {
   std::string value( reinterpret_cast< const char* > ( data ), length );
 
@@ -90,9 +90,9 @@ klv_convert< std::string > ( const unsigned char* data, std::size_t length )
 /// \note this is a place holder for now.
 template < >
 kwiver::vital::any
-klv_convert< kwiver::vital::std_0102_lds > ( const unsigned char* data, std::size_t length )
+klv_convert< kwiver::vital::std_0102_lds > ( const uint8_t* data, std::size_t length )
 {
-  std::vector< unsigned char > value( data, data + length );
+  std::vector< uint8_t > value( data, data + length );
 
   return value;
 }
@@ -100,7 +100,7 @@ klv_convert< kwiver::vital::std_0102_lds > ( const unsigned char* data, std::siz
 
 // ------------------------------------------------------------------
 /// A function type that converts a kwiver::vital::any to a double
-typedef boost::function< double ( kwiver::vital::any const& ) > klv_any_to_double_func_t;
+typedef std::function< double ( kwiver::vital::any const& ) > klv_any_to_double_func_t;
 
 
 // ------------------------------------------------------------------
@@ -108,7 +108,7 @@ typedef boost::function< double ( kwiver::vital::any const& ) > klv_any_to_doubl
 /// This is used with boost bind to make a kwiver::vital::any to double conversion function
 template < typename T >
 double
-klv_as_double( const boost::function< double(T const& val) >& func,
+klv_as_double( const std::function< double(T const& val) >& func,
                kwiver::vital::any const& data )
 {
   return func( kwiver::vital::any_cast< T > ( data ) );
@@ -116,7 +116,7 @@ klv_as_double( const boost::function< double(T const& val) >& func,
 
 
 /// A function type to format kwiver::vital::any raw data in hex and write to the ostream
-typedef boost::function< void ( std::ostream& os, kwiver::vital::any const& ) > klv_any_format_hex_func_t;
+typedef std::function< void ( std::ostream& os, kwiver::vital::any const& ) > klv_any_format_hex_func_t;
 
 
 // ------------------------------------------------------------------
@@ -137,12 +137,12 @@ format_hex( std::ostream& os, kwiver::vital::any const& data )
 /// Specialization for writing a byte in hex (so it doesn't print ASCII)
 template < >
 void
-format_hex< unsigned char > ( std::ostream& os, kwiver::vital::any const& data )
+format_hex< uint8_t > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
 
   os  << std::hex << std::setfill( '0' ) << std::setw( 2 )
-      << static_cast< unsigned int > ( kwiver::vital::any_cast< unsigned char > ( data ) );
+      << static_cast< unsigned int > ( kwiver::vital::any_cast< uint8_t > ( data ) );
   os.flags( f );
 }
 
@@ -186,7 +186,7 @@ void
 format_hex< kwiver::vital::std_0102_lds > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
-  std::vector< unsigned char > d = kwiver::vital::any_cast< std::vector< unsigned char > > ( data );
+  std::vector< uint8_t > d = kwiver::vital::any_cast< std::vector< uint8_t > > ( data );
 
   for ( unsigned int k = 0; k < d.size(); ++k )
   {
@@ -268,7 +268,7 @@ std::vector< klv_0601_dyn_traits > init_traits_array()
 
 static const std::vector< klv_0601_dyn_traits > traits_array = init_traits_array();
 
-static const unsigned char key_data[16] =
+static const uint8_t key_data[16] =
 {
   0x06, 0x0e, 0x2b, 0x34,
   0x02, 0x0B, 0x01, 0x01,
@@ -369,7 +369,7 @@ klv_0601_tag_to_string( klv_0601_tag t )
 // ------------------------------------------------------------------
 /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
 kwiver::vital::any
-klv_0601_value( klv_0601_tag t, const unsigned char* data, std::size_t length )
+klv_0601_value( klv_0601_tag t, const uint8_t* data, std::size_t length )
 {
   return traits_array[t].decode_func( data, length );
 }
