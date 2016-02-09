@@ -38,8 +38,57 @@
 
 #include <vital/logger/logger.h>
 
+#include <cctype>
+
 namespace kwiver {
 namespace vital {
+
+namespace {
+
+std::string
+FormatString( std::string const& val )
+{
+  const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                               '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+  const size_t len( val.size() );
+  bool unprintable_found(false);
+  std::string ascii;
+  std::string hex;
+
+  for (size_t i = 0; i < len; i++)
+  {
+    char const byte = val[i];
+    if ( ! isprint( byte ) )
+    {
+      ascii.append( 1, '.' );
+      unprintable_found = true;
+    }
+    else
+    {
+      ascii.append( 1, byte );
+    }
+
+    // format as hex
+    if (i > 0)
+    {
+      hex += " ";
+    }
+
+    hex += hex_chars[ ( byte & 0xF0 ) >> 4 ];
+    hex += hex_chars[ ( byte & 0x0F ) >> 0 ];
+
+  } // end for
+
+  if (unprintable_found)
+  {
+    ascii += " (" + hex + ")";
+  }
+
+  return ascii;
+}
+
+  }
+
 
 // ----------------------------------------------------------------
 /** Extract a KLV length using BER (basic encoding rules)
@@ -70,7 +119,7 @@ klv_ber_length( ITERATOR buffer,
 
   if ( offset > 5 )
   {
-    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital_klv" ) );
+    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_parse" ) );
     LOG_ERROR( logger, "BER encoded length more then 4 bytes: "
                << static_cast< int > ( offset ) );
     return false;
@@ -108,8 +157,8 @@ klv_ber_length( ITERATOR buffer,
  * @return \c true if packet returned; \c false if no packet returned.
  */
 bool
-klv_pop_next_packet( std::deque< unsigned char >&  data,
-                     klv_data&                     klv_packet )
+klv_pop_next_packet( std::deque< uint8_t >&  data,
+                     klv_data&               klv_packet )
 {
   const std::size_t klv_key_length = klv_uds_key::size();
 
@@ -143,6 +192,7 @@ klv_pop_next_packet( std::deque< unsigned char >&  data,
       {
         if ( temp_key.category() == klv_uds_key::CATEGORY_LABEL )
         {
+          // collect bytes that make up the key
           klv_data::container_t raw_data( data.begin(), data.begin() + klv_key_length );
           klv_packet = klv_data( raw_data, 0, klv_key_length, 0, 0 );
 
@@ -159,11 +209,15 @@ klv_pop_next_packet( std::deque< unsigned char >&  data,
         {
           size_t total_len = klv_key_length + offset + length;
 
+          // Is the full packet in the input buffer?
           if ( data.size() >= total_len )
           {
-            klv_data::container_t raw_data( data.begin(), data.begin() + total_len );
-            klv_packet = klv_data( raw_data, 0, klv_key_length,
-                                   klv_key_length + offset, length );
+            klv_data::container_t raw_data( data.begin(), data.begin() + total_len ); // extract the key bytes
+            klv_packet = klv_data( raw_data,       // total raw data
+                                   0,              // key offset
+                                   klv_key_length, // length of key in bytes
+                                   klv_key_length + offset, // value offset (start of value bytes)
+                                   length );                // length of value in bytes
 
             data.erase( data.begin(), data.begin() + total_len );
             return true;
@@ -176,7 +230,7 @@ klv_pop_next_packet( std::deque< unsigned char >&  data,
 
     // If prefix does not match or key not valid
     // Delete byte from top of input and try again
-    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital_klv" ) );
+    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_parse" ) );
     LOG_DEBUG( logger, "discarding klv byte - 0x" << std::hex << int(data[0])
                //  << " rest of prefix: 0x"
                // << int(data[1]) << " 0x"
@@ -224,7 +278,7 @@ parse_klv_lds( klv_data const& data )
 
   if ( len != 0 )
   {
-    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital_klv" ) );
+    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_parse" ) );
     LOG_ERROR( logger, len << " bytes left over when parsing LDS" );
   }
 
@@ -240,11 +294,13 @@ parse_klv_uds( klv_data const& data )
   std::vector< klv_uds_pair > uds_pairs;
 
   klv_data pk;
+
+  // create queue of data portion of packet.
   std::deque< uint8_t > deq( data.value_begin(), data.value_end() );
 
   while ( klv_pop_next_packet( deq, pk ) )
   {
-    klv_uds_key uds_key( pk );
+    klv_uds_key uds_key( pk ); // 16 byte key
     uds_pairs.push_back( klv_uds_pair( uds_key,
                                        std::vector< uint8_t > ( pk.value_begin(), pk.value_end() ) ) );
   }
@@ -297,9 +353,11 @@ print_klv( std::ostream& str, klv_data const& klv )
   else if ( klv_0104::is_key( uds_key ) )
   {
     str << "Predator (0104) Universal Key of size " << klv.value_size() << std::endl;
+
     klv_uds_vector_t uds = parse_klv_uds( klv );
     str << "  found " << uds.size() << " tags" << std::endl;
 
+    // Vector has key and data
     for ( klv_uds_vector_t::const_iterator itr = uds.begin(); itr != uds.end(); ++itr )
     {
       try
@@ -308,16 +366,16 @@ print_klv( std::ostream& str, klv_data const& klv )
         klv_0104::tag tag = klv_0104::instance()->get_tag( itr->first );
         if ( tag == klv_0104::UNKNOWN )
         {
-          str << "Unknown key: " << itr->first << "Length: " << itr->second.size() << "\n";
+          str << "Unknown key: " << itr->first << "Length: " << itr->second.size() << "bytes \n";
           continue;
         }
 
-        //+ get value as string
         kwiver::vital::any data = klv_0104::instance()->get_value( tag, &itr->second[0], itr->second.size() );
+        std::string str_val = FormatString( klv_0104::instance()->get_string( tag, data ) );
 
         str << "    #" << tag << " - "
             << klv_0104::instance()->get_tag_name( tag )
-            << ": " << klv_0104::instance()->get_string( tag, data ) << " "
+            << "(" <<  itr->second.size() << " bytes): " << str_val << " "
             << std::endl;
 
       }
