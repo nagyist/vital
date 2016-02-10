@@ -49,8 +49,6 @@ namespace vital {
 class any
 {
 public:
-  // constructors
-
   /**
    * @brief Create empty object.
    *
@@ -89,6 +87,8 @@ public:
     delete m_content;
   }
 
+
+  // ------------------------------------------------------------------
   /**
    * @brief Swap value and type.
    *
@@ -104,10 +104,11 @@ public:
     return *this;
   }
 
+  // ------------------------------------------------------------------
   /**
    * @brief Assignment operator.
    *
-   * This operator assigns the specified type and vlue to this object.
+   * This operator assigns the specified type and value to this object.
    *
    * @param rhs New value to assign to this object.
    *
@@ -120,6 +121,7 @@ public:
     return *this;
   }
 
+  // ------------------------------------------------------------------
   /**
    * @brief Assignment operator.
    *
@@ -135,6 +137,7 @@ public:
     return *this;
   }
 
+  // ------------------------------------------------------------------
   /**
    * @brief Determine if this object has a value.
    *
@@ -149,6 +152,7 @@ public:
     return ! m_content;
   }
 
+  // ------------------------------------------------------------------
   /**
    * @brief Remove value from object.
    *
@@ -161,12 +165,21 @@ public:
     any().swap( *this );
   }
 
+  // ------------------------------------------------------------------
   /**
    * @brief Get typeid for current value.
    *
    * This method returns the std::type_info for the item contained in
    * this object. If this object is empty(), then the type info for \b
    * void is returned.
+   *
+   * You can get the type name string from the following, but the name
+   * string may not be all that helpful.
+   *
+   \code
+   kwiver::vital::any any_double(3.14159);
+   std::cout << "Type name: " << any_double.type().name() << std::endl;
+   \endcode
    *
    * @return The type info for the datum in this object is returned.
    */
@@ -212,7 +225,7 @@ private:
 
 private:
   template < typename T >
-  friend T* any_cast( any* ) VITAL_NOTHROW;
+  friend T* any_cast( any * aval ) VITAL_NOTHROW;
 
   template < typename T >
   friend T any_cast(any const& aval);
@@ -221,7 +234,7 @@ private:
 };
 
 
-// ------------------------------------------------------------------
+// ==================================================================
 class  bad_any_cast : public std::bad_cast
 {
 public:
@@ -244,7 +257,7 @@ private:
 };
 
 
-// ------------------------------------------------------------------
+// ==================================================================
 // Casting functions
 //
 /**
@@ -255,12 +268,35 @@ private:
  * @return
  */
 template < typename T >
-inline const T* any_cast( any const* operand ) VITAL_NOTHROW
+inline T*
+any_cast( any* operand ) VITAL_NOTHROW
+{
+  if ( operand && ( operand->type() == typeid( T ) ) )
+  {
+    return &static_cast< any::internal_typed< T >* > ( operand->m_content )->m_any_data;
+  }
+
+  return 0;
+}
+
+
+// ------------------------------------------------------------------
+/**
+ * @brief
+ *
+ * @param operand
+ *
+ * @return
+ */
+template < typename T >
+inline const T*
+any_cast( any const* operand ) VITAL_NOTHROW
 {
   return any_cast< T > ( const_cast< any* > ( operand ) );
 }
 
 
+// ------------------------------------------------------------------
 /**
  * @brief Get value from a container.
  *
@@ -268,16 +304,17 @@ inline const T* any_cast( any const* operand ) VITAL_NOTHROW
  *
  * @return Value from object as specified type.
  */
-template< typename T >
-inline T any_cast(any const& aval)
+template < typename T >
+inline T
+any_cast( any const& aval )
 {
   // Is the type requested compatible with the type represented.
-  if ( typeid(T) == aval.m_content->type() )
+  if ( typeid( T ) == aval.m_content->type() )
   {
-    return ( (any::internal_typed< T >*) aval.m_content )->m_any_data;
+    return ( ( any::internal_typed< T >* )aval.m_content )->m_any_data;
   }
 
-  throw bad_any_cast( aval.m_content->type().name(), typeid(T).name() );
+  throw bad_any_cast( aval.m_content->type().name(), typeid( T ).name() );
 }
 
 } }  // end namespace
