@@ -371,6 +371,7 @@ endif()
 if (VITAL_ENABLE_TESTS)
   add_subdirectory( tests )
   add_subdirectory( util/tests )
+  add_subdirectory( klv/tests )
 endif()
 
 ###
