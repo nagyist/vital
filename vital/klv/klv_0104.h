@@ -139,9 +139,26 @@ public:
   T get_value( tag tag, kwiver::vital::any const& data ) const;
 
   /// Get the value of the data in the format of a string for any type
+  /**
+   * This method returns the string representation of the supplied
+   * data. It is converted based on the correct type for the specified
+   * tag.
+   *
+   * @param tg Tag to use to guide conversion.
+   * @param data Data to be converted.
+   *
+   * @return String representation of the data.
+   */
   std::string get_string( tag tg, kwiver::vital::any const& data ) const;
 
   /// Get the name of the tag as a string
+  /**
+   * This method returns the name of the supplied tag.
+   *
+   * @param tg Tag code to be converted to a string name.
+   *
+   * @return Name associated with the tag.
+   */
   std::string get_tag_name( tag tg ) const;
 
 
@@ -156,8 +173,6 @@ private:
   std::map< klv_uds_key, tag > m_key_to_tag;
   std::vector< traits_base* > m_traitsvec;
 };
-
-
 
 } }   // end namespace
 

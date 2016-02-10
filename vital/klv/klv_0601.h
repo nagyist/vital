@@ -119,39 +119,124 @@ enum klv_0601_tag {KLV_0601_UNKNOWN                 = 0,
                    KLV_0601_ENUM_END };
 
 
+/// Get tag value from key.
+/**
+ * This function returns the tag value from the supplied key. The key
+ * value can be used to easily and uniquely identify the metadata entry.
+ *
+ * @param key Get tag from this key.
+ *
+ * @return Tag value from key.
+ */
+klv_0601_tag
+klv_0601_get_tag( klv_lds_key key );
+
+
 /// Return a string representation of the name of a KLV 0601 tag
+/**
+ * Convert tag code to descriptive string.
+ *
+ * @param t Tag value
+ *
+ * @return String name for tag.
+ */
 std::string
 klv_0601_tag_to_string(klv_0601_tag t);
 
 
 /// Test to see if a 0601 key
+/**
+ * This function tests the supplied key to see it it really is a 0601
+ * type key.
+ *
+ * @param key Test this key
+ *
+ * @return \b true if key is in 0601 format.
+ */
 bool is_klv_0601_key( klv_uds_key const& key);
 
 
 /// Return 0601 key
+/**
+ * This function returns the standard 0601 key structure. This is
+ * useful when you need a key to test against.
+ *
+ * @return 0601 key structure.
+ */
 klv_uds_key klv_0601_key();
 
 
 /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
+/**
+ * This function converts the data associated with the 0601 entry into
+ * the correct value in the appropriate type.
+ *
+ * @param t Tag code from 0601 key
+ * @param data Raw data associated with key.
+ * @param length Length of raw data.
+ *
+ * @return Correctly typed data value in a kwiver::vital::any() object.
+ */
 kwiver::vital::any
 klv_0601_value(klv_0601_tag t, uint8_t const* data, std::size_t length);
 
 
-/// Return the tag data as a double
+/// Return the tag data as a double.
+/**
+ * This function converts the data associated with the 0601 entry into
+ * a double data type.
+ *
+ * The data must be converted into a kwiver::vital::any() by the
+ * klv_0601_value() call first.
+ *
+ * @param t Tag code from 0601 key
+ * @param data Typed data associated with key.
+ *
+ * @return Metadata entry data value returned as a double.
+ */
 double
 klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
 
 
-/// Format the tag data as a string
+/// Format the tag data as a string.
+/**
+ * This function converts the data associated with the 0601 entry into
+ * a string data type. The basic underlying data type is extracted
+ * from the supplied data and then converted to a string. Note that
+ * there are some data types that can not be converted. The string
+ * "Unknown" is returned in that case.
+ *
+ * The data must be converted into a kwiver::vital::any() by the
+ * klv_0601_value() call first.
+ *
+ * @param t Tag code from 0601 key
+ * @param data Typed data associated with key.
+ *
+ * @return Metadata entry data as a string or "unknown" if value can
+ * not be converted.
+ */
 std::string
 klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 
 /// Format the tag data as a hex string
+/**
+ * This function converts the data associated with the 0601 entry into
+ * a string data type. The supplied data is converted to a hex
+ * representation.
+ *
+ * The data must be converted into a kwiver::vital::any() by the
+ * klv_0601_value() call first.
+ *
+ * @param t Tag code from 0601 key
+ * @param data Raw data associated with key.
+ *
+ * @return String containing the hex representation of the raw data is
+ * returned.
+ */
 std::string
 klv_0601_value_hex_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 } } // end namespace
-
 
 #endif

@@ -330,7 +330,7 @@ print_klv( std::ostream& str, klv_data const& klv )
     klv_lds_vector_t lds = parse_klv_lds( klv );
 
     str << "  found " << lds.size() << " tags" << std::endl;
-    for ( klv_lds_vector_t::const_iterator itr = lds.begin(); itr != lds.end(); ++itr )
+    for ( auto itr = lds.begin(); itr != lds.end(); ++itr )
     {
       if ( ( itr->first <= KLV_0601_UNKNOWN ) || ( itr->first >= KLV_0601_ENUM_END ) )
       {
@@ -338,17 +338,19 @@ print_klv( std::ostream& str, klv_data const& klv )
         continue;
       }
 
-      const klv_0601_tag tag( static_cast< klv_0601_tag > ( uint8_t( itr->first ) ) );
+      // Convert a single tag
+      const klv_0601_tag tag( klv_0601_get_tag( itr->first ) ); // get tag code from key
+
+      // Extract relevant data from associated data bytes.
       kwiver::vital::any data = klv_0601_value( tag,
                                                 &itr->second[0], itr->second.size() );
 
-      str << "    #" << int(itr->first) << " - "
+      str << "    #" << tag << " - "
           << klv_0601_tag_to_string( tag )
           << ": " << klv_0601_value_string( tag, data ) << " "
           << " [" << klv_0601_value_hex_string( tag, data ) << "]"
           << std::endl;
-    }
-
+    } // end for
   }
   else if ( klv_0104::is_key( uds_key ) )
   {
@@ -358,11 +360,10 @@ print_klv( std::ostream& str, klv_data const& klv )
     str << "  found " << uds.size() << " tags" << std::endl;
 
     // Vector has key and data
-    for ( klv_uds_vector_t::const_iterator itr = uds.begin(); itr != uds.end(); ++itr )
+    for ( auto itr = uds.begin(); itr != uds.end(); ++itr )
     {
       try
       {
-
         klv_0104::tag tag = klv_0104::instance()->get_tag( itr->first );
         if ( tag == klv_0104::UNKNOWN )
         {
@@ -383,12 +384,11 @@ print_klv( std::ostream& str, klv_data const& klv )
       {
         str << "Error in 0104 klv: " << e.what() << "\n";
       }
-    }
-
+    } // end for
   }
   else
   {
-    str << "unsupported Key: " << uds_key << " data size is "
+    str << "Unsupported UDS Key: " << uds_key << " data size is "
         << klv.value_size() << std::endl;
 
     switch ( uds_key.category() )

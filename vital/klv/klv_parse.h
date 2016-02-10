@@ -29,7 +29,7 @@
  */
 
 /** @file
- * Interface to the KLV parsing functions
+ * Interface to the KLV parsing functions.
  */
 
 #ifndef KWIVER_VITAL_KLV_PARSE_H_
@@ -41,9 +41,7 @@
 #include <cstdint>
 
 #include <vital/vital_export.h>
-
 #include <vital/klv/klv_key.h>
-
 
 namespace kwiver {
 namespace vital {
@@ -63,7 +61,9 @@ typedef std::vector< klv_uds_pair > klv_uds_vector_t;
  * @brief Pop the first KLV UDS key-value pair found in the data buffer.
  *
  * The first valid KLV packet found in the data stream is returned.
- * Leading bytes that do not belong to a KLV pair are dropped.
+ * Leading bytes that do not belong to a KLV pair are dropped. If
+ * there is a partial packet in the input data stream, it is left
+ * there and no packet is returned.
  *
  * @param[in,out] data Byte stream to be parsed.
  * @param[out] klv_packet Full klv packet with key and data fields
@@ -79,7 +79,8 @@ klv_pop_next_packet( std::deque< uint8_t >& data, klv_data& klv_packet);
  * @brief Parse KLV LDS (Local Data Set) from an array of bytes.
  *
  * The input array is the raw KLV packet. The output is a vector of
- * LDS packets.
+ * LDS packets. The raw packet is usually taken from the
+ * klv_pop_next_packet() function.
  *
  * @param data KLV raw packet
  *
@@ -93,7 +94,10 @@ parse_klv_lds(klv_data const& data);
  * @brief Parse KLV UDS (Universal Data Set) from an array of bytes.
  *
  * The input array is the raw KLV packet. The output is a vector of
- * UDS packets.
+ * UDS packets. The raw packet is usually taken from the
+ * klv_pop_next_packet() function.
+ *
+ * The UDS keys can be decoded using the klv_0104 class.
  *
  * @param[in] data KLV raw packet
  *
@@ -106,7 +110,8 @@ parse_klv_uds( klv_data const& data );
 /**
  * @brief Print KLV packet.
  *
- * The supplied KLV packet is decoded and printed.
+ * The supplied KLV packet is decoded and printed. The raw packet is
+ * usually taken from the klv_pop_next_packet() function.
  *
  * @param str stream to format on
  * @param klv packet to decode

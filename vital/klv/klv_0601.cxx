@@ -219,7 +219,8 @@ template < klv_0601_tag tag >
 struct construct_traits
 {
   /// Populate the array element for this tag
-  static inline std::vector< klv_0601_dyn_traits >& init( std::vector< klv_0601_dyn_traits >& data )
+  static inline std::vector< klv_0601_dyn_traits >&
+  init( std::vector< klv_0601_dyn_traits >& data )
   {
     typedef typename klv_0601_traits< tag >::type type;
     klv_0601_dyn_traits& t = data[tag];
@@ -301,6 +302,12 @@ is_klv_0601_key( klv_uds_key const& key )
   return key == klv_0601_uds_key;
 }
 
+
+klv_0601_tag
+klv_0601_get_tag( klv_lds_key key )
+{
+  return static_cast< klv_0601_tag > ( uint8_t( key ) );
+}
 
 // ----------------------------------------------------------------
 /** Compute 0601 checksum.
@@ -395,6 +402,7 @@ klv_0601_value_string( klv_0601_tag t, kwiver::vital::any const& data )
   {
     return kwiver::vital::any_cast< std::string > ( data );
   }
+
   if ( traits.has_double )
   {
     std::stringstream ss;
@@ -402,13 +410,16 @@ klv_0601_value_string( klv_0601_tag t, kwiver::vital::any const& data )
         << traits.double_func( data );
     return ss.str();
   }
+
   if ( t == KLV_0601_UNIX_TIMESTAMP )
   {
     std::stringstream ss;
     typedef klv_0601_traits< KLV_0601_UNIX_TIMESTAMP >::type time_type;
+
     ss << kwiver::vital::any_cast< time_type > ( data );
     return ss.str();
   }
+
   return "Unknown";
 }
 
