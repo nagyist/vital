@@ -155,7 +155,7 @@ klv_0104::klv_0104()
     { klv_uds_key( 0x060E2B3401010101UL, 0x0420030100000000UL ), SENSOR_TYPE },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0701010100000000UL ), IMAGE_COORDINATE_SYSTEM },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0701090201000000UL ), TARGET_WIDTH },
-    { klv_uds_key( 0x060e2b3401010107UL, 0x0701100106000000UL ), PLATFORM_HEADING },
+    { klv_uds_key( 0x060e2b3401010107UL, 0x0701100106000000UL ), PLATFORM_HEADING_ANGLE },
     { klv_uds_key( 0x060e2b3401010107UL, 0x0701100105000000UL ), PLATFORM_PITCH_ANGLE },
     { klv_uds_key( 0x060e2b3401010107UL, 0x0701100104000000UL ), PLATFORM_ROLL_ANGLE },
     { klv_uds_key( 0x060e2b3401010103UL, 0x0701020102040200UL ), SENSOR_LATITUDE },
@@ -210,7 +210,7 @@ klv_0104::klv_0104()
   m_traitsvec[SENSOR_TYPE] =                 NEW_TRAIT( std::string, "Sensor type" );
   m_traitsvec[IMAGE_COORDINATE_SYSTEM] =     NEW_TRAIT( std::string, "Image Coordinate System" );
   m_traitsvec[TARGET_WIDTH] =                NEW_TRAIT( double, "Target Width" );
-  m_traitsvec[PLATFORM_HEADING] =            NEW_TRAIT( double, "Platform heading" );
+  m_traitsvec[PLATFORM_HEADING_ANGLE] =      NEW_TRAIT( double, "Platform heading" );
   m_traitsvec[PLATFORM_PITCH_ANGLE] =        NEW_TRAIT( double, "Platform pitch angle" );
   m_traitsvec[PLATFORM_ROLL_ANGLE] =         NEW_TRAIT( double, "Platform roll angle" );
   m_traitsvec[SENSOR_LATITUDE] =             NEW_TRAIT( double, "Sensor latitude" );

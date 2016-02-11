@@ -77,7 +77,7 @@ public:
               SENSOR_TYPE,
               IMAGE_COORDINATE_SYSTEM,
               TARGET_WIDTH,
-              PLATFORM_HEADING,
+              PLATFORM_HEADING_ANGLE,
               PLATFORM_PITCH_ANGLE,
               PLATFORM_ROLL_ANGLE,
               SENSOR_LATITUDE,
