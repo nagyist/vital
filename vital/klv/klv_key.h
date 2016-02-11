@@ -36,6 +36,8 @@
 #ifndef KWIVER_VITAL_KLV_KEY_H_
 #define KWIVER_VITAL_KLV_KEY_H_
 
+#include <vital/vital_export.h>
+
 #include <cstddef>
 #include <iostream>
 #include <cstdint>
@@ -48,7 +50,7 @@ class klv_data;
 
 /// A class to represent a KLV key
 template <unsigned int LEN>
-class klv_key
+class VITAL_EXPORT klv_key
 {
 public:
   klv_key();
@@ -79,6 +81,7 @@ protected:
 /// Ouput stream operator for \a klv_key
 /// formats output as a hex string
 template <unsigned int LEN>
+VITAL_EXPORT
 std::ostream& operator <<(std::ostream& os, const klv_key<LEN>& key);
 
 
@@ -87,7 +90,7 @@ std::ostream& operator <<(std::ostream& os, const klv_key<LEN>& key);
  *
  *
  */
-class klv_uds_key :
+class VITAL_EXPORT klv_uds_key :
   public klv_key< 16 >
 {
 public:
@@ -177,7 +180,7 @@ public:
 
 // ----------------------------------------------------------------
 /// A LDS (Local Data Set) key with 1 byte length
-class klv_lds_key
+class VITAL_EXPORT klv_lds_key
   : public klv_key<1>
 {
 public:

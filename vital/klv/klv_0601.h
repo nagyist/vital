@@ -134,7 +134,7 @@ enum klv_0601_tag {KLV_0601_UNKNOWN                     = 0,
  *
  * @return Tag value from key.
  */
-klv_0601_tag
+VITAL_EXPORT klv_0601_tag
 klv_0601_get_tag( klv_lds_key key );
 
 
@@ -146,7 +146,7 @@ klv_0601_get_tag( klv_lds_key key );
  *
  * @return String name for tag.
  */
-std::string
+VITAL_EXPORT std::string
 klv_0601_tag_to_string(klv_0601_tag t);
 
 
@@ -159,7 +159,8 @@ klv_0601_tag_to_string(klv_0601_tag t);
  *
  * @return \b true if key is in 0601 format.
  */
-bool is_klv_0601_key( klv_uds_key const& key);
+VITAL_EXPORT bool
+is_klv_0601_key( klv_uds_key const& key);
 
 
 /// Return 0601 key
@@ -169,7 +170,8 @@ bool is_klv_0601_key( klv_uds_key const& key);
  *
  * @return 0601 key structure.
  */
-klv_uds_key klv_0601_key();
+VITAL_EXPORT klv_uds_key
+klv_0601_key();
 
 
 /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
@@ -183,7 +185,7 @@ klv_uds_key klv_0601_key();
  *
  * @return Correctly typed data value in a kwiver::vital::any() object.
  */
-kwiver::vital::any
+VITAL_EXPORT kwiver::vital::any
 klv_0601_value(klv_0601_tag t, uint8_t const* data, std::size_t length);
 
 
@@ -200,7 +202,7 @@ klv_0601_value(klv_0601_tag t, uint8_t const* data, std::size_t length);
  *
  * @return Metadata entry data value returned as a double.
  */
-double
+VITAL_EXPORT double
 klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
 
 
@@ -221,7 +223,7 @@ klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
  * @return Metadata entry data as a string or "unknown" if value can
  * not be converted.
  */
-std::string
+VITAL_EXPORT std::string
 klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 
@@ -240,7 +242,7 @@ klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
  * @return String containing the hex representation of the raw data is
  * returned.
  */
-std::string
+VITAL_EXPORT std::string
 klv_0601_value_hex_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 } } // end namespace
