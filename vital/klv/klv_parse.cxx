@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the implementation for the klv parser.
+ */
+
 #include "klv_parse.h"
 #include "klv_data.h"
 #include "klv_key.h"

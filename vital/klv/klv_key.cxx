@@ -33,6 +33,10 @@
 #include <algorithm>
 #include <iomanip>
 
+/**
+ * \file
+ * \brief This file contains the implementation for the klv_key class.
+ */
 
 namespace kwiver {
 namespace vital {

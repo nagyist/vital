@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the interface for the KLV exception.
+ */
+
 #ifndef VITAL_CORE_EXCEPTIONS_KLV_H
 #define VITAL_CORE_EXCEPTIONS_KLV_H
 

@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the interface for klv 0601 video metadata.
+ */
+
 #ifndef KWIVER_VITAL_KLV_0601_H_
 #define KWIVER_VITAL_KLV_0601_H_
 

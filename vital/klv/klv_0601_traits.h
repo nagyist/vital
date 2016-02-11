@@ -28,6 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the internal definitions needed to
+ * make KLV 0601 traits.
+ */
+
 #ifndef KWIVER_VITAL_KLV_0601_TRAITS_H_
 #define KWIVER_VITAL_KLV_0601_TRAITS_H_
 

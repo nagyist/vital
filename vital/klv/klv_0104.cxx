@@ -28,6 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the implementation for representing
+ * and accessing klv 0104 video metadata.
+ */
+
 #include "klv_0104.h"
 #include "klv_data.h"
 

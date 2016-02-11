@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the implementation for the klv data class.
+ */
+
 #include <vital/klv/klv_data.h>
 
 #include <algorithm>
