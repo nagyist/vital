@@ -163,6 +163,8 @@ set( vital_public_headers
 
   util/get_paths.h
   util/timer.h
+
+  video_metadata.h
 )
 
 # ----------------------
@@ -223,6 +225,8 @@ set( vital_sources
   types/track_set.cxx
 
   util/get_paths.cxx
+
+  video_metadata.cxx
 )
 
 kwiver_install_headers(
