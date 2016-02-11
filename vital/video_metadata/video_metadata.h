@@ -39,13 +39,20 @@
 #include <vital/any.h>
 #include <vital/klv/klv_parse.h>
 
+#include <vital/types/geo_lat_lon.h>
+
 #include <map>
 #include <string>
 #include <typeinfo>
+#include <memory>
+
 
 namespace kwiver {
 namespace vital {
 
+  //
+  // Canonical metadata tags
+  //
   enum vital_metadata_tag {
     VITAL_META_UNKNOWN,
     VITAL_META_UNIX_TIMESTAMP,
@@ -55,17 +62,19 @@ namespace vital {
     VITAL_META_PLATFORM_PITCH_ANGLE,
     VITAL_META_PLATFORM_ROLL_ANGLE,
     VITAL_META_PLATFORM_TRUE_AIRSPEED,
-    VITAL_META_PLATFORM_IND_AIRSPEED,
+    VITAL_META_PLATFORM_INDICATED_AIRSPEED,
     VITAL_META_PLATFORM_DESIGNATION,
     VITAL_META_IMAGE_SOURCE_SENSOR,
     VITAL_META_IMAGE_COORDINATE_SYSTEM,
     VITAL_META_SENSOR_LOCATION,
-    VITAL_META_SENSOR_TRUE_ALTITUDE,
+    VITAL_META_SENSOR_ALTITUDE,
     VITAL_META_SENSOR_HORIZONTAL_FOV,
     VITAL_META_SENSOR_VERTICAL_FOV,
     VITAL_META_SENSOR_REL_AZ_ANGLE,
     VITAL_META_SENSOR_REL_EL_ANGLE,
     VITAL_META_SENSOR_REL_ROLL_ANGLE,
+    VITAL_META_SENSOR_ROLL_ANGLE,
+    VITAL_META_SENSOR_TYPE,                 //string
     VITAL_META_SLANT_RANGE,
     VITAL_META_TARGET_WIDTH,
     VITAL_META_FRAME_CENTER,
@@ -102,9 +111,11 @@ namespace vital {
     VITAL_META_SENSOR_FOV_NAME,
     VITAL_META_PLATFORM_MAGNET_HEADING,
     VITAL_META_UAS_LDS_VERSION_NUMBER,
+    VITAL_META_ANGLE_TO_NORTH,
 
-    // NOTE  Add the rest of the fields here
-    VITAL_META_ENUM_END };
+    // User tags can be generated for a specific application and
+    // should start with a value not less than the following.
+    VITAL_META_FIRST_USER_TAG };
 
 
 // -----------------------------------------------------------------
@@ -213,6 +224,9 @@ public:
 class video_metadata
 {
 public:
+  typedef std::map< vital_metadata_tag, std::unique_ptr< metadata_item > > metadata_map_t;
+  typedef metadata_map_t::const_iterator const_iterator_t;
+
   video_metadata();
   ~video_metadata();
 
@@ -222,8 +236,7 @@ public:
    *
    * @param item New metadata item to be copied into collection.
    */
-  void add( metadata_item const& item );
-
+  void add( metadata_item* item );
 
   /**
    * @brief Determine if metadata collection has tag.
@@ -236,10 +249,35 @@ public:
    */
   bool has( vital_metadata_tag tag ); // needs not-found return value
 
+  /**
+   * @brief Find metadata entry for specified tag.
+   *
+   * This method looks for the metadata entrty corresponding to the
+   * supplied tag. If the tag is not present in the collection, the
+   * results are undefined.
+   *
+   * @param tag Look for this tag in collection of metadata.
+   *
+   * @return metadata item object for tag.
+   */
   metadata_item const& find( vital_metadata_tag tag ); // needs not-found return value
 
+  // iterators
+  const_iterator_t begin() const;
+  const_iterator_t end() const;
+
+
+  // the corner points are a nested structure so it is in a nested name space.
+  struct geo_corner_points
+  {
+    geo_lat_lon p1;
+    geo_lat_lon p2;
+    geo_lat_lon p3;
+    geo_lat_lon p4;
+  };
+
 private:
-  std::map< vital_metadata_tag, metadata_item > m_metadata_map;
+  metadata_map_t m_metadata_map;
 
 }; // end class video_metadata
 
@@ -252,9 +290,8 @@ private:
  */
 void convert_metadata( klv_data const& klv, video_metadata& metadata );
 
-
 void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
-  void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
+void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
 
 } } // end namespace
 

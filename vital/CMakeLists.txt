@@ -163,8 +163,6 @@ set( vital_public_headers
 
   util/get_paths.h
   util/timer.h
-
-  video_metadata.h
 )
 
 # ----------------------
@@ -225,8 +223,6 @@ set( vital_sources
   types/track_set.cxx
 
   util/get_paths.cxx
-
-  video_metadata.cxx
 )
 
 kwiver_install_headers(
@@ -365,6 +361,7 @@ add_subdirectory( bindings )
 add_subdirectory( logger )
 add_subdirectory( config )
 add_subdirectory( klv )
+add_subdirectory( video_metadata )
 
 if (VITAL_ENABLE_TOOLS)
   add_subdirectory( tools )
