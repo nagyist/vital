@@ -58,20 +58,16 @@ public:
 
   virtual std::string to_string( kwiver::vital::any const& ) const = 0;
   virtual kwiver::vital::any convert( uint8_t const*, std::size_t ) = 0;
-  bool is_metadata_set() const { return m_metadata_set; }
 
   std::string m_name;
-  bool m_metadata_set; // set if data contains more tags
 
 protected:
   traits_base( std::string const& name )
-    : m_name( name ),
-      m_metadata_set( false )
+    : m_name( name )
   { }
 
   traits_base( std::string const& name, bool set )
-    : m_name( name ),
-      m_metadata_set( set )
+    : m_name( name )
   { }
 
 };
@@ -201,13 +197,12 @@ klv_0104::klv_0104()
 
   //Mapping between tag index and traits, double is used for floats and doubles
 #define NEW_TRAIT(T,D) reinterpret_cast< traits_base* >(new traits< T > ( D ))
-#define NEW_TRAIT_GROUP(T,D) reinterpret_cast< traits_base* >(new traits< T > ( D, true ))
 
   m_traitsvec[PLATFORM_DESIGNATION] =        NEW_TRAIT( std::string, "Platform designation" );
   m_traitsvec[PLATFORM_DESIGNATION_ALT] =    NEW_TRAIT( std::string, "Platform designation (alternate key)" );
   m_traitsvec[STREAM_ID] =                   NEW_TRAIT( std::string, "Stream ID" );
   m_traitsvec[ITEM_DESIGNATOR_ID] =          NEW_TRAIT( std::string, "Item Designator ID (16 bytes)" );
-  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT_GROUP( std::string, "Classification" );
+  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT( std::string, "Classification" ); // really std_0102_lds
   m_traitsvec[SECURITY_CLASSIFICATION] =     NEW_TRAIT( std::string, "Security Classification" );
   m_traitsvec[IMAGE_SOURCE_SENSOR] =         NEW_TRAIT( std::string, "Image Source sensor" );
   m_traitsvec[SENSOR_HORIZONTAL_FOV] =       NEW_TRAIT( double, "Sensor horizontal field of view" );
