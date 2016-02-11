@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the implementation of a lat lon geo point.
+ */
+
 #include "geo_lat_lon.h"
 #include <cmath>
 #include <iomanip>
@@ -37,6 +42,7 @@ namespace vital {
 
 const double geo_lat_lon::INVALID = 444.0;
 
+// ------------------------------------------------------------------
 geo_lat_lon::
 geo_lat_lon()
   : m_latitude(INVALID),
@@ -55,6 +61,7 @@ geo_lat_lon::
 { }
 
 
+// ------------------------------------------------------------------
 geo_lat_lon& geo_lat_lon
 ::set_latitude(double l)
 {
@@ -63,6 +70,7 @@ geo_lat_lon& geo_lat_lon
 }
 
 
+// ------------------------------------------------------------------
 geo_lat_lon& geo_lat_lon
 ::set_longitude(double l)
 {
@@ -71,6 +79,7 @@ geo_lat_lon& geo_lat_lon
 }
 
 
+// ------------------------------------------------------------------
 double geo_lat_lon
 ::get_latitude() const
 {
@@ -78,6 +87,7 @@ double geo_lat_lon
 }
 
 
+// ------------------------------------------------------------------
 double geo_lat_lon
 ::get_longitude() const
 {
@@ -85,6 +95,7 @@ double geo_lat_lon
 }
 
 
+// ------------------------------------------------------------------
 bool
 geo_lat_lon::
 is_valid() const
@@ -103,6 +114,7 @@ is_valid() const
 }
 
 
+// ------------------------------------------------------------------
 bool
 geo_lat_lon::
 is_empty() const
@@ -111,6 +123,7 @@ is_empty() const
 }
 
 
+// ------------------------------------------------------------------
 bool
 geo_lat_lon::
 operator == ( const geo_lat_lon &rhs ) const
@@ -120,6 +133,7 @@ operator == ( const geo_lat_lon &rhs ) const
 }
 
 
+// ------------------------------------------------------------------
 bool
 geo_lat_lon::
 operator != ( const geo_lat_lon &rhs ) const
@@ -128,7 +142,8 @@ operator != ( const geo_lat_lon &rhs ) const
 }
 
 
-  std::ostream & operator<< (std::ostream & str, vital::geo_lat_lon const& obj)
+// ------------------------------------------------------------------
+std::ostream & operator<< (std::ostream & str, vital::geo_lat_lon const& obj)
 {
   std::streamsize old_prec = str.precision();
 

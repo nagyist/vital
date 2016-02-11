@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * \file
+ * \brief This file contains the interface to a lat lon geo point.
+ */
+
 #ifndef _VITAL_GEO_LAT_LON_H_
 #define _VITAL_GEO_LAT_LON_H_
 
@@ -63,7 +68,24 @@ public:
   double get_latitude() const;
   double get_longitude() const;
 
+  /**
+   * @brief Is geo location in initial state
+   *
+   * This method checks the object to see if any data values have been
+   * set.
+   *
+   * @return \b true if object is default constructed.
+   */
   bool is_empty() const;
+
+  /**
+   * @brief Is geo location a valid coordinate.
+   *
+   * This method checks the latitude to be between -90 and +90.  The
+   * latitude is checked to be between -180 and +360.
+   *
+   * @return \b true if valid lat/lon coordinate.
+   */
   bool is_valid() const;
 
   bool operator==( const geo_lat_lon& rhs ) const;
