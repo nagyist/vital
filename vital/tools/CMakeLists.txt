@@ -31,5 +31,6 @@ target_link_libraries( dump_klv
   PRIVATE     vital
               vital_klv
               vital_logger
+              vital_video_metadata
               vidl
   )

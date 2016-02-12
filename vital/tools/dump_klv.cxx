@@ -38,6 +38,8 @@
 
 #include <vital/klv/klv_data.h>
 #include <vital/klv/klv_parse.h>
+#include <vital/video_metadata/video_metadata.h>
+
 
 // ----------------------------------------------------------------
 /** Main entry.
@@ -72,10 +74,12 @@ int main( int argc, char** argv )
 
   std::deque<uint8_t> md_buffer;
   unsigned count = 0;
+
+
   while ( istr.advance() )
   {
     std::cout << "========== Read frame " << istr.frame_number()
-             << " (index " << count << ") ==========" <<std::endl;
+              << " (index " << count << ") ==========" <<std::endl;
 
     std::deque<uint8_t> curr_md = istr.current_metadata();
 
@@ -89,6 +93,10 @@ int main( int argc, char** argv )
     while (klv_pop_next_packet( md_buffer, klv_packet ))
     {
       kwiver::vital::print_klv( std::cout, klv_packet );
+
+      kwiver::vital::video_metadata metadata;
+      convert_metadata( klv_packet, metadata );
+      print_metadata(std::cout,  metadata );
     }
     ++count;
 
