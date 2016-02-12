@@ -144,6 +144,8 @@ set( vital_public_headers
   types/feature_set.h
   types/fundamental_matrix.h
   types/geo_lat_lon.h
+  types/geo_UTM.h
+  types/geo_MGRS.h
   types/homography.h
   types/homography_f2f.h
   types/homography_f2w.h
@@ -211,6 +213,8 @@ set( vital_sources
   types/feature.cxx
   types/fundamental_matrix.cxx
   types/geo_lat_lon.cxx
+  types/geo_UTM.cxx
+  types/geo_MGRS.cxx
   types/homography.cxx
   types/homography_f2f.cxx
   types/homography_f2w.cxx
