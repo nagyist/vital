@@ -165,6 +165,7 @@ set( vital_public_headers
 
   util/get_paths.h
   util/timer.h
+  util/demangle.h
 )
 
 # ----------------------
@@ -227,6 +228,7 @@ set( vital_sources
   types/track_set.cxx
 
   util/get_paths.cxx
+  util/demangle.cxx
 )
 
 kwiver_install_headers(
