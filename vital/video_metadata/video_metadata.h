@@ -36,9 +36,12 @@
 #ifndef KWIVER_VITAL_VIDEO_METADATA_H
 #define KWIVER_VITAL_VIDEO_METADATA_H
 
+#include <vital/vital_export.h>
+
 #include <vital/any.h>
 #include <vital/klv/klv_parse.h>
 
+#include <vital/types/timestamp.h>
 #include <vital/types/geo_lat_lon.h>
 
 #include <vital/video_metadata/video_metadata_tags.h>
@@ -47,27 +50,28 @@
 #include <string>
 #include <typeinfo>
 #include <memory>
-
+#include <ostream>
+#include <sstream>
 
 namespace kwiver {
 namespace vital {
 
-  //
-  // Canonical metadata tags
-  //
-  enum vital_metadata_tag {
+//
+// Canonical metadata tags
+//
+enum vital_metadata_tag {
 
 #define ENUM_ITEM( TAG, NAME, T) VITAL_META_##TAG,
 
-    // Generate enum items
-    KWIVER_VITAL_METADATA_TAGS( ENUM_ITEM )
+  // Generate enum items
+  KWIVER_VITAL_METADATA_TAGS( ENUM_ITEM )
 
 #undef ENUM_ITEM
 
-    // User tags can be generated for a specific application and
-    // should start with a value not less than the following.
-    VITAL_META_FIRST_USER_TAG
-  };
+  // User tags can be generated for a specific application and
+  // should start with a value not less than the following.
+  VITAL_META_FIRST_USER_TAG
+};
 
 
 // -----------------------------------------------------------------
@@ -95,7 +99,6 @@ public:
 
   /// Get vital metadata tag.
   /**
-   *
    * This method returns the vital metadata tag enum value.
    *
    * @return Metadata tag value.
@@ -118,6 +121,14 @@ public:
    * @return Data for metadata item.
    */
   kwiver::vital::any data() const { return this->m_data; }
+
+  /// Return value forced to a  string.
+  /**
+   * This method forces the metadata value to a string.
+   *
+   * @return String representation of data value.
+   */
+  virtual std::string to_string() const = 0;
 
   /// Get metadat value as double.
   /**
@@ -176,9 +187,16 @@ public:
 
   virtual vital_metadata_tag tag() const { return TAG; }
   virtual std::type_info const& type() const { return typeid( TYPE ); }
+  virtual std::string to_string() const
+  {
+    TYPE var = kwiver::vital::any_cast< TYPE > ( m_data );
+    std::stringstream ss;
+
+    ss << var;
+    return ss.str();
+  }
 
 }; // end class typed_metadata
-
 
 
 // -----------------------------------------------------------------
@@ -191,7 +209,7 @@ public:
  * data. User specific data can also be added by manually managing
  * enum values greater than VITAL_META_FIRST_USER_TAG.
  */
-class video_metadata
+class VITAL_EXPORT video_metadata
 {
 public:
   typedef std::map< vital_metadata_tag, std::unique_ptr< metadata_item > > metadata_map_t;
@@ -257,7 +275,7 @@ public:
    * Typical usage:
    \code
    auto eix = metadata_collection.end();
-   for ( auto ix = metadata_collection->begin(); ix != eix; ix++)
+   for ( auto ix = metadata_collection.begin(); ix != eix; ix++)
    {
      // process metada items
    }
@@ -266,6 +284,25 @@ public:
    */
   const_iterator_t end() const;
 
+  /// Set timestamp for this metadata set.
+  /**
+   * This method sets that time stamp for this metadata
+   * collection. This time stamp can be used to relate this metada
+   * back to the video image stream.
+   *
+   * @param ts Time stamp to add to this collection.
+   */
+  void set_timestamp( kwiver::vital::timestamp const& ts );
+
+  /// Return timestamp associated with these metadata.
+  /**
+   * This method returns the timestamp associated with this collection
+   * of video metadata. The value may not be meaningful if it has not
+   * been set by set_timestamp().
+   *
+   * @return Timestamp value.
+   */
+  kwiver::vital::timestamp const& timestamp() const;
 
   // the corner points are a nested structure so it is in a nested name space.
   struct geo_corner_points
@@ -276,8 +313,10 @@ public:
     geo_lat_lon p4;
   };
 
+
 private:
   metadata_map_t m_metadata_map;
+  kwiver::vital::timestamp m_timestamp;
 
 }; // end class video_metadata
 
@@ -288,12 +327,15 @@ private:
  * @param[in] klv Raw metadata packet containing UDS key
  * @param[in,out] metadata Collection of metadata this updated.
  */
-void convert_metadata( klv_data const& klv, video_metadata& metadata );
+VITAL_EXPORT void convert_metadata( klv_data const& klv, video_metadata& metadata );
 
-void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
-void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
+VITAL_EXPORT void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
+VITAL_EXPORT void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
 
-void print_metadata( video_metadata& metadata );
+VITAL_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata& metadata );
+VITAL_EXPORT std::string tag_to_string( vital_metadata_tag tag );
+
+  VITAL_EXPORT std::ostream& operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj );
 
 } } // end namespace
 

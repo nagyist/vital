@@ -43,8 +43,57 @@
 #include <vital/exceptions/klv.h>
 #include <vital/logger/logger.h>
 
+#include <vital/util/demangle.h>
+
 namespace kwiver {
 namespace vital {
+
+namespace {
+
+std::string
+FormatString( std::string const& val )
+{
+  const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                               '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+  const size_t len( val.size() );
+  bool unprintable_found(false);
+  std::string ascii;
+  std::string hex;
+
+  for (size_t i = 0; i < len; i++)
+  {
+    char const byte = val[i];
+    if ( ! isprint( byte ) )
+    {
+      ascii.append( 1, '.' );
+      unprintable_found = true;
+    }
+    else
+    {
+      ascii.append( 1, byte );
+    }
+
+    // format as hex
+    if (i > 0)
+    {
+      hex += " ";
+    }
+
+    hex += hex_chars[ ( byte & 0xF0 ) >> 4 ];
+    hex += hex_chars[ ( byte & 0x0F ) >> 0 ];
+
+  } // end for
+
+  if (unprintable_found)
+  {
+    ascii += " (" + hex + ")";
+  }
+
+  return ascii;
+}
+
+} // end namespace
+
 
 // ----------------------------------------------------------------
 /*
@@ -63,6 +112,8 @@ namespace vital {
     virtual ~unknown_metadata_item() {}
     virtual vital_metadata_tag tag() const { return static_cast< vital_metadata_tag >(0); }
     virtual std::type_info const& type() const { return typeid( void ); }
+    virtual std::string to_string() const { return "--Unknown metadata item--"; }
+
   }; // end class unknown_metadata_item
 
 // ==================================================================
@@ -126,6 +177,23 @@ video_metadata
 }
 
 
+// ------------------------------------------------------------------
+void
+video_metadata
+::set_timestamp( kwiver::vital::timestamp const& ts )
+{
+  this->m_timestamp = ts;
+}
+
+
+kwiver::vital::timestamp const&
+video_metadata
+::timestamp() const
+{
+  return this->m_timestamp;
+}
+
+
 // ==================================================================
 void convert_metadata( klv_data const& klv, video_metadata& metadata )
 {
@@ -154,6 +222,59 @@ void convert_metadata( klv_data const& klv, video_metadata& metadata )
               << uds_key << " data size is "
               << klv.value_size() );
   }
+}
+
+
+// ------------------------------------------------------------------
+std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
+{
+  auto eix = metadata.end();
+  for ( auto ix = metadata.begin(); ix != eix; ix++)
+  {
+    // process metada items
+   vital_metadata_tag tag = ix->first;
+   std::string name = ix->second->name();
+   kwiver::vital::any data = ix->second->data();
+
+   str << "Metadata item: "
+       << name
+       << " (" << tag_to_string( tag )
+       << " / <" << demangle( ix->second->type().name() )
+       << ">): "
+       << FormatString (ix->second->to_string() )
+       << std::endl;
+  } // end for
+
+  return str;
+}
+
+
+// ------------------------------------------------------------------
+std::string tag_to_string( vital_metadata_tag tag )
+{
+#define TAG_CASE( TAG, NAME, TYPE ) case VITAL_META_##TAG: return "VITAL_META_" #TAG;
+
+  switch (tag)
+  {
+
+    KWIVER_VITAL_METADATA_TAGS( TAG_CASE )
+
+  default:
+    return "-- unknown tag code --";
+    break;
+  } // end switch
+
+#undef TAG_CASE
+
+}
+
+// ------------------------------------------------------------------
+std::ostream&
+operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj )
+{
+  str << "{ " << obj.p1 << obj.p2 << obj.p3 << obj.p4 << " }";
+
+  return str;
 }
 
 } } // end namespace
