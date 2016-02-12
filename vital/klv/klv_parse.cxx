@@ -92,7 +92,7 @@ FormatString( std::string const& val )
   return ascii;
 }
 
-  }
+} // end namespace
 
 
 // ----------------------------------------------------------------
@@ -372,7 +372,7 @@ print_klv( std::ostream& str, klv_data const& klv )
         klv_0104::tag tag = klv_0104::instance()->get_tag( itr->first );
         if ( tag == klv_0104::UNKNOWN )
         {
-          str << "Unknown key: " << itr->first << "Length: " << itr->second.size() << "bytes \n";
+          str << "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes\n";
           continue;
         }
 
