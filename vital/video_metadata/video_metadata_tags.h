@@ -51,6 +51,7 @@
 CALL( UNKNOWN,                     "Unknown/ Undefined entry",        void) \
 CALL( UNIX_TIMESTAMP,              "Unix Time Stamp",                 uint64_t) \
 CALL( MISSION_ID,                  "Mission ID",                      std::string) \
+CALL( MISSION_NUMBER,              "Episode Number",                  uint16_t) \
 CALL( PLATFORM_TAIL_NUMBER,        "Platform Tail Number",            std::string) \
 CALL( PLATFORM_HEADING_ANGLE,      "Platform Heading Angle",          double) \
 CALL( PLATFORM_PITCH_ANGLE,        "Platform Pitch Angle",            double) \
@@ -103,6 +104,12 @@ CALL( LASER_PRF_CODE,              "Laser PRF Code",                  uint32_t) 
 CALL( SENSOR_FOV_NAME,             "Sensor Field of View Name",       uint32_t) \
 CALL( PLATFORM_MAGNET_HEADING,     "Platform Magnetic Heading",       double) \
 CALL( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint8_t) \
-CALL( ANGLE_TO_NORTH,              "Angle to North",                  double)
+CALL( ANGLE_TO_NORTH,              "Angle to North",                  double) \
+CALL( OBLIQUITY_ANGLE,             "Sensor Elevation Angle",          double) \
+CALL( START_DATE_TIME_UTC,         "Start Date Time - UTC",           std::string ) \
+CALL( EVENT_START_DATE_TIME_UTC,   "Event Start Date Time - UTC",     std::string ) \
+CALL( MISSION_START_TIME_UTC,      "Mission Start Date Time - UTC",   std::string ) \
+CALL( SECURITY_CLASSIFICATION,     "Security Classification",         std::string ) \
+CALL( CLASSIFICATION,               "Classification",                 std::string ) // really std_0102_lds
 
 #endif /* KWIVER_VITAL_VIDEO_METADATA_TAGS_H */

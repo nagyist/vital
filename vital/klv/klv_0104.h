@@ -97,6 +97,7 @@ public:
               ANGLE_TO_NORTH,
               OBLIQUITY_ANGLE,
               START_DATE_TIME_UTC,
+              EVENT_START_DATE_TIME_UTC,
               UNIX_TIMESTAMP,
               PLATFORM_TRUE_AIRSPEED,
               PLATFORM_INDICATED_AIRSPEED,
@@ -108,10 +109,12 @@ public:
               PREDATOR_UAV_UMS_V2,
               SENSOR_RELATIVE_ROLL_ANGLE,
               MISSION_ID,
+              MISSION_START_TIME,
               PLATFORM_TAIL_NUMBER,
               MISSION_NUMBER,
               SENSOR_ROLL_ANGLE,
 
+              // ---------------------- //
               UNKNOWN //must be last
   };
 

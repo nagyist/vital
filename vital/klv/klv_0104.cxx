@@ -38,9 +38,9 @@
 #include "klv_data.h"
 
 #include <vital/exceptions/klv.h>
+#include <vital/logger/logger.h>
 
 #include <sstream>
-#include <iostream>
 #include <map>
 #include <iomanip>
 #include <mutex>
@@ -175,6 +175,7 @@ klv_0104::klv_0104()
     { klv_uds_key( 0x060E2B3401010101UL, 0x0701100102000000UL ), ANGLE_TO_NORTH },
     { klv_uds_key( 0x060E2B3401010101UL, 0x0701100103000000UL ), OBLIQUITY_ANGLE },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0702010201010000UL ), START_DATE_TIME_UTC },
+    { klv_uds_key( 0x060e2b3401010101UL, 0x0702010207010000UL ), EVENT_START_DATE_TIME_UTC },
     { klv_uds_key( 0x060e2b3401010103UL, 0x0702010101050000UL ), UNIX_TIMESTAMP },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0e0101010a000000UL ), PLATFORM_TRUE_AIRSPEED },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0e0101010b000000UL ), PLATFORM_INDICATED_AIRSPEED },
@@ -188,7 +189,9 @@ klv_0104::klv_0104()
     { klv_uds_key( 0x060e2b3401010101UL, 0x0e01040103000000UL ), MISSION_ID },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0e01040102000000UL ), PLATFORM_TAIL_NUMBER },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0105050000000000UL ), MISSION_NUMBER },
-    { klv_uds_key( 0x060e2b3401010101UL, 0x0701100101000000UL ), SENSOR_ROLL_ANGLE }
+    { klv_uds_key( 0x060e2b3401010101UL, 0x0701100101000000UL ), SENSOR_ROLL_ANGLE },
+    { klv_uds_key( 0x060e2b3401010101UL, 0x0701100102000000UL ), ANGLE_TO_NORTH },
+    { klv_uds_key( 0x060e2b3401010101UL, 0x0701100103000000UL ), OBLIQUITY_ANGLE }
   };
 
 
@@ -198,52 +201,55 @@ klv_0104::klv_0104()
   //Mapping between tag index and traits, double is used for floats and doubles
 #define NEW_TRAIT(T,D) reinterpret_cast< traits_base* >(new traits< T > ( D ))
 
-  m_traitsvec[PLATFORM_DESIGNATION] =        NEW_TRAIT( std::string, "Platform designation" );
-  m_traitsvec[PLATFORM_DESIGNATION_ALT] =    NEW_TRAIT( std::string, "Platform designation (alternate key)" );
-  m_traitsvec[STREAM_ID] =                   NEW_TRAIT( std::string, "Stream ID" );
-  m_traitsvec[ITEM_DESIGNATOR_ID] =          NEW_TRAIT( std::string, "Item Designator ID (16 bytes)" );
-  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT( std::string, "Classification" ); // really std_0102_lds
-  m_traitsvec[SECURITY_CLASSIFICATION] =     NEW_TRAIT( std::string, "Security Classification" );
-  m_traitsvec[IMAGE_SOURCE_SENSOR] =         NEW_TRAIT( std::string, "Image Source sensor" );
-  m_traitsvec[SENSOR_HORIZONTAL_FOV] =       NEW_TRAIT( double, "Sensor horizontal field of view" );
-  m_traitsvec[SENSOR_VERTICAL_FOV] =         NEW_TRAIT( double, "Sensor vertical field of view" );
-  m_traitsvec[SENSOR_TYPE] =                 NEW_TRAIT( std::string, "Sensor type" );
-  m_traitsvec[IMAGE_COORDINATE_SYSTEM] =     NEW_TRAIT( std::string, "Image Coordinate System" );
-  m_traitsvec[TARGET_WIDTH] =                NEW_TRAIT( double, "Target Width" );
-  m_traitsvec[PLATFORM_HEADING_ANGLE] =      NEW_TRAIT( double, "Platform heading" );
-  m_traitsvec[PLATFORM_PITCH_ANGLE] =        NEW_TRAIT( double, "Platform pitch angle" );
-  m_traitsvec[PLATFORM_ROLL_ANGLE] =         NEW_TRAIT( double, "Platform roll angle" );
-  m_traitsvec[SENSOR_LATITUDE] =             NEW_TRAIT( double, "Sensor latitude" );
-  m_traitsvec[SENSOR_LONGITUDE] =            NEW_TRAIT( double, "Sensor longitude" );
-  m_traitsvec[SENSOR_ALTITUDE] =             NEW_TRAIT( double, "Sensor Altitude" );
-  m_traitsvec[FRAME_CENTER_LATITUDE] =       NEW_TRAIT( double, "Frame center latitude" );
-  m_traitsvec[FRAME_CENTER_LONGITUDE] =      NEW_TRAIT( double, "Frame center longitude" );
-  m_traitsvec[UPPER_LEFT_CORNER_LAT] =       NEW_TRAIT( double, "Upper left corner latitude" );
-  m_traitsvec[UPPER_LEFT_CORNER_LON] =       NEW_TRAIT( double, "Upper left corner longitude" );
-  m_traitsvec[UPPER_RIGHT_CORNER_LAT] =      NEW_TRAIT( double, "Upper right corner latitude" );
-  m_traitsvec[UPPER_RIGHT_CORNER_LON] =      NEW_TRAIT( double, "Upper right corner longitude" );
-  m_traitsvec[LOWER_RIGHT_CORNER_LAT] =      NEW_TRAIT( double, "Lower right corner latitude" );
-  m_traitsvec[LOWER_RIGHT_CORNER_LON] =      NEW_TRAIT( double, "Lower right corner longitude" );
-  m_traitsvec[LOWER_LEFT_CORNER_LAT] =       NEW_TRAIT( double, "Lower left corner latitude" );
-  m_traitsvec[LOWER_LEFT_CORNER_LON] =       NEW_TRAIT( double, "Lower left corner longitude" );
-  m_traitsvec[SLANT_RANGE] =                 NEW_TRAIT( double, "Slant range" );
-  m_traitsvec[ANGLE_TO_NORTH] =              NEW_TRAIT( double, "Angle to north" );
-  m_traitsvec[OBLIQUITY_ANGLE] =             NEW_TRAIT( double, "Obliquity angle" );
-  m_traitsvec[START_DATE_TIME_UTC] =         NEW_TRAIT( std::string, "Start Date Time - UTC" );
-  m_traitsvec[UNIX_TIMESTAMP] =              NEW_TRAIT( uint64_t, "Unix timestamp" );
-  m_traitsvec[PLATFORM_TRUE_AIRSPEED] =      NEW_TRAIT( double, "Platform true airspeed" );
-  m_traitsvec[PLATFORM_INDICATED_AIRSPEED] = NEW_TRAIT( double, "Platform indicated airspeed" );
-  m_traitsvec[PLATFORM_CALL_SIGN] =          NEW_TRAIT( std::string, "Platform call sign" );
-  m_traitsvec[FOV_NAME] =                    NEW_TRAIT( std::string, "Field of view name" );
-  m_traitsvec[WIND_DIRECTION] =              NEW_TRAIT( std::string, "Wind Direction" );
-  m_traitsvec[WIND_SPEED] =                  NEW_TRAIT( double, "Wind Speed" );
-  m_traitsvec[PREDATOR_UAV_UMS] =            NEW_TRAIT( std::string, "Predator UAV Universal Metadata Set" );
-  m_traitsvec[PREDATOR_UAV_UMS_V2] =         NEW_TRAIT( std::string, "Predator UAV Universal Metadata Set v2.0" );
-  m_traitsvec[SENSOR_RELATIVE_ROLL_ANGLE] =  NEW_TRAIT( double, "Sensor Relative Roll Angle" );
-  m_traitsvec[MISSION_ID] =                  NEW_TRAIT( std::string, "Mission ID" );
-  m_traitsvec[PLATFORM_TAIL_NUMBER] =        NEW_TRAIT( std::string, "Platform tail number" );
-  m_traitsvec[MISSION_NUMBER] =              NEW_TRAIT( std::string, "Episode Number" );
-  m_traitsvec[SENSOR_ROLL_ANGLE] =           NEW_TRAIT( double, "Sensor Roll Angle" );
+  m_traitsvec[PLATFORM_DESIGNATION] =        NEW_TRAIT( std::string,  "Platform designation" );
+  m_traitsvec[PLATFORM_DESIGNATION_ALT] =    NEW_TRAIT( std::string,  "Platform designation (alternate key)" );
+  m_traitsvec[STREAM_ID] =                   NEW_TRAIT( std::string,  "Stream ID" );
+  m_traitsvec[ITEM_DESIGNATOR_ID] =          NEW_TRAIT( std::string,  "Item Designator ID (16 bytes)" );
+  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT( std::string,  "Classification" ); // really std_0102_lds
+  m_traitsvec[SECURITY_CLASSIFICATION] =     NEW_TRAIT( std::string,  "Security Classification" );
+  m_traitsvec[IMAGE_SOURCE_SENSOR] =         NEW_TRAIT( std::string,  "Image Source sensor" );
+  m_traitsvec[SENSOR_HORIZONTAL_FOV] =       NEW_TRAIT( double,       "Sensor horizontal field of view" );
+  m_traitsvec[SENSOR_VERTICAL_FOV] =         NEW_TRAIT( double,       "Sensor vertical field of view" );
+  m_traitsvec[SENSOR_TYPE] =                 NEW_TRAIT( std::string,  "Sensor type" );
+  m_traitsvec[IMAGE_COORDINATE_SYSTEM] =     NEW_TRAIT( std::string,  "Image Coordinate System" );
+  m_traitsvec[TARGET_WIDTH] =                NEW_TRAIT( double,       "Target Width" );
+  m_traitsvec[PLATFORM_HEADING_ANGLE] =      NEW_TRAIT( double,       "Platform heading" );
+  m_traitsvec[PLATFORM_PITCH_ANGLE] =        NEW_TRAIT( double,       "Platform pitch angle" );
+  m_traitsvec[PLATFORM_ROLL_ANGLE] =         NEW_TRAIT( double,       "Platform roll angle" );
+  m_traitsvec[SENSOR_LATITUDE] =             NEW_TRAIT( double,       "Sensor latitude" );
+  m_traitsvec[SENSOR_LONGITUDE] =            NEW_TRAIT( double,       "Sensor longitude" );
+  m_traitsvec[SENSOR_ALTITUDE] =             NEW_TRAIT( double,       "Sensor Altitude" );
+  m_traitsvec[FRAME_CENTER_LATITUDE] =       NEW_TRAIT( double,       "Frame center latitude" );
+  m_traitsvec[FRAME_CENTER_LONGITUDE] =      NEW_TRAIT( double,       "Frame center longitude" );
+  m_traitsvec[UPPER_LEFT_CORNER_LAT] =       NEW_TRAIT( double,       "Upper left corner latitude" );
+  m_traitsvec[UPPER_LEFT_CORNER_LON] =       NEW_TRAIT( double,       "Upper left corner longitude" );
+  m_traitsvec[UPPER_RIGHT_CORNER_LAT] =      NEW_TRAIT( double,       "Upper right corner latitude" );
+  m_traitsvec[UPPER_RIGHT_CORNER_LON] =      NEW_TRAIT( double,       "Upper right corner longitude" );
+  m_traitsvec[LOWER_RIGHT_CORNER_LAT] =      NEW_TRAIT( double,       "Lower right corner latitude" );
+  m_traitsvec[LOWER_RIGHT_CORNER_LON] =      NEW_TRAIT( double,       "Lower right corner longitude" );
+  m_traitsvec[LOWER_LEFT_CORNER_LAT] =       NEW_TRAIT( double,       "Lower left corner latitude" );
+  m_traitsvec[LOWER_LEFT_CORNER_LON] =       NEW_TRAIT( double,       "Lower left corner longitude" );
+  m_traitsvec[SLANT_RANGE] =                 NEW_TRAIT( double,       "Slant range" );
+  m_traitsvec[ANGLE_TO_NORTH] =              NEW_TRAIT( double,       "Angle to north" );
+  m_traitsvec[OBLIQUITY_ANGLE] =             NEW_TRAIT( double,       "Obliquity angle" );
+  m_traitsvec[START_DATE_TIME_UTC] =         NEW_TRAIT( std::string,  "Start Date Time - UTC" );
+  m_traitsvec[EVENT_START_DATE_TIME_UTC] =   NEW_TRAIT( std::string,  "Event Start Date Time - UTC" );
+  m_traitsvec[MISSION_START_TIME] =          NEW_TRAIT( std::string,  "Mission Start Date Time - UTC" );
+  m_traitsvec[UNIX_TIMESTAMP] =              NEW_TRAIT( uint64_t,     "Unix timestamp" );
+  m_traitsvec[PLATFORM_TRUE_AIRSPEED] =      NEW_TRAIT( double,       "Platform true airspeed" );
+  m_traitsvec[PLATFORM_INDICATED_AIRSPEED] = NEW_TRAIT( double,       "Platform indicated airspeed" );
+  m_traitsvec[PLATFORM_CALL_SIGN] =          NEW_TRAIT( std::string,  "Platform call sign" );
+  m_traitsvec[FOV_NAME] =                    NEW_TRAIT( std::string,  "Field of view name" );
+  m_traitsvec[WIND_DIRECTION] =              NEW_TRAIT( std::string,  "Wind Direction" );
+  m_traitsvec[WIND_SPEED] =                  NEW_TRAIT( double,       "Wind Speed" );
+  m_traitsvec[PREDATOR_UAV_UMS] =            NEW_TRAIT( std::string,  "Predator UAV Universal Metadata Set" );
+  m_traitsvec[PREDATOR_UAV_UMS_V2] =         NEW_TRAIT( std::string,  "Predator UAV Universal Metadata Set v2.0" );
+  m_traitsvec[SENSOR_RELATIVE_ROLL_ANGLE] =  NEW_TRAIT( double,       "Sensor Relative Roll Angle" );
+  m_traitsvec[MISSION_ID] =                  NEW_TRAIT( std::string,  "Mission ID" );
+  m_traitsvec[PLATFORM_TAIL_NUMBER] =        NEW_TRAIT( std::string,  "Platform tail number" );
+  m_traitsvec[MISSION_NUMBER] =              NEW_TRAIT( uint16_t,     "Episode Number" );
+  m_traitsvec[ANGLE_TO_NORTH] =              NEW_TRAIT( double,       "Angle to North" );
+  m_traitsvec[OBLIQUITY_ANGLE] =             NEW_TRAIT( double,       "Sensor Elevation Angle" );
 
 #undef NEW_TRAIT
 #undef NEW_TRAIT_GROUP
@@ -282,7 +288,10 @@ traits< T >::convert( uint8_t const* data, std::size_t length )
 {
   if ( sizeof( T ) != length )
   {
-    std::cerr << "Warning: length=" << length << ", sizeof(type)=" << sizeof( T ) << " ";
+    static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_0104_metadata" ) );
+
+    LOG_WARN( logger, "Data length does not match type length.  Data length ="
+              << length << ", sizeof(type) =" << sizeof( T ) );
   }
 
   union

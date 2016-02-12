@@ -71,7 +71,7 @@ void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadat
       tag = klv_0104::instance()->get_tag( itr->first );
       if ( tag == klv_0104::UNKNOWN )
       {
-        LOG_WARN( logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << "bytes" );
+        LOG_WARN( logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
         continue;
       }
 
@@ -103,6 +103,7 @@ case klv_0104::N:                                               \
 
       CASE( UNIX_TIMESTAMP );
       CASE( MISSION_ID );
+      CASE( MISSION_NUMBER );
       CASE( PLATFORM_TAIL_NUMBER );
       CASE( PLATFORM_HEADING_ANGLE );
       CASE( PLATFORM_PITCH_ANGLE );
@@ -123,10 +124,14 @@ case klv_0104::N:                                               \
       CASE( WIND_SPEED );
       CASE( PLATFORM_CALL_SIGN );
       CASE2( FOV_NAME, SENSOR_FOV_NAME );
-      // CASE2( CLASSIFICATION, SECURITY_LOCAL_MD_SET );
-
+      CASE( ANGLE_TO_NORTH );
+      CASE( OBLIQUITY_ANGLE );
+      CASE( START_DATE_TIME_UTC );
+      CASE2( MISSION_START_TIME, MISSION_START_TIME_UTC );
+      CASE( SECURITY_CLASSIFICATION );
+      CASE( CLASSIFICATION );
       CASE( SENSOR_TYPE );
-
+      CASE( EVENT_START_DATE_TIME_UTC );
 
 #undef CASE
 #undef CASE2
@@ -180,13 +185,13 @@ case klv_0104::N:                                               \
       break;
 
     default:
-      LOG_WARN( logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << "bytes" );
+      LOG_WARN( logger, "Unprocessed key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
       break;
     } // end switch
 
   } // end for
 
-    //
+  //
   // Process composite metadata
   //
   if ( ! sensor_location.is_empty() )
