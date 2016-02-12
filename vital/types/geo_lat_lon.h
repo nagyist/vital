@@ -33,8 +33,8 @@
  * \brief This file contains the interface to a lat lon geo point.
  */
 
-#ifndef _VITAL_GEO_LAT_LON_H_
-#define _VITAL_GEO_LAT_LON_H_
+#ifndef KWIVER_VITAL_GEO_LAT_LON_H_
+#define KWIVER_VITAL_GEO_LAT_LON_H_
 
 #include <vital/vital_export.h>
 
@@ -65,8 +65,8 @@ public:
 
   geo_lat_lon& set_latitude( double l );
   geo_lat_lon& set_longitude( double l );
-  double get_latitude() const;
-  double get_longitude() const;
+  double latitude() const;
+  double longitude() const;
 
   /**
    * @brief Is geo location in initial state
@@ -101,4 +101,4 @@ VITAL_EXPORT std::ostream& operator<< (std::ostream& str, vital::geo_lat_lon con
 
 } } // end namespace
 
-#endif /* _VITAL_GEO_LAT_LON_H_ */
+#endif /* KWIVER_VITAL_GEO_LAT_LON_H_ */

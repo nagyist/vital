@@ -81,7 +81,7 @@ geo_lat_lon& geo_lat_lon
 
 // ------------------------------------------------------------------
 double geo_lat_lon
-::get_latitude() const
+::latitude() const
 {
   return ( m_latitude );
 }
@@ -89,7 +89,7 @@ double geo_lat_lon
 
 // ------------------------------------------------------------------
 double geo_lat_lon
-::get_longitude() const
+::longitude() const
 {
   return ( m_longitude );
 }
@@ -119,7 +119,7 @@ bool
 geo_lat_lon::
 is_empty() const
 {
-  return (INVALID == get_latitude() && INVALID == get_longitude());
+  return (INVALID == latitude() && INVALID == longitude());
 }
 
 
@@ -128,8 +128,8 @@ bool
 geo_lat_lon::
 operator == ( const geo_lat_lon &rhs ) const
 {
-  return ( ( rhs.get_latitude() == this->get_latitude() )
-           && ( rhs.get_longitude() == this->get_longitude() ) );
+  return ( ( rhs.latitude() == this->latitude() )
+           && ( rhs.longitude() == this->longitude() ) );
 }
 
 
@@ -148,8 +148,8 @@ std::ostream & operator<< (std::ostream & str, vital::geo_lat_lon const& obj)
   std::streamsize old_prec = str.precision();
 
   str << std::setprecision(22)
-      << "[ " << obj.get_latitude()
-      << " / " << obj.get_longitude()
+      << "[ " << obj.latitude()
+      << " / " << obj.longitude()
       << " ]";
 
   str.precision( old_prec );
