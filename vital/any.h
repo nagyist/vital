@@ -243,7 +243,7 @@ public:
   {
     // Construct helpful message
     m_message = "vital::bad_any_cast: failed conversion using kwiver::vital::any_cast from type \""
-      + from_type + "\" to type \"" + to_type;
+      + from_type + "\" to type \"" + to_type + "\"";
   }
 
   virtual ~bad_any_cast() VITAL_NOTHROW {}
