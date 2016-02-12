@@ -41,6 +41,8 @@
 
 #include <vital/types/geo_lat_lon.h>
 
+#include <vital/video_metadata/video_metadata_tags.h>
+
 #include <map>
 #include <string>
 #include <typeinfo>
@@ -54,68 +56,18 @@ namespace vital {
   // Canonical metadata tags
   //
   enum vital_metadata_tag {
-    VITAL_META_UNKNOWN,
-    VITAL_META_UNIX_TIMESTAMP,
-    VITAL_META_MISSION_ID,
-    VITAL_META_PLATFORM_TAIL_NUMBER,
-    VITAL_META_PLATFORM_HEADING_ANGLE,
-    VITAL_META_PLATFORM_PITCH_ANGLE,
-    VITAL_META_PLATFORM_ROLL_ANGLE,
-    VITAL_META_PLATFORM_TRUE_AIRSPEED,
-    VITAL_META_PLATFORM_INDICATED_AIRSPEED,
-    VITAL_META_PLATFORM_DESIGNATION,
-    VITAL_META_IMAGE_SOURCE_SENSOR,
-    VITAL_META_IMAGE_COORDINATE_SYSTEM,
-    VITAL_META_SENSOR_LOCATION,
-    VITAL_META_SENSOR_ALTITUDE,
-    VITAL_META_SENSOR_HORIZONTAL_FOV,
-    VITAL_META_SENSOR_VERTICAL_FOV,
-    VITAL_META_SENSOR_REL_AZ_ANGLE,
-    VITAL_META_SENSOR_REL_EL_ANGLE,
-    VITAL_META_SENSOR_REL_ROLL_ANGLE,
-    VITAL_META_SENSOR_ROLL_ANGLE,
-    VITAL_META_SENSOR_TYPE,
-    VITAL_META_SLANT_RANGE,
-    VITAL_META_TARGET_WIDTH,
-    VITAL_META_FRAME_CENTER,
-    VITAL_META_FRAME_CENTER_ELEV,
-    VITAL_META_CORNER_POINTS,
-    VITAL_META_ICING_DETECTED,
-    VITAL_META_WIND_DIRECTION,
-    VITAL_META_WIND_SPEED,
-    VITAL_META_STATIC_PRESSURE,
-    VITAL_META_DENSITY_ALTITUDE,
-    VITAL_META_OUTSIDE_AIR_TEMPERATURE,
-    VITAL_META_TARGET_LOCATION,
-    VITAL_META_TARGET_LOCATION_ELEV,
-    VITAL_META_TARGET_TRK_GATE_WIDTH,
-    VITAL_META_TARGET_TRK_GATE_HEIGHT,
-    VITAL_META_TARGET_ERROR_EST_CE90,
-    VITAL_META_TARGET_ERROR_EST_LE90,
-    VITAL_META_GENERIC_FLAG_DATA_01,
-    VITAL_META_SECURITY_LOCAL_MD_SET,
-    VITAL_META_DIFFERENTIAL_PRESSURE,
-    VITAL_META_PLATFORM_ANG_OF_ATTACK,
-    VITAL_META_PLATFORM_VERTICAL_SPEED,
-    VITAL_META_PLATFORM_SIDESLIP_ANGLE,
-    VITAL_META_AIRFIELD_BAROMET_PRESS,
-    VITAL_META_AIRFIELD_ELEVATION,
-    VITAL_META_RELATIVE_HUMIDITY,
-    VITAL_META_PLATFORM_GROUND_SPEED,
-    VITAL_META_GROUND_RANGE,
-    VITAL_META_PLATFORM_FUEL_REMAINING,
-    VITAL_META_PLATFORM_CALL_SIGN,
-    VITAL_META_WEAPON_LOAD,
-    VITAL_META_WEAPON_FIRED,
-    VITAL_META_LASER_PRF_CODE,
-    VITAL_META_SENSOR_FOV_NAME,
-    VITAL_META_PLATFORM_MAGNET_HEADING,
-    VITAL_META_UAS_LDS_VERSION_NUMBER,
-    VITAL_META_ANGLE_TO_NORTH,
+
+#define ENUM_ITEM( TAG, NAME, T) VITAL_META_##TAG,
+
+    // Generate enum items
+    KWIVER_VITAL_METADATA_TAGS( ENUM_ITEM )
+
+#undef ENUM_ITEM
 
     // User tags can be generated for a specific application and
     // should start with a value not less than the following.
-    VITAL_META_FIRST_USER_TAG };
+    VITAL_META_FIRST_USER_TAG
+  };
 
 
 // -----------------------------------------------------------------
@@ -124,51 +76,68 @@ namespace vital {
  * This class is the abstract base class for a single metadata
  * item. This mainly provides the interface for the type specific
  * derived classes.
+ *
+ * All metadata items need a common base class so they can be managed
+ * in a collection.
  */
 class metadata_item
 {
 public:
   virtual ~metadata_item() { }
 
+  /// Get name of metadata item.
   /**
-   * @brief Get name of metadata item.
-   *
+   * This method returns the descriptive name for this metadata item.
    *
    * @return Descriptive name of this metadata entry.
    */
   std::string const& name() const { return this->m_name; }
 
+  /// Get vital metadata tag.
   /**
-   * @brief Get vital metadata tag,
    *
    * This method returns the vital metadata tag enum value.
    *
-   * @return
+   * @return Metadata tag value.
    */
   virtual vital_metadata_tag tag() const = 0;
 
+  /// Get metadata data type.
   /**
-   * @brief Get metadata data type.
+   * This method returns the type-info for this metadata item.
    *
-   *
-   * @return
+   * @return Ty[e info for metadata tag.
    */
   virtual std::type_info const& type() const = 0;
 
+  /// Get actual data for metadata item.
   /**
-   * @brief Get actual data for metadata item.
+   * This method returns the actual data for this metadata item as a
+   * "any" object.
    *
-   *
-   * @return
+   * @return Data for metadata item.
    */
   kwiver::vital::any data() const { return this->m_data; }
 
-  // convenience methods
+  /// Get metadat value as double.
+  /**
+   * This method returns the metadata item value as a double or throws
+   * an exception if data is not a double.
+   *
+   * @return Data for metadata item as double.
+   * @throws bad_any_cast if data type is not really a double.
+   */
   double as_double() const { return kwiver::vital::any_cast< double >( this->m_data ); }
-  std::string as_string() const { return kwiver::vital::any_cast< std::string  >( this->m_data ); }
 
-  // -- MANIPULATORS --
-  void set_data( kwiver::vital::any const& data ) { this->m_data = data; }
+  /// Get metadat value as string.
+  /**
+   * This method returns the metadata item value as a double or throws
+   * an exception if data is not a string.
+   *
+   * @return Data for metadata item as string.
+   * @throws bad_any_cast if data type is not really a string.
+   */
+  std::string as_string() const { return kwiver::vital::any_cast< std::string  >( this->m_data ); }
 
 
 protected:
@@ -219,7 +188,8 @@ public:
  *
  * The concept is to provide a canonical set of useful metadata
  * entries that can be derived from 0104 and 0601 types of KLV
- * data. User specific data can also be added.
+ * data. User specific data can also be added by manually managing
+ * enum values greater than VITAL_META_FIRST_USER_TAG.
  */
 class video_metadata
 {
@@ -230,18 +200,19 @@ public:
   video_metadata();
   ~video_metadata();
 
-
+  /// Add metadata item to collection.
   /**
-   * @brief Add metadata item to collection.
+   *This method adds a metadata item to the collection. The collection
+   *takes ownership of the item and managed the memory.
    *
    * @param item New metadata item to be copied into collection.
    */
   void add( metadata_item* item );
 
+  /// Determine if metadata collection has tag.
   /**
-   * @brief Determine if metadata collection has tag.
-   *
-   * This method determines if the specified tag is in this metadata collection.
+   * This method determines if the specified tag is in this metadata
+   * collection.
    *
    * @param tag Check for the presence of this tag.
    *
@@ -249,9 +220,8 @@ public:
    */
   bool has( vital_metadata_tag tag ); // needs not-found return value
 
+  /// Find metadata entry for specified tag.
   /**
-   * @brief Find metadata entry for specified tag.
-   *
    * This method looks for the metadata entrty corresponding to the
    * supplied tag. If the tag is not present in the collection, the
    * results are undefined.
@@ -262,8 +232,38 @@ public:
    */
   metadata_item const& find( vital_metadata_tag tag ); // needs not-found return value
 
-  // iterators
+  /// Get starting iterator for collection of metadata items.
+  /**
+   * This method returns the const iterator to the first element in
+   * the collection of metadata items.
+   *
+   * Typical usage
+   \code
+   auto ix = metadata_collection->begin();
+   vital_metadata_tag tag = ix->first;
+   std::string name = ix->second->name();
+   kwiver::vital::any data = ix->second->data();
+   \endcode
+   *
+   * @return Iterator pointing to the first element in the collection.
+   */
   const_iterator_t begin() const;
+
+  /// Get ending iterator for collection of video metadata.
+  /**
+   * This method returns the ending iterator for the collection of
+   * video metadata items.
+   *
+   * Typical usage:
+   \code
+   auto eix = metadata_collection.end();
+   for ( auto ix = metadata_collection->begin(); ix != eix; ix++)
+   {
+     // process metada items
+   }
+   \endcode
+   * @return Ending iterator for collection
+   */
   const_iterator_t end() const;
 
 
@@ -292,6 +292,8 @@ void convert_metadata( klv_data const& klv, video_metadata& metadata );
 
 void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
 void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
+
+void print_metadata( video_metadata& metadata );
 
 } } // end namespace
 
