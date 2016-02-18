@@ -77,6 +77,6 @@ try_compile( success
      -DCMAKE_CXX_FLAGS:STRING=#${CMAKE_CXX_FLAGS}
   OUTPUT_VARIABLE OUTPUT)
 
-set( VITAL_USE_DEMANGLE_ABI ${success} )
+set( VITAL_USE_ABI_DEMANGLE ${success} )
 
 #

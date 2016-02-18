@@ -32,7 +32,7 @@
 
 #include <vital/vital_config.h>
 
-#if VITAL_USE_DEMANGLE_ABI
+#if VITAL_USE_ABI_DEMANGLE
 
 #include <cxxabi.h>
 
@@ -52,7 +52,7 @@ std::string demangle( std::string const& sym )
 std::string demangle( char const* sym )
 {
 
-#if VITAL_USE_DEMANGLE_ABI
+#if VITAL_USE_ABI_DEMANGLE
 
   std::string tname;
   int status;
