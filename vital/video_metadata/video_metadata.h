@@ -39,7 +39,6 @@
 #include <vital/vital_export.h>
 
 #include <vital/any.h>
-#include <vital/klv/klv_parse.h>
 
 #include <vital/types/timestamp.h>
 #include <vital/types/geo_lat_lon.h>
@@ -52,26 +51,10 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <type_traits>
 
 namespace kwiver {
 namespace vital {
-
-//
-// Canonical metadata tags
-//
-enum vital_metadata_tag {
-
-#define ENUM_ITEM( TAG, NAME, T) VITAL_META_##TAG,
-
-  // Generate enum items
-  KWIVER_VITAL_METADATA_TAGS( ENUM_ITEM )
-
-#undef ENUM_ITEM
-
-  // User tags can be generated for a specific application and
-  // should start with a value not less than the following.
-  VITAL_META_FIRST_USER_TAG
-};
 
 
 // -----------------------------------------------------------------
@@ -84,10 +67,11 @@ enum vital_metadata_tag {
  * All metadata items need a common base class so they can be managed
  * in a collection.
  */
-class metadata_item
+class VITAL_EXPORT metadata_item
 {
 public:
-  virtual ~metadata_item() { }
+  virtual ~metadata_item();
+
 
   /// Get name of metadata item.
   /**
@@ -95,7 +79,8 @@ public:
    *
    * @return Descriptive name of this metadata entry.
    */
-  std::string const& name() const { return this->m_name; }
+  std::string const& name() const;
+
 
   /// Get vital metadata tag.
   /**
@@ -105,6 +90,7 @@ public:
    */
   virtual vital_metadata_tag tag() const = 0;
 
+
   /// Get metadata data type.
   /**
    * This method returns the type-info for this metadata item.
@@ -113,24 +99,18 @@ public:
    */
   virtual std::type_info const& type() const = 0;
 
+
   /// Get actual data for metadata item.
   /**
-   * This method returns the actual data for this metadata item as a
-   * "any" object.
+   * This method returns the actual raw data for this metadata item as
+   * a "any" object.
    *
    * @return Data for metadata item.
    */
-  kwiver::vital::any data() const { return this->m_data; }
+  kwiver::vital::any data() const;
 
-  /// Return value forced to a  string.
-  /**
-   * This method forces the metadata value to a string.
-   *
-   * @return String representation of data value.
-   */
-  virtual std::string to_string() const = 0;
 
-  /// Get metadat value as double.
+  /// Get metadata value as double.
   /**
    * This method returns the metadata item value as a double or throws
    * an exception if data is not a double.
@@ -138,26 +118,40 @@ public:
    * @return Data for metadata item as double.
    * @throws bad_any_cast if data type is not really a double.
    */
-  double as_double() const { return kwiver::vital::any_cast< double >( this->m_data ); }
+  double as_double() const;
+  bool has_double() const;
 
-  /// Get metadat value as string.
+
+  /// Get metadata value as uint64.
   /**
-   * This method returns the metadata item value as a double or throws
-   * an exception if data is not a string.
+   * This method returns the metadata item value as a uint64 or throws
+   * an exception if data is not a uint64.
+   *
+   * @return Data for metadata item as uint64.
+   * @throws bad_any_cast if data type is not really a uint64.
+   */
+  uint64_t as_uint64() const;
+  bool has_uint64() const;
+
+
+  /// Get metadata value as string.
+  /**
+   * This method returns the metadata item value as a string.  If the
+   * data is actually a string (as indicated by has_string() method)
+   * the native value is returned. If the data is of another type, it
+   * is converted to a string.
    *
    * @return Data for metadata item as string.
-   * @throws bad_any_cast if data type is not really a string.
    */
-  std::string as_string() const { return kwiver::vital::any_cast< std::string  >( this->m_data ); }
+  virtual std::string as_string() const = 0;
+  bool has_string() const;
 
 
 protected:
   std::string m_name;
   kwiver::vital::any m_data;
 
-  metadata_item(std::string name, kwiver::vital::any const& data )
-    : m_name( name ),
-      m_data( data ) { }
+  metadata_item(std::string name, kwiver::vital::any const& data );
 
 }; // end class metadata_item
 
@@ -167,7 +161,8 @@ protected:
 /**
  * This class represents a typed metadata item.
  *
- *
+ * tparam TAG Metadata tag value
+ * tparam TYPE Metadata value representation type
  */
 template<vital_metadata_tag TAG, typename TYPE>
 class typed_metadata
@@ -187,8 +182,14 @@ public:
 
   virtual vital_metadata_tag tag() const { return TAG; }
   virtual std::type_info const& type() const { return typeid( TYPE ); }
-  virtual std::string to_string() const
+  virtual std::string as_string() const
   {
+    if ( this->has_string() )
+    {
+      return kwiver::vital::any_cast< std::string  > ( m_data );
+    }
+
+    // Else convert to a string
     TYPE var = kwiver::vital::any_cast< TYPE > ( m_data );
     std::stringstream ss;
 
@@ -304,6 +305,18 @@ public:
    */
   kwiver::vital::timestamp const& timestamp() const;
 
+  /// Get type representation for vital metadata tag. //+ move to convert_metadata
+  /**
+   * This method returns the type id string for the specified vital
+   * metadata tag.
+   *
+   * @param tag Code for metadata tag.
+   *
+   * @return Type info for this tag
+   */
+  static std::type_info const& typeid_for_tag( vital_metadata_tag tag );
+
+
   // the corner points are a nested structure so it is in a nested name space.
   struct geo_corner_points
   {
@@ -321,21 +334,8 @@ private:
 }; // end class video_metadata
 
 
-/**
- * @brief Convert raw metadata packet into vital metadata entries.
- *
- * @param[in] klv Raw metadata packet containing UDS key
- * @param[in,out] metadata Collection of metadata this updated.
- */
-VITAL_EXPORT void convert_metadata( klv_data const& klv, video_metadata& metadata );
-
-VITAL_EXPORT void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
-VITAL_EXPORT void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
-
 VITAL_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata& metadata );
-VITAL_EXPORT std::string tag_to_string( vital_metadata_tag tag );
-
-  VITAL_EXPORT std::ostream& operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj );
+VITAL_EXPORT std::ostream& operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj );
 
 } } // end namespace
 

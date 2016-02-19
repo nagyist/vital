@@ -43,9 +43,7 @@
 namespace kwiver {
 namespace vital {
 
-class std_0102_lds
-{
-};
+class std_0102_lds { };
 
 
 /// Define traits for a given KLV 0601 tag
@@ -57,12 +55,13 @@ class std_0102_lds
 template <klv_0601_tag tag>
 struct klv_0601_traits;
 
-#define KLV_TRAITS(TAG, NAME, T)                        \
-template <>                                             \
-struct klv_0601_traits<KLV_0601_##TAG>                  \
-{                                                       \
-  static inline std::string name() { return NAME; }     \
-  typedef T type;                                       \
+#define KLV_TRAITS(TAG, NAME, T)                                        \
+template <>                                                             \
+struct klv_0601_traits<KLV_0601_##TAG>                                  \
+{                                                                       \
+  static inline std::string name() { return NAME; }                     \
+  typedef T type;                                                       \
+  static inline klv_0601_tag tag_value() { return KLV_0601_##TAG; }     \
 }
 
 //          tag                          string name                        type
@@ -135,7 +134,12 @@ KLV_TRAITS( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint
 
 #undef KLV_TRAITS
 
-
+//
+// These converters are templated over the tags and provide tag
+// specific conversion operations.
+//
+// Default converter.
+//
 template <klv_0601_tag tag>
 struct klv_0601_convert
 {
@@ -197,8 +201,8 @@ struct klv_0601_convert<KLV_0601_##TAG>                                 \
   }                                                                     \
 }
 
-//                 tag                      scale  offset
-//                 ---                      -----  ------
+//                 tag                            scale  offset
+//                 ---                            -----  ------
 KLV_SCALE(         PLATFORM_HEADING_ANGLE,       360);
 KLV_SCALE_INVALID( PLATFORM_PITCH_ANGLE,         20);
 KLV_SCALE_INVALID( PLATFORM_ROLL_ANGLE,          50);
@@ -250,6 +254,7 @@ KLV_SCALE(         PLATFORM_MAGNET_HEADING,      360);
 KLV_CAST(          UAS_LDS_VERSION_NUMBER );
 
 #undef KLV_SCALE
+#undef KLV_CAST
 #undef KLV_SCALE_OFFSET
 #undef KLV_SCALE_INVALID
 

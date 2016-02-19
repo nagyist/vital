@@ -121,6 +121,9 @@ enum klv_0601_tag {KLV_0601_UNKNOWN                     = 0,
                    KLV_0601_SENSOR_FOV_NAME             = 63,
                    KLV_0601_PLATFORM_MAGNET_HEADING     = 64,
                    KLV_0601_UAS_LDS_VERSION_NUMBER      = 65,
+
+
+//                   KLV_0601_OPERATIONAL_MODE           = 77,
                    // TODO Add the rest of the fields here
                    KLV_0601_ENUM_END };
 
@@ -186,7 +189,20 @@ klv_0601_key();
  * @return Correctly typed data value in a kwiver::vital::any() object.
  */
 VITAL_EXPORT kwiver::vital::any
-klv_0601_value(klv_0601_tag t, uint8_t const* data, std::size_t length);
+klv_0601_value( klv_0601_tag t, uint8_t const* data, std::size_t length );
+
+
+/// Can value be converted to double.
+/**
+ * This method returns whether the value can be converted to double.
+ *
+ * @param t Tag value.
+ *
+ * @return \b true -s value can be converted to double, \b false
+ * otherwise.
+ */
+VITAL_EXPORT bool
+klv_0601_has_double( klv_0601_tag t );
 
 
 /// Return the tag data as a double.

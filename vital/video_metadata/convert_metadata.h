@@ -30,13 +30,23 @@
 
 /**
  * \file \brief This file contains the internal interface for
- * converter functions.
+ * converter class.
  */
 
 #ifndef KWIVER_VITAL_CONVERT_METADATA_H
 #define KWIVER_VITAL_CONVERT_METADATA_H
 
-#include "video_metadata_tags.h"
+#include <vital/vital_export.h>
+
+#include <vital/video_metadata/video_metadata.h>
+#include <vital/video_metadata/video_metadata_traits.h>
+
+#include <vital/klv/klv_0601.h>
+#include <vital/klv/klv_0104.h>
+#include <vital/klv/klv_parse.h>
+#include <vital/util/any_converter.h>
+
+#include <vital/logger/logger.h>
 
 namespace kwiver {
 namespace vital {
@@ -46,28 +56,49 @@ namespace vital {
   new typed_metadata< TAG, vital_meta_trait<TAG>::type >  \
   ( vital_meta_trait<TAG>::name(), DATA )
 
-// ------------------------------------------------------------------
-// vital meta traits
-//
-// Need to describe rationale for metadata items
-//
-template <vital_metadata_tag tag> struct vital_meta_trait;
+// ----------------------------------------------------------------
+/**
+ * @brief
+ *
+ */
+class VITAL_EXPORT convert_metadata
+{
+public:
+  // -- CONSTRUCTORS --
+  convert_metadata();
+  ~convert_metadata();
 
-#define DEFINE_VITAL_META_TRAIT(TAG, NAME, T)                           \
-  template <>                                                           \
-  struct vital_meta_trait<VITAL_META_ ## TAG>                           \
-  {                                                                     \
-    static inline std::string name() { return NAME; }                   \
-    typedef T type;                                                     \
-    static inline vital_metadata_tag tag() { return VITAL_META_ ## TAG; } \
-  };
+  /**
+   * @brief Convert raw metadata packet into vital metadata entries.
+   *
+   * @param[in] klv Raw metadata packet containing UDS key
+   * @param[in,out] metadata Collection of metadata this updated.
+   *
+   * @throws klv_exception When error encountered.
+   */
+   void convert( klv_data const& klv, video_metadata& metadata );
 
-//
-// Define all metadata traits
-//
-  KWIVER_VITAL_METADATA_TAGS( DEFINE_VITAL_META_TRAIT )
+private:
 
-#undef DEFINE_VITAL_META_TRAIT
+  void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata );
+  void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata );
+
+  kwiver::vital::any normalize_0601_tag_data( klv_0601_tag tag,
+                                              kwiver::vital::vital_metadata_tag vital_tag,
+                                              kwiver::vital::any const& data );
+
+  kwiver::vital::any normalize_0104_tag_data( klv_0104::tag tag,
+                                            kwiver::vital::vital_metadata_tag vital_tag,
+                                            kwiver::vital::any const& data );
+
+  kwiver::vital::logger_handle_t m_logger;
+
+  any_converter< double > convert_to_double;
+  any_converter< uint64_t > convert_to_int;
+
+  video_metadata_traits m_metadata_traits;
+
+}; // end class convert_metadata
 
 } } // end namespace
 

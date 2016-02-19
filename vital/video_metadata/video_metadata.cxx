@@ -34,14 +34,7 @@
  */
 
 #include "video_metadata.h"
-#include "video_metadata_tags.h"
-
-#include <vital/klv/klv_0601.h>
-#include <vital/klv/klv_0104.h>
-#include <vital/klv/klv_data.h>
-
-#include <vital/exceptions/klv.h>
-#include <vital/logger/logger.h>
+#include "video_metadata_traits.h"
 
 #include <vital/util/demangle.h>
 
@@ -112,9 +105,81 @@ FormatString( std::string const& val )
     virtual ~unknown_metadata_item() {}
     virtual vital_metadata_tag tag() const { return static_cast< vital_metadata_tag >(0); }
     virtual std::type_info const& type() const { return typeid( void ); }
-    virtual std::string to_string() const { return "--Unknown metadata item--"; }
+    virtual std::string as_string() const { return "--Unknown metadata item--"; }
+    virtual double as_double() const { return 0; }
+    virtual double as_uint64() const { return 0; }
 
   }; // end class unknown_metadata_item
+
+// ==================================================================
+
+metadata_item
+::metadata_item(std::string name, kwiver::vital::any const& data )
+    : m_name( name ),
+      m_data( data )
+{ }
+
+
+metadata_item
+::~metadata_item()
+{ }
+
+
+std::string const&
+metadata_item
+::name() const
+{
+  return this->m_name;
+}
+
+
+kwiver::vital::any
+metadata_item
+::data() const
+{
+  return this->m_data;
+}
+
+
+double
+metadata_item
+::as_double() const
+{
+  return kwiver::vital::any_cast< double > ( this->m_data );
+}
+
+
+bool
+metadata_item
+::has_double() const
+{
+  return m_data.type() == typeid( double );
+}
+
+
+uint64_t
+metadata_item
+::as_uint64() const
+{
+  return kwiver::vital::any_cast< uint64_t > ( this->m_data );
+}
+
+
+bool
+metadata_item
+::has_uint64() const
+{
+  return m_data.type() == typeid( uint64_t );
+}
+
+
+bool
+metadata_item
+::has_string() const
+{
+  return m_data.type() == typeid( std::string );
+}
+
 
 // ==================================================================
 video_metadata
@@ -194,33 +259,21 @@ video_metadata
 }
 
 
-// ==================================================================
-void convert_metadata( klv_data const& klv, video_metadata& metadata )
+  // ------------------------------------------------------------------
+std::type_info const&
+video_metadata
+::typeid_for_tag( vital_metadata_tag tag )
 {
-  static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_metadata" ) );
 
-  klv_uds_key uds_key( klv ); // create key from raw data
+  switch (tag)
+  {
+#define VITAL_META_TRAIT_CASE(TAG, NAME, T) case VITAL_META_ ## TAG: return typeid(T);
 
-  if ( is_klv_0601_key( uds_key ) )
-  {
-    if ( ! klv_0601_checksum( klv ) )
-    {
-      throw klv_exception( "checksum error on 0601 packet");
-    }
+    KWIVER_VITAL_METADATA_TAGS( VITAL_META_TRAIT_CASE )
 
-    klv_lds_vector_t lds = parse_klv_lds( klv );
-    convert_0601_metadata( lds, metadata );
-  }
-  else if ( klv_0104::is_key( uds_key ) )
-  {
-    klv_uds_vector_t uds = parse_klv_uds( klv );
-    convert_0104_metadata( uds,  metadata );
-  }
-  else
-  {
-    LOG_WARN( logger, "Unsupported UDS Key: "
-              << uds_key << " data size is "
-              << klv.value_size() );
+#undef VITAL_META_TRAIT_CASE
+
+  default: return typeid(void);
   }
 }
 
@@ -232,40 +285,19 @@ std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
   for ( auto ix = metadata.begin(); ix != eix; ix++)
   {
     // process metada items
-   vital_metadata_tag tag = ix->first;
    std::string name = ix->second->name();
    kwiver::vital::any data = ix->second->data();
 
    str << "Metadata item: "
        << name
-       << " (" << tag_to_string( tag )
+       << " (" << ix->second->name()
        << " / <" << demangle( ix->second->type().name() )
        << ">): "
-       << FormatString (ix->second->to_string() )
+       << FormatString (ix->second->as_string() )
        << std::endl;
   } // end for
 
   return str;
-}
-
-
-// ------------------------------------------------------------------
-std::string tag_to_string( vital_metadata_tag tag )
-{
-#define TAG_CASE( TAG, NAME, TYPE ) case VITAL_META_##TAG: return "VITAL_META_" #TAG;
-
-  switch (tag)
-  {
-
-    KWIVER_VITAL_METADATA_TAGS( TAG_CASE )
-
-  default:
-    return "-- unknown tag code --";
-    break;
-  } // end switch
-
-#undef TAG_CASE
-
 }
 
 // ------------------------------------------------------------------

@@ -32,6 +32,7 @@
 #define KWIVER_VITAL_ANY_H
 
 #include <vital/vital_config.h>
+#include <vital/util/demangle.h>
 
 #include <algorithm>
 #include <typeinfo>
@@ -189,6 +190,18 @@ public:
   }
 
 
+  /// Return demangled name of type contained in this object.
+  /**
+   * This method returns the demangled name of type contained in this
+   * object.
+   *
+   * @return Demangled type name string.
+   */
+  std::string type_name() const VITAL_NOTHROW
+  {
+    return demangle( this->type().name() );
+  }
+
 private:
   // ------------------------------------------------------------------
   // Base class for representing content
@@ -238,12 +251,22 @@ private:
 class  bad_any_cast : public std::bad_cast
 {
 public:
+
+  /// Create bad cast exception;
+  /**
+   * This is the CTOR for the bnad any cast exception. A message is
+   * created from the supplied mangled type names.
+   *
+   *
+   * @param from_type Mangled type name.
+   * @param to_type Mangled type name.
+   */
   bad_any_cast( std::string const& from_type,
                 std::string const& to_type )
   {
     // Construct helpful message
     m_message = "vital::bad_any_cast: failed conversion using kwiver::vital::any_cast from type \""
-      + from_type + "\" to type \"" + to_type + "\"";
+      + demangle( from_type ) + "\" to type \"" + demangle( to_type ) + "\"";
   }
 
   virtual ~bad_any_cast() VITAL_NOTHROW {}

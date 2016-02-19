@@ -37,15 +37,90 @@
 #include "convert_metadata.h"
 
 #include <vital/klv/klv_0601.h>
+#include <vital/klv/klv_0601_traits.h>
 #include <vital/klv/klv_data.h>
 
 #include <vital/logger/logger.h>
 
+#include <memory>
+#include <type_traits>
+
 namespace kwiver {
 namespace vital {
 
+
+/**
+ * @brief Normalize metadata tag data types.
+ *
+ * @param[in] vital_tag Metadata tag
+ * @param[in,out] data Data to be normalized
+ */
+kwiver::vital::any
+convert_metadata
+::normalize_0601_tag_data( klv_0601_tag tag,
+                           kwiver::vital::vital_metadata_tag vital_tag,
+                           kwiver::vital::any const& data )
+{
+  // If one type is string, then both types must be string
+  if ( (video_metadata::typeid_for_tag( vital_tag ) == typeid( std::string ))
+       || (data.type() == typeid( std::string )) )
+  {
+    if ( ( video_metadata::typeid_for_tag( vital_tag ) != typeid( std::string ))
+         && ( data.type() != typeid( std::string )) )
+    {
+      LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
+                << m_metadata_traits.tag_to_symbol( vital_tag ) );
+    }
+    else
+    {
+      // leave data as is since it already correct type.
+      return data;
+    }
+  }
+
+  // If destination type is double, then source must be convertable to double
+  if ( video_metadata::typeid_for_tag( vital_tag ) == typeid( double ) )
+  {
+    if ( klv_0601_has_double( tag ) )
+    {
+      kwiver::vital::any converted_data = klv_0601_value_double( tag, data );
+      return converted_data;
+    }
+    // Could use convert_to_double.convert here to coerce the type if
+    // we believe the tags tables are correct.
+  }
+
+  // If we have gotten this far and inbound tag can be converted to
+  // double and has not been handled by previous section, there is an
+  // internal error
+  if ( klv_0601_has_double( tag ) )
+  {
+    LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
+              << m_metadata_traits.tag_to_symbol( vital_tag ) );
+    return data;
+  }
+
+  try
+  {
+    //+ if ( xxx is vital_tag integral
+    kwiver::vital::any converted_data = convert_to_int.convert( data );
+    return converted_data;
+  }
+  catch (kwiver::vital::bad_any_cast const& e)
+  {
+    LOG_INFO( m_logger, "Data not convertable for tag: "
+              << m_metadata_traits.tag_to_symbol( vital_tag )
+              << ",  " << e.what() );
+  }
+
+  return data;
+}
+
+
 // ------------------------------------------------------------------
-void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata )
+void
+convert_metadata
+::convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata )
 {
   static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_metadata" ) );
 
@@ -75,18 +150,24 @@ void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadat
     // Extract relevant data from associated data bytes.
     kwiver::vital::any data = klv_0601_value( tag,
                                               &itr->second[0], itr->second.size() );
-
     switch (tag)
     {
 // Refine simple case to a define
 #define CASE(N)                                                         \
   case KLV_0601_ ## N:                                                  \
+    metadata.add( NEW_METADATA_ITEM( VITAL_META_ ## N,                  \
+      normalize_0601_tag_data( KLV_0601_ ## N, VITAL_META_ ## N, data ) ) ); \
+    break
+
+#define CASE_COPY(N)                                                    \
+  case KLV_0601_ ## N:                                                  \
     metadata.add( NEW_METADATA_ITEM( VITAL_META_ ## N, data ) );        \
     break
 
-#define CASE2(KN,MN)                                                    \
+#define CASE2(KN,VN)                                                    \
   case KLV_0601_ ## KN:                                                 \
-    metadata.add( NEW_METADATA_ITEM( VITAL_META_ ## MN, data ) );       \
+    metadata.add( NEW_METADATA_ITEM( VITAL_META_ ## VN,                 \
+      normalize_0601_tag_data( KLV_0601_ ## KN, VITAL_META_ ## VN, data ) ) ); \
     break
 
       CASE( UNIX_TIMESTAMP );
@@ -118,7 +199,7 @@ void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadat
       CASE( TARGET_LOCATION_ELEV );
       CASE( TARGET_TRK_GATE_WIDTH );
       CASE( TARGET_TRK_GATE_HEIGHT );
-//      CASE( SECURITY_LOCAL_MD_SET );
+      CASE_COPY( SECURITY_LOCAL_MD_SET );
       CASE( TARGET_ERROR_EST_CE90 );
       CASE( TARGET_ERROR_EST_LE90 );
       CASE( DIFFERENTIAL_PRESSURE );
@@ -132,74 +213,122 @@ void convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadat
       CASE( GROUND_RANGE );
       CASE( PLATFORM_FUEL_REMAINING );
       CASE( PLATFORM_CALL_SIGN );
-      CASE( WEAPON_LOAD );
-      CASE( WEAPON_FIRED );
       CASE( LASER_PRF_CODE );
       CASE( SENSOR_FOV_NAME );
       CASE( PLATFORM_MAGNET_HEADING );
       CASE( UAS_LDS_VERSION_NUMBER );
 
+      // Source specific metadata tags
+
+      // These are prefixed with the spec. number because the data format is specification specific.
+      CASE2( WEAPON_LOAD, 0601_WEAPON_LOAD );
+      CASE2( WEAPON_FIRED, 0601_WEAPON_FIRED );
+
 #undef CASE
 #undef CASE2
 
+      // option (2) Use klv 0601 native to double converter.
+
     case KLV_0601_SENSOR_LATITUDE:
-      sensor_location.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_SENSOR_LATITUDE, data );
+      sensor_location.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_SENSOR_LONGITUDE:
-      sensor_location.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_SENSOR_LONGITUDE, data );
+      sensor_location.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_FRAME_CENTER_LAT:
-      frame_center.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_FRAME_CENTER_LAT, data );
+      frame_center.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_FRAME_CENTER_LONG:
-      frame_center.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_FRAME_CENTER_LONG, data );
+      frame_center.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_1:
-      corner_pt1.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_1, data );
+      corner_pt1.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_1:
-      corner_pt1.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_1, data );
+      corner_pt1.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_2:
-      corner_pt2.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_2, data );
+      corner_pt2.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_2:
-      corner_pt2.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_2, data );
+      corner_pt2.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_3:
-      corner_pt3.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_3, data );
+      corner_pt3.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_3:
-      corner_pt3.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_3, data );
+      corner_pt3.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_4:
-      corner_pt4.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_4, data );
+      corner_pt4.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_4:
-      corner_pt4.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_4, data );
+      corner_pt4.set_longitude( temp );
+    }
       break;
 
     case KLV_0601_TARGET_LOCATION_LAT:
-      target_location.set_latitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_TARGET_LOCATION_LAT, data );
+      target_location.set_latitude( temp );
+    }
       break;
 
     case KLV_0601_TARGET_LOCATION_LONG:
-      target_location.set_longitude( kwiver::vital::any_cast< double >(data) );
+    {
+      double temp = klv_0601_value_double( KLV_0601_TARGET_LOCATION_LONG, data );
+      target_location.set_longitude( temp );
+    }
       break;
 
     default:
-      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported" );
+      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported." );
       break;
     } // end switch
   } // end for

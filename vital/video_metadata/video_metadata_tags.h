@@ -48,10 +48,10 @@
 //      tag                          string name                        type
 //      ---                          -----------                        ----
 #define KWIVER_VITAL_METADATA_TAGS(CALL)                                \
-CALL( UNKNOWN,                     "Unknown/ Undefined entry",        void) \
+CALL( UNKNOWN,                     "Unknown / Undefined entry",       void) \
 CALL( UNIX_TIMESTAMP,              "Unix Time Stamp",                 uint64_t) \
 CALL( MISSION_ID,                  "Mission ID",                      std::string) \
-CALL( MISSION_NUMBER,              "Episode Number",                  uint16_t) \
+CALL( MISSION_NUMBER,              "Episode Number",                  uint64_t) \
 CALL( PLATFORM_TAIL_NUMBER,        "Platform Tail Number",            std::string) \
 CALL( PLATFORM_HEADING_ANGLE,      "Platform Heading Angle",          double) \
 CALL( PLATFORM_PITCH_ANGLE,        "Platform Pitch Angle",            double) \
@@ -98,8 +98,6 @@ CALL( PLATFORM_GROUND_SPEED,       "Platform Ground Speed",           double) \
 CALL( GROUND_RANGE,                "Ground Range",                    double) \
 CALL( PLATFORM_FUEL_REMAINING,     "Platform Fuel Remaining",         double) \
 CALL( PLATFORM_CALL_SIGN,          "Platform Call Sign",              std::string) \
-CALL( WEAPON_LOAD,                 "Weapon Load",                     bool) \
-CALL( WEAPON_FIRED,                "Weapon Fired",                    bool) \
 CALL( LASER_PRF_CODE,              "Laser PRF Code",                  uint32_t) \
 CALL( SENSOR_FOV_NAME,             "Sensor Field of View Name",       uint32_t) \
 CALL( PLATFORM_MAGNET_HEADING,     "Platform Magnetic Heading",       double) \
@@ -110,6 +108,34 @@ CALL( START_DATE_TIME_UTC,         "Start Date Time - UTC",           std::strin
 CALL( EVENT_START_DATE_TIME_UTC,   "Event Start Date Time - UTC",     std::string ) \
 CALL( MISSION_START_TIME_UTC,      "Mission Start Date Time - UTC",   std::string ) \
 CALL( SECURITY_CLASSIFICATION,     "Security Classification",         std::string ) \
-CALL( CLASSIFICATION,               "Classification",                 std::string ) // really std_0102_lds
+CALL( CLASSIFICATION,              "Classification (0102 lds)",       std::string ) \
+CALL( SECURITY_LOCAL_MD_SET,       "Security Local Metadata Set",     std::string ) /* really std_0102_lds */ \
+CALL( 0601_WEAPON_LOAD,            "Weapon Load",                     uint32_t) \
+CALL( 0601_WEAPON_FIRED,           "Weapon Fired",                    uint32_t) \
+CALL( AVERAGE_GSD,                 "Average GSD value",               double)
+
+// ------------------------------------------------------------------
+//
+// Canonical metadata tags
+//
+
+namespace kwiver {
+namespace vital {
+
+enum vital_metadata_tag {
+
+#define ENUM_ITEM( TAG, NAME, T) VITAL_META_ ## TAG,
+
+  // Generate enum items
+  KWIVER_VITAL_METADATA_TAGS( ENUM_ITEM )
+
+#undef ENUM_ITEM
+
+  // User tags can be generated for a specific application and
+  // should start with a value not less than the following.
+  VITAL_META_LAST_TAG
+};
+
+} } // end namespace
 
 #endif /* KWIVER_VITAL_VIDEO_METADATA_TAGS_H */

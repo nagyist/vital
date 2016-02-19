@@ -39,6 +39,7 @@
 #include <vital/klv/klv_data.h>
 #include <vital/klv/klv_parse.h>
 #include <vital/video_metadata/video_metadata.h>
+#include <vital/video_metadata/convert_metadata.h>
 
 
 // ----------------------------------------------------------------
@@ -74,6 +75,7 @@ int main( int argc, char** argv )
 
   std::deque<uint8_t> md_buffer;
   unsigned count = 0;
+  kwiver::vital::convert_metadata converter;
 
 
   while ( istr.advance() )
@@ -95,7 +97,8 @@ int main( int argc, char** argv )
       kwiver::vital::print_klv( std::cout, klv_packet );
 
       kwiver::vital::video_metadata metadata;
-      convert_metadata( klv_packet, metadata );
+
+      converter.convert( klv_packet, metadata );
       print_metadata(std::cout,  metadata );
     }
     ++count;

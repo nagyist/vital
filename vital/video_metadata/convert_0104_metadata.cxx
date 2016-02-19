@@ -33,23 +33,73 @@
  * \brief This file contains the implementation for vital video metadata.
  */
 
-#include "video_metadata.h"
 #include "convert_metadata.h"
 
 #include <vital/klv/klv_0104.h>
 #include <vital/klv/klv_data.h>
 
-#include <vital/logger/logger.h>
 #include <vital/exceptions/klv.h>
 
 namespace kwiver {
 namespace vital {
 
-// ------------------------------------------------------------------
-void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata )
+/**
+ * @brief Normalize metadata tag data types.
+ *
+ * @param[in] vital_tag Metadata tag
+ * @param[in,out] data Data to be normalized
+ */
+kwiver::vital::any
+convert_metadata
+::normalize_0104_tag_data( klv_0104::tag tag,
+                           kwiver::vital::vital_metadata_tag vital_tag,
+                           kwiver::vital::any const& data )
 {
-  static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_metadata" ) );
+  // If one type is string, then both types must be string
+  if ( (video_metadata::typeid_for_tag( vital_tag ) == typeid( std::string ))
+       || (data.type() == typeid( std::string )) )
+  {
+    if ( ( video_metadata::typeid_for_tag( vital_tag ) != typeid( std::string ))
+         && ( data.type() != typeid( std::string )) )
+    {
+      LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
+                << m_metadata_traits.tag_to_symbol( vital_tag ) );
+    }
+    else
+    {
+      // leave data as is since it already correct type.
+      return data;
+    }
+  }
 
+  try
+  {
+    // If destination type is double, then source must be convertable to double
+    if ( video_metadata::typeid_for_tag( vital_tag ) == typeid( double ) )
+    {
+      kwiver::vital::any converted_data = convert_to_double.convert( data );
+      return converted_data;
+    }
+
+    // Assume target type is integer
+    kwiver::vital::any converted_data = convert_to_int.convert( data );
+    return converted_data;
+  }
+  catch (kwiver::vital::bad_any_cast const& e)
+  {
+    LOG_INFO( m_logger, "Data not convertable for tag: "
+              << m_metadata_traits.tag_to_symbol( vital_tag )
+              << ",  " << e.what() );
+  }
+
+  return data;
+}
+
+
+// ------------------------------------------------------------------
+void convert_metadata
+::convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadata )
+{
   //
   // Data items that are used to collect multi-value metadataa items
   // such as lat-lon points and image corner points.
@@ -71,7 +121,7 @@ void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadat
       tag = klv_0104::instance()->get_tag( itr->first );
       if ( tag == klv_0104::UNKNOWN )
       {
-        LOG_WARN( logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
+        LOG_WARN( m_logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
         continue;
       }
 
@@ -79,12 +129,12 @@ void convert_0104_metadata( klv_uds_vector_t const& uds, video_metadata& metadat
     }
     catch ( kwiver::vital::klv_exception const& e )
     {
-      LOG_WARN( logger, "Exception caught parsing 0104 klv: " << e.what() );
+      LOG_WARN( m_logger, "Exception caught parsing 0104 klv: " << e.what() );
       continue;
     }
 
     //
-    // Data items that are used to collect multi-value metadataa items
+    // Data items that are used to collect multi-value metadata items
     // such as lat-lon points and image corner points.
     //
 
@@ -185,7 +235,7 @@ case klv_0104::N:                                               \
       break;
 
     default:
-      LOG_WARN( logger, "Unprocessed key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
+      LOG_WARN( m_logger, "Unprocessed key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
       break;
     } // end switch
 
@@ -198,7 +248,7 @@ case klv_0104::N:                                               \
   {
     if ( ! sensor_location.is_valid() )
     {
-      LOG_WARN( logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
+      LOG_WARN( m_logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
     }
     else
     {
@@ -210,7 +260,7 @@ case klv_0104::N:                                               \
   {
     if ( ! frame_center.is_valid() )
     {
-      LOG_WARN( logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
+      LOG_WARN( m_logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
     }
     else
     {
@@ -235,22 +285,22 @@ case klv_0104::N:                                               \
       // Decode which one(s) are not valie
       if ( ! corner_pt1.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_WARN( m_logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt2.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_WARN( m_logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt3.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_WARN( m_logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt4.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_WARN( m_logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
       }
     }
     else

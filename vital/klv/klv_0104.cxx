@@ -48,6 +48,8 @@
 namespace kwiver {
 namespace vital {
 
+class std_0102_lds { };
+
 // ------------------------------------------------------------------
 /// Class to store the tag name and a base class for different
 /// types of values that can come from the klv
@@ -58,6 +60,7 @@ public:
 
   virtual std::string to_string( kwiver::vital::any const& ) const = 0;
   virtual kwiver::vital::any convert( uint8_t const*, std::size_t ) = 0;
+  virtual std::type_info const& typeid_for_tag( ) const = 0;
 
   std::string m_name;
 
@@ -91,10 +94,11 @@ public:
 
   virtual ~traits() { }
 
-  std::string to_string( kwiver::vital::any const& data ) const;
+  virtual std::string to_string( kwiver::vital::any const& data ) const;
 
   /// Parse type T from a raw byte stream in MSB (most significant byte first) order
-  kwiver::vital::any convert( uint8_t const* data, std::size_t length );
+  virtual kwiver::vital::any convert( uint8_t const* data, std::size_t length );
+  virtual std::type_info const& typeid_for_tag( ) const { return typeid(T); }
 };
 
 
@@ -152,7 +156,7 @@ klv_0104::klv_0104()
     { klv_uds_key( 0x060e2b3401010101UL, 0x0420010201010000UL ), IMAGE_SOURCE_SENSOR },
     { klv_uds_key( 0x060e2b3401010102UL, 0x0420020101080000UL ), SENSOR_HORIZONTAL_FOV },
     { klv_uds_key( 0x060e2b3401010107UL, 0x04200201010a0100UL ), SENSOR_VERTICAL_FOV },
-    { klv_uds_key( 0x060E2B3401010101UL, 0x0420030100000000UL ), SENSOR_TYPE },
+    { klv_uds_key( 0x060e2b3401010101UL, 0x0420030100000000UL ), SENSOR_TYPE },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0701010100000000UL ), IMAGE_COORDINATE_SYSTEM },
     { klv_uds_key( 0x060e2b3401010101UL, 0x0701090201000000UL ), TARGET_WIDTH },
     { klv_uds_key( 0x060e2b3401010107UL, 0x0701100106000000UL ), PLATFORM_HEADING_ANGLE },
@@ -199,13 +203,13 @@ klv_0104::klv_0104()
   m_traitsvec.resize( UNKNOWN );
 
   //Mapping between tag index and traits, double is used for floats and doubles
-#define NEW_TRAIT(T,D) reinterpret_cast< traits_base* >(new traits< T > ( D ))
+#define NEW_TRAIT(T,D) static_cast< traits_base* >(new traits< T > ( D ))
 
   m_traitsvec[PLATFORM_DESIGNATION] =        NEW_TRAIT( std::string,  "Platform designation" );
   m_traitsvec[PLATFORM_DESIGNATION_ALT] =    NEW_TRAIT( std::string,  "Platform designation (alternate key)" );
   m_traitsvec[STREAM_ID] =                   NEW_TRAIT( std::string,  "Stream ID" );
   m_traitsvec[ITEM_DESIGNATOR_ID] =          NEW_TRAIT( std::string,  "Item Designator ID (16 bytes)" );
-  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT( std::string,  "Classification" ); // really std_0102_lds
+  m_traitsvec[CLASSIFICATION] =              NEW_TRAIT( std_0102_lds,  "Classification" );
   m_traitsvec[SECURITY_CLASSIFICATION] =     NEW_TRAIT( std::string,  "Security Classification" );
   m_traitsvec[IMAGE_SOURCE_SENSOR] =         NEW_TRAIT( std::string,  "Image Source sensor" );
   m_traitsvec[SENSOR_HORIZONTAL_FOV] =       NEW_TRAIT( double,       "Sensor horizontal field of view" );
@@ -250,9 +254,9 @@ klv_0104::klv_0104()
   m_traitsvec[MISSION_NUMBER] =              NEW_TRAIT( uint16_t,     "Episode Number" );
   m_traitsvec[ANGLE_TO_NORTH] =              NEW_TRAIT( double,       "Angle to North" );
   m_traitsvec[OBLIQUITY_ANGLE] =             NEW_TRAIT( double,       "Sensor Elevation Angle" );
+  m_traitsvec[SENSOR_ROLL_ANGLE] =           NEW_TRAIT( double,       "Sensor Roll Angle" );
 
 #undef NEW_TRAIT
-#undef NEW_TRAIT_GROUP
 
 }
 
@@ -310,7 +314,7 @@ traits< T >::convert( uint8_t const* data, std::size_t length )
 
 
 // ------------------------------------------------------------------
-/// Specialization for extracting strings from a raw byte stream
+// Specialization for extracting strings from a raw byte stream
 template < >
 kwiver::vital::any
 traits< std::string >::convert( uint8_t const* data, std::size_t length )
@@ -322,7 +326,7 @@ traits< std::string >::convert( uint8_t const* data, std::size_t length )
 
 
 // ------------------------------------------------------------------
-///Handle real values as floats or doubles but return double
+//Handle real values as floats or doubles but return double
 template < >
 kwiver::vital::any
 traits< double >::convert( uint8_t const* data, std::size_t length )
@@ -365,7 +369,30 @@ traits< double >::convert( uint8_t const* data, std::size_t length )
   }
 
   return val;
-} // >::convert
+}
+
+
+// ------------------------------------------------------------------
+// Specialization for extracting std_0102_lds from a raw byte stream
+template < >
+kwiver::vital::any
+traits< std_0102_lds >::convert( uint8_t const* data, std::size_t length )
+{
+  // TODO:  Need to handle this for real
+  std::string value( reinterpret_cast< char const* > ( data ), length );
+
+  return value;
+}
+
+// ------------------------------------------------------------------
+  // TEMP handling for std_0102_lds objects.
+template < >
+std::string
+traits< std_0102_lds >::to_string( kwiver::vital::any const& data ) const
+{
+  std::string var = kwiver::vital::any_cast< std::string > ( data );
+  return var;
+}
 
 
 // ------------------------------------------------------------------

@@ -339,7 +339,7 @@ print_klv( std::ostream& str, klv_data const& klv )
     {
       if ( ( itr->first <= KLV_0601_UNKNOWN ) || ( itr->first >= KLV_0601_ENUM_END ) )
       {
-        str << "   #" << int(itr->first) << " is not supported" << std::endl;
+        str << "    #" << int(itr->first) << " is not supported" << std::endl;
         continue;
       }
 

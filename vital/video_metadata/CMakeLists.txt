@@ -4,12 +4,15 @@
 
 set( sources
   video_metadata.cxx
+  video_metadata_traits.cxx
+  convert_metadata.cxx
   convert_0601_metadata.cxx
   convert_0104_metadata.cxx
   )
 
 set( public_headers
   video_metadata.h
+  video_metadata_traits.h
   )
 
 set( private_headers

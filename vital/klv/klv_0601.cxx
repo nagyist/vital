@@ -41,26 +41,26 @@
 #include <iomanip>
 
 #include <functional>
-#include <boost/bind.hpp>
 
 namespace kwiver {
 namespace vital {
 
 namespace {
 
-/// A function type that converts raw byte streams to kwiver::vital::any
+// A function type that converts raw byte streams to kwiver::vital::any
 typedef std::function< kwiver::vital::any( const uint8_t*, std::size_t ) > klv_decode_func_t;
 
 // ------------------------------------------------------------------
-/// Parse type T from a raw byte stream in MSB (most significant byte first) order
+// Parse type T from a raw byte stream in MSB (most significant byte first) order
 template < typename T >
 kwiver::vital::any
 klv_convert( const uint8_t* data, std::size_t length )
 {
   if ( sizeof( T ) != length )
   {
-    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital_klv" ) );
-    LOG_WARN( logger, "Data type and length differ in size." );
+    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_0601" ) );
+    LOG_WARN( logger, "Data type (" <<  sizeof(T) << " bytes) and length ("
+              << length << " bytes) differ in size." );
   }
 
   T value = *( data++ );
@@ -69,12 +69,13 @@ klv_convert( const uint8_t* data, std::size_t length )
     value <<= 8;
     value |= *data;
   }
+
   return value;
 }
 
 
 // ------------------------------------------------------------------
-/// Specialization for extracting strings from a raw byte stream
+// Specialization for extracting strings from a raw byte stream
 template < >
 kwiver::vital::any
 klv_convert< std::string > ( const uint8_t* data, std::size_t length )
@@ -86,12 +87,13 @@ klv_convert< std::string > ( const uint8_t* data, std::size_t length )
 
 
 // ------------------------------------------------------------------
-/// Specialization for extracting STD 0102 LSD from raw byte stream
-/// \note this is a place holder for now.
+// Specialization for extracting STD 0102 LSD from raw byte stream
+// \note this is a place holder for now.
 template < >
 kwiver::vital::any
 klv_convert< kwiver::vital::std_0102_lds > ( const uint8_t* data, std::size_t length )
 {
+  // Need to decode this for real
   std::vector< uint8_t > value( data, data + length );
 
   return value;
@@ -99,28 +101,30 @@ klv_convert< kwiver::vital::std_0102_lds > ( const uint8_t* data, std::size_t le
 
 
 // ------------------------------------------------------------------
-/// A function type that converts a kwiver::vital::any to a double
+// A function type that converts a kwiver::vital::any to a double
 typedef std::function< double ( kwiver::vital::any const& ) > klv_any_to_double_func_t;
 
 
 // ------------------------------------------------------------------
-/// Take a "convert T to double" function apply to a kwiver::vital::any
-/// This is used with boost bind to make a kwiver::vital::any to double conversion function
+// Take a "convert T to double" function apply to a kwiver::vital::any
+// This is used with boost bind to make a kwiver::vital::any to double conversion function
 template < typename T >
 double
 klv_as_double( const std::function< double(T const& val) >& func,
                kwiver::vital::any const& data )
 {
+  std::cout << "---->>>> any has type " << demangle(data.type().name() ) //+ TEMP
+            << "   requested type " << demangle( typeid(T).name() ) << std::endl;
   return func( kwiver::vital::any_cast< T > ( data ) );
 }
 
 
-/// A function type to format kwiver::vital::any raw data in hex and write to the ostream
+// A function type to format kwiver::vital::any raw data in hex and write to the ostream
 typedef std::function< void ( std::ostream& os, kwiver::vital::any const& ) > klv_any_format_hex_func_t;
 
 
 // ------------------------------------------------------------------
-/// Write kwiver::vital::any (with underlying type T) in hex
+// Write kwiver::vital::any (with underlying type T) in hex
 template < typename T >
 void
 format_hex( std::ostream& os, kwiver::vital::any const& data )
@@ -134,7 +138,7 @@ format_hex( std::ostream& os, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Specialization for writing a byte in hex (so it doesn't print ASCII)
+// Specialization for writing a byte in hex (so it doesn't print ASCII)
 template < >
 void
 format_hex< uint8_t > ( std::ostream& os, kwiver::vital::any const& data )
@@ -148,7 +152,7 @@ format_hex< uint8_t > ( std::ostream& os, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Specialization for writing a byte in hex (so it doesn't print ASCII)
+// Specialization for writing a byte in hex (so it doesn't print ASCII)
 template < >
 void
 format_hex< int8_t > ( std::ostream& os, kwiver::vital::any const& data )
@@ -162,7 +166,7 @@ format_hex< int8_t > ( std::ostream& os, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Specialization for writing a string as a sequence of hex bytes
+// Specialization for writing a string as a sequence of hex bytes
 template < >
 void
 format_hex< std::string > ( std::ostream& os, kwiver::vital::any const& data )
@@ -180,7 +184,7 @@ format_hex< std::string > ( std::ostream& os, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Specialization for writing a STD 0102 LDS in hex bytes
+// Specialization for writing a STD 0102 LDS in hex bytes
 template < >
 void
 format_hex< kwiver::vital::std_0102_lds > ( std::ostream& os, kwiver::vital::any const& data )
@@ -198,9 +202,9 @@ format_hex< kwiver::vital::std_0102_lds > ( std::ostream& os, kwiver::vital::any
 
 
 // ------------------------------------------------------------------
-/// Store KLV 0601 traits for dynamic run-time lookup
-/// Build an array of these structs, one for each 0601 tag,
-/// using template metaprogramming.
+// Store KLV 0601 traits for dynamic run-time lookup
+// Build an array of these structs, one for each 0601 tag,
+// using template metaprogramming.
 struct klv_0601_dyn_traits
 {
   std::string name;
@@ -214,11 +218,11 @@ struct klv_0601_dyn_traits
 
 
 // ------------------------------------------------------------------
-/// Recursive template metaprogram to populate the run-time array of traits
+// Recursive template metaprogram to populate the run-time array of traits
 template < klv_0601_tag tag >
 struct construct_traits
 {
-  /// Populate the array element for this tag
+  // Populate the array element for this tag
   static inline std::vector< klv_0601_dyn_traits >&
   init( std::vector< klv_0601_dyn_traits >& data )
   {
@@ -230,7 +234,7 @@ struct construct_traits
     t.decode_func = klv_decode_func_t( klv_convert< type > );
     t.has_double = klv_0601_convert< tag >::has_double;
     t.double_func = std::bind( klv_as_double< type >,
-                                 klv_0601_convert< tag >::as_double, _1 );
+                                 klv_0601_convert< tag >::as_double, std::placeholders::_1 );
     t.any_hex_func = klv_any_format_hex_func_t( format_hex< type > );
     return construct_traits< klv_0601_tag( tag - 1 ) >::init( data );
   }
@@ -240,7 +244,7 @@ struct construct_traits
 
 
 // ------------------------------------------------------------------
-/// The base case: unknown tag (with ID = 0)
+// The base case: unknown tag (with ID = 0)
 template < >
 struct construct_traits< KLV_0601_UNKNOWN >
 {
@@ -258,7 +262,7 @@ struct construct_traits< KLV_0601_UNKNOWN >
 
 
 // ------------------------------------------------------------------
-/// Construct an array of traits for all known 0601 tags
+// Construct an array of traits for all known 0601 tags
 std::vector< klv_0601_dyn_traits > init_traits_array()
 {
   std::vector< klv_0601_dyn_traits > tmp( KLV_0601_ENUM_END );
@@ -365,7 +369,7 @@ klv_0601_checksum( klv_data const& data )
 
 
 // ------------------------------------------------------------------
-/// Return a string representation of the name of a KLV 0601 tag
+// Return a string representation of the name of a KLV 0601 tag
 std::string
 klv_0601_tag_to_string( klv_0601_tag t )
 {
@@ -374,7 +378,7 @@ klv_0601_tag_to_string( klv_0601_tag t )
 
 
 // ------------------------------------------------------------------
-/// Extract the appropriate data type from raw bytes as a kwiver::vital::any
+// Extract the appropriate data type from raw bytes as a kwiver::vital::any
 kwiver::vital::any
 klv_0601_value( klv_0601_tag t, const uint8_t* data, std::size_t length )
 {
@@ -383,7 +387,7 @@ klv_0601_value( klv_0601_tag t, const uint8_t* data, std::size_t length )
 
 
 // ------------------------------------------------------------------
-/// Return the tag data as a double
+// Return the tag data as a double
 double
 klv_0601_value_double( klv_0601_tag t, kwiver::vital::any const& data )
 {
@@ -392,7 +396,16 @@ klv_0601_value_double( klv_0601_tag t, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Format the tag data as a string
+// Return the tag data as a double
+bool
+klv_0601_has_double( klv_0601_tag t )
+{
+  return traits_array[t].has_double;
+}
+
+
+// ------------------------------------------------------------------
+// Format the tag data as a string
 std::string
 klv_0601_value_string( klv_0601_tag t, kwiver::vital::any const& data )
 {
@@ -425,7 +438,7 @@ klv_0601_value_string( klv_0601_tag t, kwiver::vital::any const& data )
 
 
 // ------------------------------------------------------------------
-/// Format the tag data as a hex string
+// Format the tag data as a hex string
 std::string
 klv_0601_value_hex_string( klv_0601_tag t, kwiver::vital::any const& data )
 {

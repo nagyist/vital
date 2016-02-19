@@ -113,20 +113,22 @@ public:
               PLATFORM_TAIL_NUMBER,
               MISSION_NUMBER,
               SENSOR_ROLL_ANGLE,
-
               // ---------------------- //
               UNKNOWN //must be last
   };
 
 
-  /// Lookup the cooresponding tag with this key.
+  /// Lookup the cooresponding tag for this key.
   /**
+   * This method returns the tag that corresponds to the specified
+   * key. If the key is not found, then the UNKNOWN tag is returned.
    *
-   * @param key
+   * @param key UDS key to look up.
    *
-   * @return
+   * @return Tag corresponding to specified key or UNKNOWN tag if not found
    */
   tag get_tag( klv_uds_key const& key ) const;
+
 
   /// Extract the appropriate data type from raw bytes as a kwiver::vital::any
   kwiver::vital::any get_value( tag tg, uint8_t const* data, std::size_t length );
@@ -141,10 +143,11 @@ public:
    *
    * @tparam T data type (string, double, uint64_t)
    *
-   * @return
+   * @return Value from tag as desired type.
    */
   template < class T >
   T get_value( tag tag, kwiver::vital::any const& data ) const;
+
 
   /// Get the value of the data in the format of a string for any type
   /**
@@ -158,6 +161,7 @@ public:
    * @return String representation of the data.
    */
   std::string get_string( tag tg, kwiver::vital::any const& data ) const;
+
 
   /// Get the name of the tag as a string
   /**
