@@ -58,7 +58,6 @@
 namespace kwiver {
 namespace vital {
 
-
 // ------------------------
 class VITAL_EXPORT video_metadata_exception
   : public vital_core_base_exception
@@ -127,7 +126,7 @@ public:
   template< typename T>
   bool data(T& val) const
   {
-    if (typeid(T) == data.type())
+    if (typeid(T) == m_data.type())
     {
       val = kwiver::vital::any_cast<T>( data() );
       return true;

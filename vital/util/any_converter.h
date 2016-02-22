@@ -40,6 +40,9 @@
 #include <vector>
 #include <memory>
 
+namespace kwiver {
+namespace vital {
+
 // ==================================================================
 /// Generic converter for any value to specific type.
 /**
@@ -55,19 +58,6 @@ any_to_int.add_converter<uint8_t>();  // add converter from uint8_t;
 any_to_int.add_converter<float>();    // add converter from float;
 \endcode
  *
- * Custom converters can be derived from the converter struct.
-\code
-template < typename DEST, typename SRC >
-struct my_converter
-: public converter< DEST, SRC >
-{
-  virtual DEST convert( kwiver::vital::any const& data ) const
-  {
-    SRC temp = ( kwiver::vital::any_cast< SRC > ( data ) );
-    return my_complex_conversion( temp );
-  }
-};
-\endcode
  */
 template <typename T>
 class any_converter
@@ -145,6 +135,28 @@ public:
     throw kwiver::vital::bad_any_cast( data.type().name(), typeid(T).name() );
   }
 
+  /// Test to see if conversion can be done.
+  /**
+   * This method checks to see if there is a suitable converter registered.
+   *
+   * @param data The any object to be converted.
+   *
+   * @return \b true if value can be converted, \b false otherwise.
+   */
+  bool can_convert( kwiver::vital::any const& data ) const
+  {
+    const auto eix = m_converter_list.end();
+    for (auto ix = m_converter_list.begin(); ix != eix; ix++)
+    {
+      if ( (*ix)->can_convert( data ) )
+      {
+        return true;
+      }
+    } // end for
+
+    return false;
+  }
+
   /// Add converter based on from type.
   /**
    * Adds a new converter that handles a specific source type. The
@@ -163,5 +175,7 @@ private:
   std::vector< converter_ptr > m_converter_list;
 
 }; // end class any_converter
+
+} } // end namespace
 
 #endif /* KWIVER_VITAL_NY_CONVERTER_H */
