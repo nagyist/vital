@@ -69,3 +69,14 @@ try_compile( success
 set( VITAL_USE_STD_RANDOM ${success} )
 
 ###
+# see if demangle ABI is supported
+try_compile( success
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/configcheck/demangle_abi.cxx
+  CMAKE_FLAGS
+     -DCMAKE_CXX_FLAGS:STRING=#${CMAKE_CXX_FLAGS}
+  OUTPUT_VARIABLE OUTPUT)
+
+set( VITAL_USE_ABI_DEMANGLE ${success} )
+
+#

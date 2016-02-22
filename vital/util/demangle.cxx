@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -28,52 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation for image exceptions
- */
+#include "demangle.h"
 
-#include "image.h"
+#include <vital/vital_config.h>
 
-#include <sstream>
+#if VITAL_USE_ABI_DEMANGLE
+
+#include <cxxabi.h>
+
+#endif
 
 namespace kwiver {
 namespace vital {
 
-
-image_exception
-::image_exception() VITAL_NOTHROW
+// ------------------------------------------------------------------
+std::string demangle( std::string const& sym )
 {
-  m_what = "An image exception";
-}
-
-image_exception
-::~image_exception() VITAL_NOTHROW
-{
+  return demangle( sym.c_str() );
 }
 
 
 // ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
+std::string demangle( char const* sym )
 {
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
+
+#if VITAL_USE_ABI_DEMANGLE
+
+  std::string tname;
+  int status;
+  char* demangled_name = abi::__cxa_demangle(sym, NULL, NULL, &status);
+
+  if( 0 == status )
+  {
+    tname = demangled_name;
+    std::free(demangled_name);
+  }
+
+  return tname;
+
+#else
+
+  return sym;
+
+#endif
 }
 
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
-{
-}
-
-} } // end vital namespace
+} } // end namespace

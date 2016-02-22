@@ -38,7 +38,6 @@
 #include <vital/util/wall_timer.h>
 
 #include <iostream>
-#include <unistd.h>
 
 #define TEST_ARGS ()
 

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,50 +30,32 @@
 
 /**
  * \file
- * \brief Implementation for image exceptions
+ * \brief test KLV classes
  */
 
-#include "image.h"
+#include <test_common.h>
 
-#include <sstream>
-
-namespace kwiver {
-namespace vital {
+#include <vital/klv/klv_parse.h>
 
 
-image_exception
-::image_exception() VITAL_NOTHROW
+#define TEST_ARGS ()
+
+DECLARE_TEST_MAP();
+
+// data fields
+
+int
+main(int argc, char* argv[])
 {
-  m_what = "An image exception";
+  CHECK_ARGS(1);
+
+  testname_t const testname = argv[1];
+
+  RUN_TEST(testname);
 }
 
-image_exception
-::~image_exception() VITAL_NOTHROW
+
+IMPLEMENT_TEST(klv_api)
 {
+  // coming soon
 }
-
-
-// ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
-{
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
-}
-
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
-{
-}
-
-} } // end vital namespace

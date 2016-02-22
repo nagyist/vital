@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,50 +30,107 @@
 
 /**
  * \file
- * \brief Implementation for image exceptions
+ * \brief This file contains the implementation for the geo MGRS coordinate
  */
 
-#include "image.h"
+#include "geo_MGRS.h"
 
-#include <sstream>
+#include <iomanip>
 
 namespace kwiver {
 namespace vital {
 
+geo_MGRS
+::geo_MGRS()
+{ }
 
-image_exception
-::image_exception() VITAL_NOTHROW
+
+geo_MGRS
+::geo_MGRS(std::string const& coord)
+: mgrs_coord_(coord)
+{ }
+
+
+geo_MGRS
+::~geo_MGRS()
+{ }
+
+
+bool
+geo_MGRS
+::is_empty() const
 {
-  m_what = "An image exception";
+  return this->mgrs_coord_.empty();
 }
 
-image_exception
-::~image_exception() VITAL_NOTHROW
+
+bool
+geo_MGRS
+::is_valid() const
 {
+  if (is_empty())
+  {
+    return false;
+  }
+
+  // TODO - what constututes a valid MGRS?
+  return true;
 }
 
 
-// ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
+geo_MGRS &
+geo_MGRS
+::set_coord( std::string const& coord)
 {
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
+  this-> mgrs_coord_ = coord;
+  return *this;
 }
 
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
+
+std::string const&
+geo_MGRS
+::coord() const
 {
+  return this->mgrs_coord_;
 }
 
-} } // end vital namespace
+
+bool
+geo_MGRS
+::operator == ( const geo_MGRS &rhs ) const
+{
+  // May want to take into precision of operands.
+  return ( rhs.coord() == this->coord() );
+}
+
+
+bool
+geo_MGRS
+::operator != ( const geo_MGRS &rhs ) const
+{
+  return ( !( this->operator == ( rhs ) ) );
+}
+
+
+geo_MGRS
+geo_MGRS
+::operator=( const geo_MGRS& m )
+{
+  if ( this != & m )
+  {
+    this->mgrs_coord_ = m.coord();
+  }
+
+  return *this;
+}
+
+
+std::ostream & operator<< (std::ostream & str, const kwiver::vital::geo_MGRS & obj)
+{
+  str << "[MGRS: " << obj.coord() << "]";
+
+  return str;
+}
+
+} // end namespace
+} // end namespace

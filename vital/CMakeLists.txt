@@ -91,6 +91,7 @@ set( vital_public_headers
   vital_types.h
   vital_foreach.h
   noncopyable.h
+  any.h
 
   algo/algorithm.txx
   algo/algorithm.h
@@ -114,6 +115,7 @@ set( vital_public_headers
   algo/optimize_cameras.h
   algo/track_features.h
   algo/triangulate_landmarks.h
+  algo/video_input.h
 
   exceptions.h
   exceptions/algorithm.h
@@ -121,6 +123,8 @@ set( vital_public_headers
   exceptions/image.h
   exceptions/io.h
   exceptions/math.h
+  exceptions/video.h
+  exceptions/klv.h
 
   io/camera_io.h
   io/camera_map_io.h
@@ -140,6 +144,8 @@ set( vital_public_headers
   types/feature_set.h
   types/fundamental_matrix.h
   types/geo_lat_lon.h
+  types/geo_UTM.h
+  types/geo_MGRS.h
   types/homography.h
   types/homography_f2f.h
   types/homography_f2w.h
@@ -159,6 +165,8 @@ set( vital_public_headers
 
   util/get_paths.h
   util/timer.h
+  util/demangle.h
+  util/any_converter.h
 )
 
 # ----------------------
@@ -186,12 +194,15 @@ set( vital_sources
   algo/optimize_cameras.cxx
   algo/track_features.cxx
   algo/triangulate_landmarks.cxx
+  algo/video_input.cxx
 
   exceptions/algorithm.cxx
   exceptions/base.cxx
   exceptions/image.cxx
   exceptions/io.cxx
   exceptions/math.cxx
+  exceptions/video.cxx
+  exceptions/klv.cxx
 
   io/camera_io.cxx
   io/camera_map_io.cxx
@@ -204,6 +215,8 @@ set( vital_sources
   types/feature.cxx
   types/fundamental_matrix.cxx
   types/geo_lat_lon.cxx
+  types/geo_UTM.cxx
+  types/geo_MGRS.cxx
   types/homography.cxx
   types/homography_f2f.cxx
   types/homography_f2w.cxx
@@ -216,6 +229,7 @@ set( vital_sources
   types/track_set.cxx
 
   util/get_paths.cxx
+  util/demangle.cxx
 )
 
 kwiver_install_headers(
@@ -353,6 +367,8 @@ configure_file(
 add_subdirectory( bindings )
 add_subdirectory( logger )
 add_subdirectory( config )
+add_subdirectory( klv )
+add_subdirectory( video_metadata )
 
 if (VITAL_ENABLE_TOOLS)
   add_subdirectory( tools )
@@ -363,6 +379,7 @@ endif()
 if (VITAL_ENABLE_TESTS)
   add_subdirectory( tests )
   add_subdirectory( util/tests )
+  add_subdirectory( klv/tests )
 endif()
 
 ###

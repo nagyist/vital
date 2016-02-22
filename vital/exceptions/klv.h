@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,50 +30,29 @@
 
 /**
  * \file
- * \brief Implementation for image exceptions
+ * \brief This file contains the interface for the KLV exception.
  */
 
-#include "image.h"
+#ifndef VITAL_CORE_EXCEPTIONS_KLV_H
+#define VITAL_CORE_EXCEPTIONS_KLV_H
 
-#include <sstream>
+#include <string>
+
+#include <vital/exceptions/base.h>
 
 namespace kwiver {
 namespace vital {
 
-
-image_exception
-::image_exception() VITAL_NOTHROW
+// ------------------------
+class VITAL_EXPORT klv_exception
+  : public vital_core_base_exception
 {
-  m_what = "An image exception";
-}
+public:
+  klv_exception( std::string const& str );
 
-image_exception
-::~image_exception() VITAL_NOTHROW
-{
-}
+  virtual ~klv_exception() VITAL_NOTHROW;
+};
 
+} } // end namespace
 
-// ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
-{
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
-}
-
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
-{
-}
-
-} } // end vital namespace
+#endif /* VITAL_CORE_EXCEPTIONS_KLV_H */

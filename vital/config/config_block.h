@@ -319,6 +319,7 @@ public:
    */
   void print( std::ostream & str );
 
+
   /// Set source file location where entry is defined.
   /**
    * This method adds the source file location where a config entry
@@ -329,6 +330,7 @@ public:
    * \param line Line number in file
    */
   void set_location( config_block_key_t const& key, std::shared_ptr< std::string > file, int line );
+
 
   /// Get file location where config key was defined.
   /**

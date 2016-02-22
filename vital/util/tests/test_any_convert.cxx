@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,50 +30,50 @@
 
 /**
  * \file
- * \brief Implementation for image exceptions
+ * \brief test util any_converter class
  */
+#include <test_common.h>
 
-#include "image.h"
-
-#include <sstream>
-
-namespace kwiver {
-namespace vital {
+#include <vital/util/any_converter.h>
 
 
-image_exception
-::image_exception() VITAL_NOTHROW
+#define TEST_ARGS ()
+
+DECLARE_TEST_MAP();
+
+// ------------------------------------------------------------------
+int
+main(int argc, char* argv[])
 {
-  m_what = "An image exception";
-}
+  CHECK_ARGS(1);
 
-image_exception
-::~image_exception() VITAL_NOTHROW
-{
+  testname_t const testname = argv[1];
+
+  RUN_TEST(testname);
 }
 
 
 // ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
+IMPLEMENT_TEST(test_converter)
 {
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
-}
+  kwiver::vital::any_converter<int> any_to_int;
 
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
-{
-}
+  any_to_int.add_converter<uint8_t>();  // add converter from uint8_t;
+  any_to_int.add_converter<float>();    // add converter from float;
 
-} } // end vital namespace
+  kwiver::vital::any ui8 = (uint8_t) 123;
+  kwiver::vital::any fl = (float) 123.45;
+  kwiver::vital::any cp = std::string("string");
+
+  TEST_EQUAL( "Convertable char", any_to_int.can_convert( ui8 ), true );
+  TEST_EQUAL( "Convert char to int", any_to_int.convert( ui8 ), 123);
+
+  TEST_EQUAL( "Convertable float", any_to_int.can_convert( fl ), true );
+  TEST_EQUAL( "Convert float to int", any_to_int.convert( fl ), 123);
+
+  TEST_EQUAL( "Unconvertable", any_to_int.can_convert( cp ), false );
+
+  EXPECT_EXCEPTION( kwiver::vital::bad_any_cast,
+                    any_to_int.convert( cp ),
+                    "Converting the unconvertable" );
+}

@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,130 +30,135 @@
 
 /**
  * \file
- * \brief This file contains the implementation of a lat lon geo point.
+ * \brief video_input algorithm definition instantiation
  */
 
-#include "geo_lat_lon.h"
-#include <cmath>
-#include <iomanip>
+#include <vital/algo/video_input.h>
+#include <vital/algo/algorithm.txx>
+
+#include <map>
+#include <string>
 
 namespace kwiver {
 namespace vital {
+namespace algo {
 
-const double geo_lat_lon::INVALID = 444.0;
-
-// ------------------------------------------------------------------
-geo_lat_lon::
-geo_lat_lon()
-  : m_latitude(INVALID),
-    m_longitude(INVALID)
-{ }
-
-geo_lat_lon::
-geo_lat_lon(double lat, double lon)
-  : m_latitude(lat),
-    m_longitude(lon)
-{ }
-
-
-geo_lat_lon::
-~geo_lat_lon()
-{ }
-
+// ==================================================================
+// -- video traits implementation --
+const video_input_traits::trait_name_t video_input_traits::HAS_EOV( "has-eov" );
+const video_input_traits::trait_name_t video_input_traits::HAS_FRAME_NUMBERS( "has-frame-numbers" );
+const video_input_traits::trait_name_t video_input_traits::HAS_FRAME_TIME( "has_frame_time" );
+const video_input_traits::trait_name_t video_input_traits::HAS_KLV_METADATA( "has-klv-metadata" );
 
 // ------------------------------------------------------------------
-geo_lat_lon& geo_lat_lon
-::set_latitude(double l)
+class video_input_traits::priv
 {
-  m_latitude = l;
-  return ( *this );
+public:
+
+  std::map< std::string, bool > m_traits;
+
+};
+
+
+// ------------------------------------------------------------------
+video_input_traits
+::video_input_traits()
+  : d( new video_input_traits::priv )
+{
 }
 
 
-// ------------------------------------------------------------------
-geo_lat_lon& geo_lat_lon
-::set_longitude(double l)
+video_input_traits
+::~video_input_traits()
 {
-  m_longitude = l;
-  return ( *this );
-}
-
-
-// ------------------------------------------------------------------
-double geo_lat_lon
-::latitude() const
-{
-  return ( m_latitude );
-}
-
-
-// ------------------------------------------------------------------
-double geo_lat_lon
-::longitude() const
-{
-  return ( m_longitude );
 }
 
 
 // ------------------------------------------------------------------
 bool
-geo_lat_lon::
-is_valid() const
+video_input_traits
+::has_trait( trait_name_t const& name )
 {
-  bool valid = true;
-  if (!(m_latitude >= -90 && m_latitude <= 90))
+  return ( d->m_traits.count( name ) > 0 );
+}
+
+
+// ------------------------------------------------------------------
+std::vector< video_input_traits::trait_name_t >
+video_input_traits
+:: trait_list() const
+{
+  std::vector< video_input_traits::trait_name_t > list;
+
+  std::map< std::string, bool >::const_iterator ix;
+  for (ix = d->m_traits.begin(); ix != d->m_traits.end(); ++ix )
   {
-    valid = false;
-  }
-  else if (!(m_longitude >= -180 && m_longitude <= 360))
-  {
-    valid = false;
+    list.push_back( ix->first );
   }
 
-  return valid;
+  return list;
 }
 
 
 // ------------------------------------------------------------------
 bool
-geo_lat_lon::
-is_empty() const
+video_input_traits
+::trait( trait_name_t const& name )
 {
-  return (INVALID == latitude() && INVALID == longitude());
+  if ( ! has_trait( name ) )
+  {
+    // TODO: throw something
+    return false;
+  }
+
+  return d->m_traits[name];
 }
 
 
 // ------------------------------------------------------------------
-bool
-geo_lat_lon::
-operator == ( const geo_lat_lon &rhs ) const
+void
+video_input_traits
+::set_trait( trait_name_t const& name, bool val )
 {
-  return ( ( rhs.latitude() == this->latitude() )
-           && ( rhs.longitude() == this->longitude() ) );
+  d->m_traits[name] = val;
+}
+
+
+// ==================================================================
+// -- video_input methods --
+video_input
+::video_input()
+{
+  attach_logger( "video_input" );
+}
+
+
+video_input
+::~video_input()
+{
 }
 
 
 // ------------------------------------------------------------------
-bool
-geo_lat_lon::
-operator != ( const geo_lat_lon &rhs ) const
+video_input_traits const&
+video_input
+::get_implementation_traits() const
 {
-  return ( !( this->operator == ( rhs ) ) );
+  return m_traits;
 }
 
 
 // ------------------------------------------------------------------
-std::ostream & operator<< (std::ostream & str, vital::geo_lat_lon const& obj)
+void
+video_input
+::set_trait( video_input_traits::trait_name_t const& name, bool val )
 {
-  std::streamsize old_prec = str.precision();
-
-  str << std::setprecision(22)
-      << "[ " << obj.latitude()
-      << " / " << obj.longitude()
-      << " ]";
-
-  str.precision( old_prec );
-  return str;
+  m_traits.set_trait( name, val );
 }
 
-} } // end namespace
+
+} } } // end namespace
+
+/// \cond DoxygenSuppress
+INSTANTIATE_ALGORITHM_DEF(kwiver::vital::algo::video_input);
+/// \endcond

@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -33,47 +33,65 @@
  * \brief Implementation for image exceptions
  */
 
-#include "image.h"
-
-#include <sstream>
+#include "video.h"
 
 namespace kwiver {
 namespace vital {
 
 
-image_exception
-::image_exception() VITAL_NOTHROW
+// ------------------------------------------------------------------
+video_exception
+::video_exception() VITAL_NOTHROW
 {
-  m_what = "An image exception";
+  m_what = "Yo, Yo, we have a Vide-o exception";
 }
 
-image_exception
-::~image_exception() VITAL_NOTHROW
+video_exception
+::~video_exception() VITAL_NOTHROW
+{
+}
+
+// ------------------------------------------------------------------
+end_of_video_exception
+::end_of_video_exception() VITAL_NOTHROW
+{
+  m_what = "End of video exception";
+}
+
+
+end_of_video_exception
+::~end_of_video_exception() VITAL_NOTHROW
 {
 }
 
 
 // ------------------------------------------------------------------
-image_size_mismatch_exception
-::image_size_mismatch_exception(std::string message,
-                                size_t correct_w, size_t correct_h,
-                                size_t given_w, size_t given_h) VITAL_NOTHROW
-  : m_message(message),
-    m_correct_w(correct_w),
-    m_correct_h(correct_h),
-    m_given_w(given_w),
-    m_given_h(given_h)
+video_input_timeout_exception
+::video_input_timeout_exception() VITAL_NOTHROW
 {
-  std::ostringstream ss;
-  ss << message
-     << " (given: [" << given_w << ", " << given_h << "],"
-     << " should be: [" << correct_w << ", " << correct_h << "])";
-  m_what = ss.str();
+  m_what = "End of video exception";
 }
 
-image_size_mismatch_exception
-::~image_size_mismatch_exception() VITAL_NOTHROW
+
+video_input_timeout_exception
+::~video_input_timeout_exception() VITAL_NOTHROW
 {
 }
 
-} } // end vital namespace
+
+// ------------------------------------------------------------------
+video_stream_exception
+::video_stream_exception() VITAL_NOTHROW
+{
+  m_what = "Video stream exception";
+}
+
+
+video_stream_exception
+::~video_stream_exception() VITAL_NOTHROW
+{
+}
+
+
+
+} } // end namespace

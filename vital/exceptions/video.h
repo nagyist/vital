@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2014 by Kitware, Inc.
+ * Copyright 2015 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    to endorse or promote products derived from this software without specific
  *    prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
@@ -30,83 +30,87 @@
 
 /**
  * \file
- * \brief VITAL base exception interface
+ * \brief Interface for image exceptions
  */
 
-#ifndef VITAL_CORE_EXCEPTIONS_BASE_H
-#define VITAL_CORE_EXCEPTIONS_BASE_H
-
-#include <vital/vital_config.h>
-#include <vital/vital_export.h>
+#ifndef VITAL_CORE_EXCEPTIONS_VIDEO_H
+#define VITAL_CORE_EXCEPTIONS_VIDEO_H
 
 #include <string>
-#include <exception>
+
+#include <vital/exceptions/base.h>
 
 namespace kwiver {
 namespace vital {
 
 // ------------------------------------------------------------------
-/// The base class for all vital exceptions
-/**
- * \ingroup exceptions
- */
-class VITAL_EXPORT vital_core_base_exception
-  : public std::exception
-{
-public:
-  /// Constructor
-  vital_core_base_exception() VITAL_NOTHROW;
-
-  /// Destructor
-  virtual ~vital_core_base_exception() VITAL_NOTHROW;
-
-  /// Description of the exception
-  /**
-   * \returns A string describing what went wrong.
-   */
-  char const* what() const VITAL_NOTHROW;
-
-protected:
-  /// descriptive string as to what happened to cause the exception.
-  std::string m_what;
-};
-
-// ------------------------------------------------------------------
-/// Exception for incorrect input values
-/**
- * \ingroup exceptions
- */
-class VITAL_EXPORT invalid_value
+/// Generic video exception
+class VITAL_EXPORT video_exception
   : public vital_core_base_exception
 {
 public:
   /// Constructor
-  invalid_value(std::string reason) VITAL_NOTHROW;
-  /// Destructor
-  virtual ~invalid_value() VITAL_NOTHROW;
-protected:
-  /// Reason for invalidity
-  std::string m_reason;
-};
+  video_exception() VITAL_NOTHROW;
 
-} } // end namespace vital
+  /// Destructor
+  virtual ~video_exception() VITAL_NOTHROW;
+};
 
 
 // ------------------------------------------------------------------
-///Exception helper macro.
+/// End of video exception.
 /**
- * Macro to simplify creating exception messages using stream
- * operators.
- *
- * @param E       Exception type.
- * @param MSG     Stream constructed exception message.
+ * This exception is thrown when end of video is encountered.
  */
-#define VITAL_THROW_MSG(E, MSG) do {            \
-    std::stringstream _oss_;                    \
-    _oss_ << MSG;                               \
-    E except;                                   \
-    except.set_location( __file, __line );      \
-    throw E( MSG.str() );                       \
-  } while (0)
+class VITAL_EXPORT end_of_video_exception
+  : public video_exception
+{
+public:
+  /// Constructor
+  end_of_video_exception() VITAL_NOTHROW;
 
-#endif // VITAL_CORE_EXCEPTIONS_BASE_H
+  /// Destructor
+  virtual ~end_of_video_exception() VITAL_NOTHROW;
+};
+
+
+// ------------------------------------------------------------------
+/// Timeout getting next video frame.
+/*
+ * This exception is thrown when the video_input::next_frame() method
+ * timeout expires.
+ */
+class VITAL_EXPORT video_input_timeout_exception
+  : public video_exception
+{
+public:
+  /// Constructor
+  video_input_timeout_exception() VITAL_NOTHROW;
+
+  /// Destructor
+  virtual ~video_input_timeout_exception() VITAL_NOTHROW;
+};
+
+
+// ------------------------------------------------------------------
+/// Video stream error.
+/*
+ * This exception is thrown when there is exceptional condition while
+ * streaming video.
+ */
+class VITAL_EXPORT video_stream_exception
+  : public video_exception
+{
+public:
+  /// Constructor
+  video_stream_exception() VITAL_NOTHROW;
+
+  /// Destructor
+  virtual ~video_stream_exception() VITAL_NOTHROW;
+};
+
+
+} } // end namespace
+
+
+#endif /* VITAL_CORE_EXCEPTIONS_VIDEO_H */
