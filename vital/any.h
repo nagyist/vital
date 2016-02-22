@@ -283,12 +283,14 @@ private:
 // ==================================================================
 // Casting functions
 //
+/// Get value from a container.
 /**
- * @brief
+ * This method returns a typed value from the any container. If the
+ * conversion can not be completed, then an exception is thrown.
  *
- * @param operand
+ * @param aval Object that has the value.
  *
- * @return
+ * @return Value from object as specified type.
  */
 template < typename T >
 inline T*
@@ -304,12 +306,14 @@ any_cast( any* operand ) VITAL_NOTHROW
 
 
 // ------------------------------------------------------------------
+/// Get value from a container.
 /**
- * @brief
+ * This method returns a typed value from the any container. If the
+ * conversion can not be completed, then an exception is thrown.
  *
- * @param operand
+ * @param aval Object that has the value.
  *
- * @return
+ * @return Value from object as specified type.
  */
 template < typename T >
 inline const T*
@@ -320,8 +324,10 @@ any_cast( any const* operand ) VITAL_NOTHROW
 
 
 // ------------------------------------------------------------------
+/// Get value from a container.
 /**
- * @brief Get value from a container.
+ * This method returns a typed value from the any container. If the
+ * conversion can not be completed, then an exception is thrown.
  *
  * @param aval Object that has the value.
  *

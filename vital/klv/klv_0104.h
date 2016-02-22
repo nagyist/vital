@@ -117,7 +117,35 @@ public:
               UNKNOWN //must be last
   };
 
+// ------------------------------------------------------------------
+/// Class to store the tag name and a base class for different
+/// types of values that can come from the klv
+  class traits_base
+  {
+  public:
+    virtual ~traits_base() { }
 
+    virtual std::string to_string( kwiver::vital::any const& ) const = 0;
+    virtual kwiver::vital::any convert( uint8_t const*, std::size_t ) = 0;
+    virtual std::type_info const& typeid_for_tag( ) const = 0;
+    virtual bool is_integral() const = 0;
+    virtual bool is_floating_point() const = 0;
+
+    std::string m_name;
+
+  protected:
+    traits_base( std::string const& name )
+      : m_name( name )
+    { }
+
+    traits_base( std::string const& name, bool set )
+      : m_name( name )
+    { }
+
+  };
+
+
+  // ------------------------------------------------------------------
   /// Lookup the cooresponding tag for this key.
   /**
    * This method returns the tag that corresponds to the specified
@@ -174,13 +202,20 @@ public:
   std::string get_tag_name( tag tg ) const;
 
 
+  /// Get traits for tag
+  /**
+   *
+   * @param tg Metadata tag value
+   *
+   * @return Reference to traits.
+   */
+  traits_base const& get_traits( tag tg ) const;
+
 private:
   klv_0104();
   ~klv_0104();
 
   static klv_0104* s_instance;
-
-  class traits_base;
 
   std::map< klv_uds_key, tag > m_key_to_tag;
   std::vector< traits_base* > m_traitsvec;
