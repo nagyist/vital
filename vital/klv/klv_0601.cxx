@@ -94,7 +94,7 @@ kwiver::vital::any
 klv_convert< kwiver::vital::std_0102_lds > ( const uint8_t* data, std::size_t length )
 {
   // Need to decode this for real
-  std::vector< uint8_t > value( data, data + length );
+  std::string value( reinterpret_cast< char const* > ( data ), length );
 
   return value;
 }
@@ -113,8 +113,6 @@ double
 klv_as_double( const std::function< double(T const& val) >& func,
                kwiver::vital::any const& data )
 {
-  std::cout << "---->>>> any has type " << demangle(data.type().name() ) //+ TEMP
-            << "   requested type " << demangle( typeid(T).name() ) << std::endl;
   return func( kwiver::vital::any_cast< T > ( data ) );
 }
 
@@ -190,7 +188,7 @@ void
 format_hex< kwiver::vital::std_0102_lds > ( std::ostream& os, kwiver::vital::any const& data )
 {
   std::iostream::fmtflags f( os.flags() );
-  std::vector< uint8_t > d = kwiver::vital::any_cast< std::vector< uint8_t > > ( data );
+  std::string d = kwiver::vital::any_cast< std::string > ( data );
 
   for ( unsigned int k = 0; k < d.size(); ++k )
   {

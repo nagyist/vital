@@ -51,7 +51,7 @@
 CALL( UNKNOWN,                     "Unknown / Undefined entry",       void) \
 CALL( UNIX_TIMESTAMP,              "Unix Time Stamp",                 uint64_t) \
 CALL( MISSION_ID,                  "Mission ID",                      std::string) \
-CALL( MISSION_NUMBER,              "Episode Number",                  uint64_t) \
+CALL( MISSION_NUMBER,              "Episode Number",                  std::string) \
 CALL( PLATFORM_TAIL_NUMBER,        "Platform Tail Number",            std::string) \
 CALL( PLATFORM_HEADING_ANGLE,      "Platform Heading Angle",          double) \
 CALL( PLATFORM_PITCH_ANGLE,        "Platform Pitch Angle",            double) \
@@ -75,7 +75,7 @@ CALL( TARGET_WIDTH,                "Target Width",                    double) \
 CALL( FRAME_CENTER,                "Frame Center Lat/Lon",            geo_lat_lon) \
 CALL( FRAME_CENTER_ELEV,           "Frame Center Elevation",          double) \
 CALL( CORNER_POINTS,               "Corner points in lat/lon",        video_metadata::geo_corner_points) \
-CALL( ICING_DETECTED,              "Icing Detected",                  bool) \
+CALL( ICING_DETECTED,              "Icing Detected",                  uint64_t) \
 CALL( WIND_DIRECTION,              "Wind Direction",                  double) \
 CALL( WIND_SPEED,                  "Wind Speed",                      double) \
 CALL( STATIC_PRESSURE,             "Static Pressure",                 double) \
@@ -98,10 +98,10 @@ CALL( PLATFORM_GROUND_SPEED,       "Platform Ground Speed",           double) \
 CALL( GROUND_RANGE,                "Ground Range",                    double) \
 CALL( PLATFORM_FUEL_REMAINING,     "Platform Fuel Remaining",         double) \
 CALL( PLATFORM_CALL_SIGN,          "Platform Call Sign",              std::string) \
-CALL( LASER_PRF_CODE,              "Laser PRF Code",                  uint32_t) \
-CALL( SENSOR_FOV_NAME,             "Sensor Field of View Name",       uint32_t) \
+CALL( LASER_PRF_CODE,              "Laser PRF Code",                  uint64_t) \
+CALL( SENSOR_FOV_NAME,             "Sensor Field of View Name",       uint64_t) \
 CALL( PLATFORM_MAGNET_HEADING,     "Platform Magnetic Heading",       double) \
-CALL( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint8_t) \
+CALL( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint64_t) \
 CALL( ANGLE_TO_NORTH,              "Angle to North",                  double) \
 CALL( OBLIQUITY_ANGLE,             "Sensor Elevation Angle",          double) \
 CALL( START_DATE_TIME_UTC,         "Start Date Time - UTC",           std::string ) \
@@ -110,8 +110,8 @@ CALL( MISSION_START_TIME_UTC,      "Mission Start Date Time - UTC",   std::strin
 CALL( SECURITY_CLASSIFICATION,     "Security Classification",         std::string ) \
 CALL( CLASSIFICATION,              "Classification (0102 lds)",       std::string ) \
 CALL( SECURITY_LOCAL_MD_SET,       "Security Local Metadata Set",     std::string ) /* really std_0102_lds */ \
-CALL( 0601_WEAPON_LOAD,            "Weapon Load",                     uint32_t) \
-CALL( 0601_WEAPON_FIRED,           "Weapon Fired",                    uint32_t) \
+CALL( 0601_WEAPON_LOAD,            "Weapon Load",                     uint64_t) \
+CALL( 0601_WEAPON_FIRED,           "Weapon Fired",                    uint64_t) \
 CALL( AVERAGE_GSD,                 "Average GSD value",               double)
 
 // ------------------------------------------------------------------

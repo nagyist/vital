@@ -42,7 +42,7 @@
 
 #include <vital/types/timestamp.h>
 #include <vital/types/geo_lat_lon.h>
-
+#include <vital/exceptions/base.h>
 #include <vital/video_metadata/video_metadata_tags.h>
 
 #include <map>
@@ -53,8 +53,21 @@
 #include <sstream>
 #include <type_traits>
 
+#include <iostream>
+
 namespace kwiver {
 namespace vital {
+
+
+// ------------------------
+class VITAL_EXPORT video_metadata_exception
+  : public vital_core_base_exception
+{
+public:
+  video_metadata_exception( std::string const& str );
+
+  virtual ~video_metadata_exception() VITAL_NOTHROW;
+};
 
 
 // -----------------------------------------------------------------
@@ -103,12 +116,27 @@ public:
   /// Get actual data for metadata item.
   /**
    * This method returns the actual raw data for this metadata item as
-   * a "any" object.
+   * a "any" object. Non-standard data types must be handled through this
+   * call.
    *
    * @return Data for metadata item.
    */
   kwiver::vital::any data() const;
 
+
+  template< typename T>
+  bool data(T& val) const
+  {
+    if (typeid(T) == data.type())
+    {
+      val = kwiver::vital::any_cast<T>( data() );
+      return true;
+    }
+    else
+    {
+      return false; // could throw
+    }
+  }
 
   /// Get metadata value as double.
   /**
@@ -119,6 +147,15 @@ public:
    * @throws bad_any_cast if data type is not really a double.
    */
   double as_double() const;
+
+
+  /// Does this entry contain double type data?
+  /**
+   * This method returns \b true if this metadata item contains a data
+   * value with double type.
+   *
+   * @return \b true if data type is double, \b false otherwise/
+   */
   bool has_double() const;
 
 
@@ -131,6 +168,15 @@ public:
    * @throws bad_any_cast if data type is not really a uint64.
    */
   uint64_t as_uint64() const;
+
+
+  /// Does this entry contain uint64 type data?
+  /**
+   * This method returns \b true if this metadata item contains a data
+   * value with uint64 type.
+   *
+   * @return \b true if data type is uint64, \b false otherwise/
+   */
   bool has_uint64() const;
 
 
@@ -144,8 +190,16 @@ public:
    * @return Data for metadata item as string.
    */
   virtual std::string as_string() const = 0;
-  bool has_string() const;
 
+
+  /// Does this entry contain std::string type data?
+  /**
+   * This method returns \b true if this metadata item contains a data
+   * value with std::string type.
+   *
+   * @return \b true if data type is std::string, \b false otherwise/
+   */
+  bool has_string() const;
 
 protected:
   std::string m_name;
@@ -161,6 +215,17 @@ protected:
 /**
  * This class represents a typed metadata item.
  *
+ * NOTE: Does it really add any benefit to have the metadata item
+ * object have a type in addition to the contained data type
+ * (kwiver::vital::any)? The type from the traits could be used to
+ * guide creating of the metadata item, but having this extra type
+ * allows the contained and the assumed metadata type to be
+ * different. How should we deal with that case?
+ *
+ * The advantage is that it is easier to convert to string if the data
+ * type is known in advance rather than having to handle multiple
+ * possibly unknown types at run time.
+ *
  * tparam TAG Metadata tag value
  * tparam TYPE Metadata value representation type
  */
@@ -174,7 +239,12 @@ public:
   {
     if ( data.type() != typeid(TYPE) )
     {
-      // throw exception invalid metadata tag data type
+      std::stringstream msg;
+      msg << "Creating typed_metadata object with data type ("
+          << demangle( data.type().name() )
+          << ") different from type object was created with ("
+          << demangle( typeid(TYPE).name() ) << ")";
+      throw video_metadata_exception( msg.str() );
     }
   }
 
@@ -207,8 +277,37 @@ public:
  *
  * The concept is to provide a canonical set of useful metadata
  * entries that can be derived from 0104 and 0601 types of KLV
- * data. User specific data can also be added by manually managing
- * enum values greater than VITAL_META_FIRST_USER_TAG.
+ * data.
+ *
+ * Metadata items from the different sources are converted into a
+ * small set of data types to simplify using these elements. Since the
+ * data item is represented as a kwiver::vital::any object, the actual
+ * type of the data contained is difficult to deal with if it is not
+ * constrained. There are three data types that are highly recommended
+ * for representing metadata. These types are:
+ *
+ * - double
+ * - uint64
+ * - std::string
+ *
+ * These data types are directly supported by the metadata_item
+ * API. There are some exceptions to this guideline however. Generally
+ * useful compound data items, such as lat/lon coordinates and image
+ * corner points, are represented using standard vital data types to
+ * make dealing with the data items easier. For example, if you want
+ * corner points, they can be retrieved with one call rather than
+ * doing eight calls and storing the values in some structure.
+ *
+ * Metadata items with integral values that are less than 64 bits will
+ * be stored in a uint64 data type. The original data type can be
+ * retrieved using static_cast<>().
+ *
+ * There may be cases where application specific data types are
+ * required and these will have to be handled on an individual
+ * basis. In this case, the metadata item will have to be queried
+ * directly about its type and the data will have to be retrieved from
+ * the \c any object carefully.
+ *
  */
 class VITAL_EXPORT video_metadata
 {
@@ -219,6 +318,7 @@ public:
   video_metadata();
   ~video_metadata();
 
+
   /// Add metadata item to collection.
   /**
    *This method adds a metadata item to the collection. The collection
@@ -227,6 +327,7 @@ public:
    * @param item New metadata item to be copied into collection.
    */
   void add( metadata_item* item );
+
 
   /// Determine if metadata collection has tag.
   /**
@@ -239,6 +340,7 @@ public:
    */
   bool has( vital_metadata_tag tag ); // needs not-found return value
 
+
   /// Find metadata entry for specified tag.
   /**
    * This method looks for the metadata entrty corresponding to the
@@ -250,6 +352,7 @@ public:
    * @return metadata item object for tag.
    */
   metadata_item const& find( vital_metadata_tag tag ); // needs not-found return value
+
 
   /// Get starting iterator for collection of metadata items.
   /**
@@ -285,6 +388,7 @@ public:
    */
   const_iterator_t end() const;
 
+
   /// Set timestamp for this metadata set.
   /**
    * This method sets that time stamp for this metadata
@@ -295,6 +399,7 @@ public:
    */
   void set_timestamp( kwiver::vital::timestamp const& ts );
 
+
   /// Return timestamp associated with these metadata.
   /**
    * This method returns the timestamp associated with this collection
@@ -304,6 +409,7 @@ public:
    * @return Timestamp value.
    */
   kwiver::vital::timestamp const& timestamp() const;
+
 
   /// Get type representation for vital metadata tag. //+ move to convert_metadata
   /**
@@ -325,6 +431,8 @@ public:
     geo_lat_lon p3;
     geo_lat_lon p4;
   };
+
+static std::string FormatString( std::string const& val );
 
 
 private:

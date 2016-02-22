@@ -61,22 +61,13 @@ convert_metadata
                            kwiver::vital::vital_metadata_tag vital_tag,
                            kwiver::vital::any const& data )
 {
-  // If one type is string, then both types must be string
-  if ( (video_metadata::typeid_for_tag( vital_tag ) == typeid( std::string ))
-       || (data.type() == typeid( std::string )) )
+  // If the input data is already in the correct type
+  if ( video_metadata::typeid_for_tag( vital_tag ) == data.type() )
   {
-    if ( ( video_metadata::typeid_for_tag( vital_tag ) != typeid( std::string ))
-         && ( data.type() != typeid( std::string )) )
-    {
-      LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
-                << m_metadata_traits.tag_to_symbol( vital_tag ) );
-    }
-    else
-    {
-      // leave data as is since it already correct type.
-      return data;
-    }
+    // leave data as is since it already correct type.
+    return data;
   }
+
 
   // If destination type is double, then source must be convertable to double
   if ( video_metadata::typeid_for_tag( vital_tag ) == typeid( double ) )
@@ -90,21 +81,15 @@ convert_metadata
     // we believe the tags tables are correct.
   }
 
-  // If we have gotten this far and inbound tag can be converted to
-  // double and has not been handled by previous section, there is an
-  // internal error
-  if ( klv_0601_has_double( tag ) )
-  {
-    LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
-              << m_metadata_traits.tag_to_symbol( vital_tag ) );
-    return data;
-  }
-
   try
   {
-    //+ if ( xxx is vital_tag integral
-    kwiver::vital::any converted_data = convert_to_int.convert( data );
-    return converted_data;
+    // If the destination is integral.
+    vital_meta_trait_base const& trait = m_metadata_traits.find( vital_tag );
+    if ( trait.is_integral() )
+    {
+      kwiver::vital::any converted_data = convert_to_int.convert( data );
+      return converted_data;
+    }
   }
   catch (kwiver::vital::bad_any_cast const& e)
   {
@@ -112,6 +97,9 @@ convert_metadata
               << m_metadata_traits.tag_to_symbol( vital_tag )
               << ",  " << e.what() );
   }
+
+    LOG_WARN( m_logger, "Tag data not converted for tag: "
+              << m_metadata_traits.tag_to_symbol( vital_tag ) );
 
   return data;
 }

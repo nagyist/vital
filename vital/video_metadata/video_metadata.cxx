@@ -41,51 +41,18 @@
 namespace kwiver {
 namespace vital {
 
-namespace {
-
-std::string
-FormatString( std::string const& val )
+// ------------------------------------------------------------------
+// video metadata exception support
+video_metadata_exception
+::video_metadata_exception( std::string const& str )
 {
-  const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
-                               '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-  const size_t len( val.size() );
-  bool unprintable_found(false);
-  std::string ascii;
-  std::string hex;
-
-  for (size_t i = 0; i < len; i++)
-  {
-    char const byte = val[i];
-    if ( ! isprint( byte ) )
-    {
-      ascii.append( 1, '.' );
-      unprintable_found = true;
-    }
-    else
-    {
-      ascii.append( 1, byte );
-    }
-
-    // format as hex
-    if (i > 0)
-    {
-      hex += " ";
-    }
-
-    hex += hex_chars[ ( byte & 0xF0 ) >> 4 ];
-    hex += hex_chars[ ( byte & 0x0F ) >> 0 ];
-
-  } // end for
-
-  if (unprintable_found)
-  {
-    ascii += " (" + hex + ")";
-  }
-
-  return ascii;
+  m_what = str;
 }
 
-} // end namespace
+
+video_metadata_exception
+::~video_metadata_exception() VITAL_NOTHROW
+{ }
 
 
 // ----------------------------------------------------------------
@@ -279,6 +246,51 @@ video_metadata
 
 
 // ------------------------------------------------------------------
+std::string
+video_metadata
+::FormatString( std::string const& val )
+{
+  const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                               '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+  const size_t len( val.size() );
+  bool unprintable_found(false);
+  std::string ascii;
+  std::string hex;
+
+  for (size_t i = 0; i < len; i++)
+  {
+    char const byte = val[i];
+    if ( ! isprint( byte ) )
+    {
+      ascii.append( 1, '.' );
+      unprintable_found = true;
+    }
+    else
+    {
+      ascii.append( 1, byte );
+    }
+
+    // format as hex
+    if (i > 0)
+    {
+      hex += " ";
+    }
+
+    hex += hex_chars[ ( byte & 0xF0 ) >> 4 ];
+    hex += hex_chars[ ( byte & 0x0F ) >> 0 ];
+
+  } // end for
+
+  if (unprintable_found)
+  {
+    ascii += " (" + hex + ")";
+  }
+
+  return ascii;
+}
+
+
+// ------------------------------------------------------------------
 std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
 {
   auto eix = metadata.end();
@@ -293,7 +305,7 @@ std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
        << " (" << ix->second->name()
        << " / <" << demangle( ix->second->type().name() )
        << ">): "
-       << FormatString (ix->second->as_string() )
+       << video_metadata::FormatString (ix->second->as_string())
        << std::endl;
   } // end for
 

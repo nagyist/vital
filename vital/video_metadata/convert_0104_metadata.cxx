@@ -55,21 +55,10 @@ convert_metadata
                            kwiver::vital::vital_metadata_tag vital_tag,
                            kwiver::vital::any const& data )
 {
-  // If one type is string, then both types must be string
-  if ( (video_metadata::typeid_for_tag( vital_tag ) == typeid( std::string ))
-       || (data.type() == typeid( std::string )) )
+  // If the input data is already in the correct type, just return.
+  if ( video_metadata::typeid_for_tag( vital_tag ) == data.type() )
   {
-    if ( ( video_metadata::typeid_for_tag( vital_tag ) != typeid( std::string ))
-         && ( data.type() != typeid( std::string )) )
-    {
-      LOG_WARN( m_logger, "internal tags type is incorrect for this entry:"
-                << m_metadata_traits.tag_to_symbol( vital_tag ) );
-    }
-    else
-    {
-      // leave data as is since it already correct type.
-      return data;
-    }
+    return data;
   }
 
   try
@@ -81,9 +70,13 @@ convert_metadata
       return converted_data;
     }
 
-    // Assume target type is integer
-    kwiver::vital::any converted_data = convert_to_int.convert( data );
-    return converted_data;
+    // If the destination is integral.
+    vital_meta_trait_base const& trait = m_metadata_traits.find( vital_tag );
+    if ( trait.is_integral() )
+    {
+      kwiver::vital::any converted_data = convert_to_int.convert( data );
+      return converted_data;
+    }
   }
   catch (kwiver::vital::bad_any_cast const& e)
   {

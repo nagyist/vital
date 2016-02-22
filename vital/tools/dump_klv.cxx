@@ -99,7 +99,7 @@ int main( int argc, char** argv )
       kwiver::vital::video_metadata metadata;
 
       converter.convert( klv_packet, metadata );
-      print_metadata(std::cout,  metadata );
+      print_metadata( std::cout, metadata );
     }
     ++count;
 

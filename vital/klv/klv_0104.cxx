@@ -40,6 +40,7 @@
 #include <vital/exceptions/klv.h>
 #include <vital/logger/logger.h>
 
+#include <type_traits>
 #include <sstream>
 #include <map>
 #include <iomanip>
@@ -48,32 +49,8 @@
 namespace kwiver {
 namespace vital {
 
+
 class std_0102_lds { };
-
-// ------------------------------------------------------------------
-/// Class to store the tag name and a base class for different
-/// types of values that can come from the klv
-class klv_0104::traits_base
-{
-public:
-  virtual ~traits_base() { }
-
-  virtual std::string to_string( kwiver::vital::any const& ) const = 0;
-  virtual kwiver::vital::any convert( uint8_t const*, std::size_t ) = 0;
-  virtual std::type_info const& typeid_for_tag( ) const = 0;
-
-  std::string m_name;
-
-protected:
-  traits_base( std::string const& name )
-    : m_name( name )
-  { }
-
-  traits_base( std::string const& name, bool set )
-    : m_name( name )
-  { }
-
-};
 
 
 // ------------------------------------------------------------------
@@ -99,6 +76,9 @@ public:
   /// Parse type T from a raw byte stream in MSB (most significant byte first) order
   virtual kwiver::vital::any convert( uint8_t const* data, std::size_t length );
   virtual std::type_info const& typeid_for_tag( ) const { return typeid(T); }
+  virtual bool is_integral() const { return std::is_integral<T>::value; }
+  virtual bool is_floating_point() const { return std::is_floating_point<T>::value; }
+
 };
 
 
@@ -251,7 +231,7 @@ klv_0104::klv_0104()
   m_traitsvec[SENSOR_RELATIVE_ROLL_ANGLE] =  NEW_TRAIT( double,       "Sensor Relative Roll Angle" );
   m_traitsvec[MISSION_ID] =                  NEW_TRAIT( std::string,  "Mission ID" );
   m_traitsvec[PLATFORM_TAIL_NUMBER] =        NEW_TRAIT( std::string,  "Platform tail number" );
-  m_traitsvec[MISSION_NUMBER] =              NEW_TRAIT( uint16_t,     "Episode Number" );
+  m_traitsvec[MISSION_NUMBER] =              NEW_TRAIT( std::string,  "Episode Number" );
   m_traitsvec[ANGLE_TO_NORTH] =              NEW_TRAIT( double,       "Angle to North" );
   m_traitsvec[OBLIQUITY_ANGLE] =             NEW_TRAIT( double,       "Sensor Elevation Angle" );
   m_traitsvec[SENSOR_ROLL_ANGLE] =           NEW_TRAIT( double,       "Sensor Roll Angle" );
@@ -293,9 +273,19 @@ traits< T >::convert( uint8_t const* data, std::size_t length )
   if ( sizeof( T ) != length )
   {
     static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_0104_metadata" ) );
+    char const* cp = reinterpret_cast< char const* >(data);
+    std::string msg(cp, length);
+    std::stringstream os;
 
-    LOG_WARN( logger, "Data length does not match type length.  Data length ="
-              << length << ", sizeof(type) =" << sizeof( T ) );
+    for ( unsigned int k = 0; k < msg.size(); ++k )
+    {
+      os  << std::hex << std::setfill( '0' ) << std::setw( 2 )
+          << static_cast< unsigned int > ( msg[k] );
+    }
+
+    LOG_WARN( logger, "Data length does not match type length.  Data length = "
+              << length << ", sizeof(type) = " << sizeof( T )
+              << " - " << os.str() );
   }
 
   union
@@ -446,6 +436,14 @@ std::string
 klv_0104::get_tag_name( tag tg ) const
 {
   return m_traitsvec[tg]->m_name;
+}
+
+
+// ------------------------------------------------------------------
+klv_0104::traits_base const&
+klv_0104::get_traits( tag tg ) const
+{
+  return *m_traitsvec[tg];
 }
 
 

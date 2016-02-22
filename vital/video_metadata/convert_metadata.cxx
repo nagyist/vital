@@ -103,7 +103,6 @@ void convert_metadata
   }
   else
   {
-    //+ should this throw rather than log?
     LOG_WARN( m_logger, "Unsupported UDS Key: "
               << uds_key << " data size is "
               << klv.value_size() );
