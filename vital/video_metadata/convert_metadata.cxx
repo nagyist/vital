@@ -90,6 +90,7 @@ void convert_metadata
   {
     if ( ! klv_0601_checksum( klv ) )
     {
+      // serious error
       throw klv_exception( "checksum error on 0601 packet");
     }
 

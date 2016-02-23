@@ -197,6 +197,7 @@ video_metadata
 }
 
 
+// ------------------------------------------------------------------
 video_metadata::const_iterator_t
 video_metadata
 ::begin() const
@@ -210,6 +211,22 @@ video_metadata
 ::end() const
 {
   return m_metadata_map.end();
+}
+
+
+size_t
+video_metadata
+::size() const
+{
+  return m_metadata_map.size();
+}
+
+
+bool
+video_metadata
+::empty() const
+{
+  return m_metadata_map.empty();
 }
 
 
@@ -306,9 +323,7 @@ std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
 
    str << "Metadata item: "
        << name
-       << " (" << ix->second->name()
-       << " / <" << demangle( ix->second->type().name() )
-       << ">): "
+       << " <" << demangle( ix->second->type().name() ) << ">: "
        << video_metadata::FormatString (ix->second->as_string())
        << std::endl;
   } // end for
