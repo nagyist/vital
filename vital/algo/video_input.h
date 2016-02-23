@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,14 @@
 #define VITAL_ALGO_VIDEO_INPUT_H_
 
 #include <vital/vital_config.h>
+#include <vital/vital_export.h>
 
 #include <string>
 
 #include <vital/algo/algorithm.h>
 #include <vital/types/image_container.h>
 #include <vital/types/timestamp.h>
+#include <vital/video_metadata/video_metadata.h>
 
 namespace kwiver {
 namespace vital {
@@ -83,7 +85,7 @@ namespace algo {
  *     KLV style metadata. The metadata could be in 0601 or 0104 data
  *     formats.
  */
-class video_input_traits
+class VITAL_EXPORT video_input_traits
 {
 public:
   typedef std::string trait_name_t;
@@ -93,7 +95,7 @@ public:
   static const trait_name_t HAS_EOV;         // has end of video indication
   static const trait_name_t HAS_FRAME_NUMBERS;
   static const trait_name_t HAS_FRAME_TIME;
-  static const trait_name_t HAS_KLV_METADATA;
+  static const trait_name_t HAS_METADATA;
 
   video_input_traits();
   ~video_input_traits();
@@ -258,6 +260,30 @@ public:
   virtual void next_frame( kwiver::vital::image_container_sptr& frame,
                            kwiver::vital::timestamp& ts,
                            uint32_t timeout = 0 ) = 0;
+
+
+  /// Get metadata collection for current frame.
+  /**
+   * This method returns the metadata collection for the current
+   * frame. It is best to call this after calling next_frame() to make
+   * sure the metadata and video are synchronized and that no metadata
+   * collections are lost.
+   *
+   * Metadata typically occurs less frequently than video frames, so
+   * if you call next_frame() and frame_metadata() together while
+   * processing a video, the same set of metadata may be returned
+   * until new metadata is read from the stream.
+   *
+   * Also note that the metadata collection has a timestamp that can
+   * be used to determine where the metadata fits in the video stream.
+   *
+   * In video streams without metadata (as determined by the stream
+   * traits), this method may return and empty collection with invalid
+   * timestamp to indicate an invalid data object.
+   *
+   * @return Reference to metadata collection.
+   */
+  virtual kwiver::vital::video_metadata const& frame_metadata() = 0;
 
 
   /**
