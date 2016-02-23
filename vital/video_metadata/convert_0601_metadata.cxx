@@ -98,7 +98,7 @@ convert_metadata
               << ",  " << e.what() );
   }
 
-    LOG_WARN( m_logger, "Tag data not converted for tag: "
+    LOG_INFO( m_logger, "Tag data not converted for tag: "
               << m_metadata_traits.tag_to_symbol( vital_tag ) );
 
   return data;
@@ -128,7 +128,7 @@ convert_metadata
   {
     if ( ( itr->first <= KLV_0601_UNKNOWN ) || ( itr->first >= KLV_0601_ENUM_END ) )
     {
-      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported" );
+      LOG_INFO( logger, "KLV 0601 key: " << int(itr->first) << " is not supported" );
       continue;
     }
 
@@ -316,7 +316,7 @@ convert_metadata
       break;
 
     default:
-      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported." );
+      LOG_INFO( logger, "KLV 0601 key: " << int(itr->first) << " is not supported." );
       break;
     } // end switch
   } // end for
@@ -328,7 +328,7 @@ convert_metadata
   {
     if ( ! sensor_location.is_valid() )
     {
-      LOG_WARN( logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
+      LOG_INFO( logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
     }
     else
     {
@@ -340,7 +340,7 @@ convert_metadata
   {
     if ( ! frame_center.is_valid() )
     {
-      LOG_WARN( logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
+      LOG_INFO( logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
     }
     else
     {
@@ -352,7 +352,7 @@ convert_metadata
   {
     if ( ! target_location.is_valid() )
     {
-      LOG_WARN( logger, "Target location lat/lon is not valid coordinate: " << target_location );
+      LOG_INFO( logger, "Target location lat/lon is not valid coordinate: " << target_location );
     }
     else
     {
@@ -377,29 +377,29 @@ convert_metadata
       // Decode which one(s) are not valid
       if ( ! corner_pt1.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_INFO( logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt2.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_INFO( logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt3.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_INFO( logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt4.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_INFO( logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
       }
     }
     else
     {
       if ( ! frame_center.is_valid() )
       {
-        LOG_WARN( logger, "Frame center not valid. Can not adjust frame corner offsets." );
+        LOG_INFO( logger, "Frame center not valid. Can not adjust frame corner offsets." );
       }
       else
       {

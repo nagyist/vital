@@ -59,7 +59,7 @@ klv_convert( const uint8_t* data, std::size_t length )
   if ( sizeof( T ) != length )
   {
     kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_0601" ) );
-    LOG_WARN( logger, "Data type (" <<  sizeof(T) << " bytes) and length ("
+    LOG_INFO( logger, "Data type (" <<  sizeof(T) << " bytes) and length ("
               << length << " bytes) differ in size." );
   }
 

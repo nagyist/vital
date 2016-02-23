@@ -283,7 +283,7 @@ traits< T >::convert( uint8_t const* data, std::size_t length )
           << static_cast< unsigned int > ( msg[k] );
     }
 
-    LOG_WARN( logger, "Data length does not match type length.  Data length = "
+    LOG_INFO( logger, "Data length does not match type length.  Data length = "
               << length << ", sizeof(type) = " << sizeof( T )
               << " - " << os.str() );
   }
