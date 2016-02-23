@@ -130,7 +130,7 @@ KLV_TRAITS( WEAPON_FIRED,                "Weapon Fired",                    uint
 KLV_TRAITS( LASER_PRF_CODE,              "Laser PRF Code",                  uint16_t);
 KLV_TRAITS( SENSOR_FOV_NAME,             "Sensor Field of View Name",       uint8_t);
 KLV_TRAITS( PLATFORM_MAGNET_HEADING,     "Platform Magnetic Heading",       uint16_t);
-KLV_TRAITS( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint8_t);
+KLV_TRAITS( UAS_LDS_VERSION_NUMBER,      "UAS LDS Version Number",          uint16_t);
 
 #undef KLV_TRAITS
 
