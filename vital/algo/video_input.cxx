@@ -47,8 +47,8 @@ namespace algo {
 // -- video traits implementation --
 const video_input_traits::trait_name_t video_input_traits::HAS_EOV( "has-eov" );
 const video_input_traits::trait_name_t video_input_traits::HAS_FRAME_NUMBERS( "has-frame-numbers" );
-const video_input_traits::trait_name_t video_input_traits::HAS_FRAME_TIME( "has_frame_time" );
-const video_input_traits::trait_name_t video_input_traits::HAS_KLV_METADATA( "has-klv-metadata" );
+const video_input_traits::trait_name_t video_input_traits::HAS_FRAME_TIME( "has-frame-time" );
+const video_input_traits::trait_name_t video_input_traits::HAS_METADATA( "has-metadata" );
 
 // ------------------------------------------------------------------
 class video_input_traits::priv
