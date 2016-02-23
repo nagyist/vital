@@ -35,13 +35,13 @@
 #ifndef KWIVER_VITAL_KLV_PARSE_H_
 #define KWIVER_VITAL_KLV_PARSE_H_
 
+#include <vital/vital_export.h>
+#include <vital/klv/klv_key.h>
+
 #include <vector>
 #include <deque>
 #include <ostream>
 #include <cstdint>
-
-#include <vital/vital_export.h>
-#include <vital/klv/klv_key.h>
 
 namespace kwiver {
 namespace vital {

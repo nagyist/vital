@@ -28,12 +28,18 @@ kwiver_add_library( vital_klv
   ${private_headers}
   )
 
+target_link_libraries( vital_klv
+  PRIVATE       vital
+                vital_logger
+  )
+
 kwiver_install_headers(
   ${public_headers}
   SUBDIR   vital/klv
   )
 
-target_link_libraries( vital_klv
-  PRIVATE       vital
-                vital_logger
+kwiver_install_headers(
+  ${CMAKE_CURRENT_BINARY_DIR}/vital_klv_export.h
+  NOPATH
+  SUBDIR      vital/klv
   )

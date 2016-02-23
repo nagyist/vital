@@ -36,7 +36,7 @@
 #ifndef KWIVER_VITAL_KLV_DATA_H_
 #define KWIVER_VITAL_KLV_DATA_H_
 
-#include <vital/toolkits/klv/vital_klv_export.h>
+#include <vital/klv/vital_klv_export.h>
 
 #include <cstddef>
 #include <iostream>
