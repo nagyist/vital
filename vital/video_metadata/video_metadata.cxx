@@ -41,6 +41,10 @@
 namespace kwiver {
 namespace vital {
 
+const std::string video_metadata::MISB_0104( "MISB_0104" );
+const std::string video_metadata::MISB_0601( "MISB_0601" );
+
+
 // ------------------------------------------------------------------
 // video metadata exception support
 video_metadata_exception

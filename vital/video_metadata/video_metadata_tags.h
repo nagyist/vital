@@ -49,6 +49,7 @@
 //      ---                          -----------                        ----
 #define KWIVER_VITAL_METADATA_TAGS(CALL)                                \
 CALL( UNKNOWN,                     "Unknown / Undefined entry",       void) \
+CALL( METADATA_ORIGIN,             "Origin of metadata",              std::string ) \
 CALL( UNIX_TIMESTAMP,              "Unix Time Stamp",                 uint64_t) \
 CALL( MISSION_ID,                  "Mission ID",                      std::string) \
 CALL( MISSION_NUMBER,              "Episode Number",                  std::string) \

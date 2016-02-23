@@ -104,6 +104,12 @@ void convert_metadata
   geo_lat_lon corner_pt3;
   geo_lat_lon corner_pt4;
 
+  //
+  // Add our "origin" tag to indicate that the source of this metadata
+  // collection is from a 0104 spec packet.
+  //
+  metadata.add( NEW_METADATA_ITEM( VITAL_META_METADATA_ORIGIN, video_metadata::MISB_0104 ) );
+
   for ( auto itr = uds.begin(); itr != uds.end(); ++itr )
   {
     klv_0104::tag tag;
