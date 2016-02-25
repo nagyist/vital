@@ -69,6 +69,13 @@ video_input_traits
 
 
 video_input_traits
+::video_input_traits( video_input_traits const& other )
+  : d( new video_input_traits::priv(*other.d) ) // copy private implementation
+{
+}
+
+
+video_input_traits
 ::~video_input_traits()
 {
 }
@@ -77,7 +84,7 @@ video_input_traits
 // ------------------------------------------------------------------
 bool
 video_input_traits
-::has_trait( trait_name_t const& name )
+::has_trait( trait_name_t const& name ) const
 {
   return ( d->m_traits.count( name ) > 0 );
 }
@@ -103,7 +110,7 @@ video_input_traits
 // ------------------------------------------------------------------
 bool
 video_input_traits
-::trait( trait_name_t const& name )
+::trait( trait_name_t const& name ) const
 {
   if ( ! has_trait( name ) )
   {

@@ -39,12 +39,13 @@
 #include <vital/vital_config.h>
 #include <vital/vital_export.h>
 
-#include <string>
-
 #include <vital/algo/algorithm.h>
 #include <vital/types/image_container.h>
 #include <vital/types/timestamp.h>
 #include <vital/video_metadata/video_metadata.h>
+
+#include <string>
+#include <vector>
 
 namespace kwiver {
 namespace vital {
@@ -98,6 +99,7 @@ public:
   static const trait_name_t HAS_METADATA;
 
   video_input_traits();
+  video_input_traits( video_input_traits const& other );
   ~video_input_traits();
 
 
@@ -111,7 +113,7 @@ public:
    *
    * \return \b true if trait is supported, \b false otherwise.
    */
-  bool has_trait( trait_name_t const& name );
+  bool has_trait( trait_name_t const& name ) const;
 
 
   /// Get list of supported traits.
@@ -133,7 +135,7 @@ public:
    *
    * @return Value of trait.
    */
-  bool trait( trait_name_t const& name );
+  bool trait( trait_name_t const& name ) const;
 
 
   /// Set trait value.
@@ -243,8 +245,11 @@ public:
    * timestamp returned may be missing either frame number or time or
    * both, depending on the actual implementation.
    *
+   * Calling this method will make new metadata packets available
+   * while deleting any old ones.
+   *
    * If the video input is already an end, then calling this method
-   * will result in another end of video exception.
+   * will return \b false.
    *
    * \param[out] frame Next frame from source
    * \param[out] ts Time of returned frame
@@ -253,11 +258,10 @@ public:
    * \return \b true if frame returned, \b false if timeout or end of
    * video.
    *
-   * \throws end_of_video_exception when end of video is encountered.
    * \throws video_input_timeout_exception when the timeout expires.
    * \throws video_stream_exception when there is an error in the video stream.
    */
-  virtual void next_frame( kwiver::vital::image_container_sptr& frame,
+  virtual bool next_frame( kwiver::vital::image_container_sptr& frame,
                            kwiver::vital::timestamp& ts,
                            uint32_t timeout = 0 ) = 0;
 
@@ -278,12 +282,12 @@ public:
    * be used to determine where the metadata fits in the video stream.
    *
    * In video streams without metadata (as determined by the stream
-   * traits), this method may return and empty collection with invalid
-   * timestamp to indicate an invalid data object.
+   * traits), this method may return and empty vector, indicating no
+   * new metadata has been found.
    *
-   * @return Reference to metadata collection.
+   * @return Pointer to metadata vector.
    */
-  virtual kwiver::vital::video_metadata const& frame_metadata() = 0;
+  virtual std::vector< kwiver::vital::video_metadata_sptr > frame_metadata() = 0;
 
 
   /**
