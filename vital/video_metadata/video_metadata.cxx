@@ -198,6 +198,15 @@ video_metadata
 
 
 // ------------------------------------------------------------------
+bool
+video_metadata
+::delete( vital_metadata_tag tag )
+{
+  return m_metadata_map.erase( tag ) > 0;
+}
+
+
+// ------------------------------------------------------------------
 video_metadata::const_iterator_t
 video_metadata
 ::begin() const

@@ -349,6 +349,18 @@ public:
   void add( metadata_item* item );
 
 
+  /// Delete metadata item.
+  /**
+   * The metadata item that corresponds with the tag is deleted it it
+   * is in the collection.
+   *
+   * @param tag Tag of metadata to delete.
+   *
+   * @return \b true if specified item was found and deleted.
+   */
+  bool delete( vital_metadata_tag tag );
+
+
   /// Determine if metadata collection has tag.
   /**
    * This method determines if the specified tag is in this metadata
