@@ -321,7 +321,7 @@ video_metadata
 
 
 // ------------------------------------------------------------------
-std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
+std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata )
 {
   auto eix = metadata.end();
   for ( auto ix = metadata.begin(); ix != eix; ix++)
