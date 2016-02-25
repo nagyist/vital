@@ -58,23 +58,6 @@ public:
 
 
 // ------------------------------------------------------------------
-/// End of video exception.
-/**
- * This exception is thrown when end of video is encountered.
- */
-class VITAL_EXPORT end_of_video_exception
-  : public video_exception
-{
-public:
-  /// Constructor
-  end_of_video_exception() VITAL_NOTHROW;
-
-  /// Destructor
-  virtual ~end_of_video_exception() VITAL_NOTHROW;
-};
-
-
-// ------------------------------------------------------------------
 /// Timeout getting next video frame.
 /*
  * This exception is thrown when the video_input::next_frame() method
@@ -103,7 +86,7 @@ class VITAL_EXPORT video_stream_exception
 {
 public:
   /// Constructor
-  video_stream_exception() VITAL_NOTHROW;
+  video_stream_exception( std::string const& msg ) VITAL_NOTHROW;
 
   /// Destructor
   virtual ~video_stream_exception() VITAL_NOTHROW;
