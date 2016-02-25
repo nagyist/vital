@@ -34,13 +34,45 @@
 
 #include <iostream>
 
-#include <vidl/vidl_ffmpeg_istream.h>
+#include <vital/config/config_block.h>
+#include <vital/config/config_block_io.h>
+#include <vital/exceptions.h>
+
+#include <vital/algorithm_plugin_manager.h>
+#include <vital/algo/video_input.h>
+#include <vital/vital_foreach.h>
 
 #include <vital/klv/klv_data.h>
 #include <vital/klv/klv_parse.h>
 #include <vital/video_metadata/video_metadata.h>
 #include <vital/video_metadata/convert_metadata.h>
 
+#include <kwiversys/CommandLineArguments.hxx>
+
+// Global options
+bool        opt_help( false );
+std::string opt_config;         // config file name
+std::string opt_out_config;     // output config file name
+
+typedef kwiversys::CommandLineArguments argT;
+
+//+ maybe not needed
+// ------------------------------------------------------------------
+static kwiver::vital::config_block_sptr default_config()
+{
+  kwiver::vital::config_block_sptr config =
+    kwiver::vital::config_block::empty_config( "dump_klv_tool" );
+
+  config->set_value( "video_reader:type", "vxl",
+                     "Implementation for video reader." );
+  config->set_value( "video_reader:vxl:time_source",  "misp",
+                     "Time source for reader." );
+
+  kwiver::vital::algo::video_input::get_nested_algo_configuration(
+    "video_reader", config, kwiver::vital::algo::video_input_sptr() );
+
+  return config;
+}
 
 // ----------------------------------------------------------------
 /** Main entry.
@@ -49,65 +81,109 @@
  */
 int main( int argc, char** argv )
 {
+  kwiversys::CommandLineArguments arg;
 
-  if( argc == 1 )
+  arg.Initialize( argc, argv );
+  arg.StoreUnusedArguments( true );
+
+  arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+  arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
+
+  if ( ! arg.Parse() )
+  {
+    std::cerr << "Problem parsing arguments" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( opt_help )
+  {
+    std::cerr
+      << "USAGE: " << argv[0] << " [OPTS]  video-file\n\n"
+      << "Options:"
+      << arg.GetHelp() << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  char** newArgv = 0;
+  int newArgc = 0;
+  arg.GetUnusedArguments(&newArgc, &newArgv);
+
+  if( newArgc == 1 )
   {
     std::cout << "Missing file name.\n"
-      << "Usage: " << argv[0] << " video-file-name\n" << std::endl;
+      << "Usage: " << newArgv[0] << " video-file-name\n" << std::endl;
 
       return EXIT_FAILURE;
   }
 
-  char* video_file = argv[1];
+  std::string video_file = newArgv[1];
 
-  vidl_ffmpeg_istream istr;
-  if ( ! istr.open( video_file ) )
+  arg.DeleteRemainingArguments(newArgc, &newArgv);
+
+  // register the algorithm implementations
+  kwiver::vital::algorithm_plugin_manager::instance().register_plugins();
+
+  kwiver::vital::algo::video_input_sptr video_reader;
+  kwiver::vital::config_block_sptr config = default_config();
+
+  // If --config given, read in config file, merge in with default just generated
+  if( ! opt_config.empty() )
   {
-    std::cerr << "Couldn't open " << video_file << '\n';
+    config->merge_config( kwiver::vital::read_config_file( opt_config ) );
+  }
+
+  kwiver::vital::algo::video_input::set_nested_algo_configuration( "video_reader", config, video_reader );
+  kwiver::vital::algo::video_input::get_nested_algo_configuration( "video_reader", config, video_reader );
+
+  if( !kwiver::vital::algo::video_input::check_nested_algo_configuration( "video_reader", config ) )
+  {
+    std::cerr << "Invalid video_reader config" << std::endl;
     return EXIT_FAILURE;
   }
 
-  if( !istr.has_metadata() )
+  // instantiate a video reader
+  try
+  {
+    video_reader->open( video_file );
+  }
+  catch ( kwiver::vital::video_exception const& e )
+  {
+    std::cerr << "Couldn't open " << video_file << std::endl
+              << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( kwiver::vital::file_not_found_exception const& e )
+  {
+    std::cerr << "Couldn't open " << video_file << std::endl
+              << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  kwiver::vital::algo::video_input_traits const& traits = video_reader->get_implementation_traits();
+  if ( ! traits.trait( kwiver::vital::algo::video_input_traits::HAS_METADATA ) )
   {
     std::cerr << "No metadata stream found in " << video_file << '\n';
     return EXIT_FAILURE;
   }
 
-  std::deque<uint8_t> md_buffer;
-  unsigned count = 0;
-  kwiver::vital::convert_metadata converter;
+  int count(1);
+  kwiver::vital::image_container_sptr frame;
+  kwiver::vital::timestamp ts;
 
-
-  while ( istr.advance() )
+  while ( video_reader->next_frame( frame, ts ) )
   {
-    std::cout << "========== Read frame " << istr.frame_number()
-              << " (index " << count << ") ==========" <<std::endl;
+    std::cout << "========== Read frame " << ts.get_frame()
+              << " (index " << count << ") ==========" << std::endl;
 
-    std::deque<uint8_t> curr_md = istr.current_metadata();
-
-    // Add new metadata to the end of current metadata stream
-    md_buffer.insert(md_buffer.end(), curr_md.begin(), curr_md.end());
-
-    std::cout << "Extracted " << curr_md.size() << " metadata bytes" << std::endl;
-
-    // loop to extract all packets from metadata
-    kwiver::vital::klv_data klv_packet;
-    while (klv_pop_next_packet( md_buffer, klv_packet ))
+    std::vector< kwiver::vital::video_metadata_sptr > metadata = video_reader->frame_metadata();
+    VITAL_FOREACH( auto meta, metadata )
     {
-      kwiver::vital::print_klv( std::cout, klv_packet );
-
-      kwiver::vital::video_metadata metadata;
-
-      converter.convert( klv_packet, metadata );
-      print_metadata( std::cout, metadata );
+      std::cout << "\n\n---------------- Metadata from: " << meta->timestamp() << std::endl;
+      print_metadata( std::cout, *meta );
+      ++count;
     }
-    ++count;
 
-    if (md_buffer.size() > 0)
-    {
-      std::cout << "Left " << md_buffer.size()
-               << " metadata bytes unprocessed" << std::endl;
-    }
   } // end while
 
   std::cout << "-- End of video --\n";
