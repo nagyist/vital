@@ -104,7 +104,7 @@ void convert_metadata
   }
   else
   {
-    LOG_WARN( m_logger, "Unsupported UDS Key: "
+    LOG_DEBUG( m_logger, "Unsupported UDS Key: "
               << uds_key << " data size is "
               << klv.value_size() );
   }

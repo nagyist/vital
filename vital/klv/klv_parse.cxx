@@ -125,7 +125,7 @@ klv_ber_length( ITERATOR buffer,
   if ( offset > 5 )
   {
     kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_parse" ) );
-    LOG_ERROR( logger, "BER encoded length more then 4 bytes: "
+    LOG_WARN( logger, "BER encoded length more then 4 bytes: "
                << static_cast< int > ( offset ) );
     return false;
   }
@@ -284,7 +284,7 @@ parse_klv_lds( klv_data const& data )
   if ( len != 0 )
   {
     kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_parse" ) );
-    LOG_ERROR( logger, len << " bytes left over when parsing LDS" );
+    LOG_WARN( logger, len << " bytes left over when parsing LDS" );
   }
 
   return lds_pairs;
@@ -307,7 +307,7 @@ parse_klv_uds( klv_data const& data )
   {
     klv_uds_key uds_key( pk ); // 16 byte key
     uds_pairs.push_back( klv_uds_pair( uds_key,
-                                       std::vector< uint8_t > ( pk.value_begin(), pk.value_end() ) ) );
+         std::vector< uint8_t > ( pk.value_begin(), pk.value_end() ) ) );
   }
 
   return uds_pairs;
