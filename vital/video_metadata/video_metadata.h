@@ -46,6 +46,7 @@
 #include <vital/video_metadata/video_metadata_tags.h>
 
 #include <map>
+#include <vector>
 #include <string>
 #include <typeinfo>
 #include <memory>
@@ -348,7 +349,7 @@ public:
   void add( metadata_item* item );
 
 
-  /// Delete metadata item.
+  /// Remove metadata item.
   /**
    * The metadata item that corresponds with the tag is deleted it it
    * is in the collection.
@@ -357,7 +358,7 @@ public:
    *
    * @return \b true if specified item was found and deleted.
    */
-  bool delete( vital_metadata_tag tag );
+  bool erase( vital_metadata_tag tag );
 
 
   /// Determine if metadata collection has tag.
@@ -477,7 +478,7 @@ public:
    */
   static std::type_info const& typeid_for_tag( vital_metadata_tag tag );
 
-static std::string FormatString( std::string const& val );
+  static std::string format_string( std::string const& val );
 
 
 private:

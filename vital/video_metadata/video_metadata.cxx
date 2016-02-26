@@ -200,7 +200,7 @@ video_metadata
 // ------------------------------------------------------------------
 bool
 video_metadata
-::delete( vital_metadata_tag tag )
+::erase( vital_metadata_tag tag )
 {
   return m_metadata_map.erase( tag ) > 0;
 }
@@ -278,7 +278,7 @@ video_metadata
 // ------------------------------------------------------------------
 std::string
 video_metadata
-::FormatString( std::string const& val )
+::format_string( std::string const& val )
 {
   const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
                                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -333,7 +333,7 @@ std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata 
    str << "Metadata item: "
        << name
        << " <" << demangle( ix->second->type().name() ) << ">: "
-       << video_metadata::FormatString (ix->second->as_string())
+       << video_metadata::format_string (ix->second->as_string())
        << std::endl;
   } // end for
 
