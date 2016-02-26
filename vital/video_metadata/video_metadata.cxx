@@ -340,13 +340,4 @@ std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata 
   return str;
 }
 
-// ------------------------------------------------------------------
-std::ostream&
-operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj )
-{
-  str << "{ " << obj.p1 << obj.p2 << obj.p3 << obj.p4 << " }";
-
-  return str;
-}
-
 } } // end namespace

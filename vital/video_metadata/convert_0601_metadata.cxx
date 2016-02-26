@@ -247,6 +247,12 @@ convert_metadata
     }
       break;
 
+      // Sometimes these offsets are set to zero. Even if the image is
+      // really that small, we can not create a meaningfull bounding
+      // box.  Currently we are ignoring the metadata if the offsets
+      // are zero. One could argue that the bounding box should be
+      // created and application level semantics should decide if it
+      // is meaningful or not.
     case KLV_0601_OFFSET_CORNER_LAT_PT_1:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_1, data );
@@ -430,7 +436,7 @@ convert_metadata
       else
       {
         // If all points are set and valid, then build corner point structure
-        video_metadata::geo_corner_points corners;
+        kwiver::vital::geo_corner_points corners;
 
         corners.p1.set_latitude( corner_pt1.latitude() + frame_center.latitude() );
         corners.p1.set_longitude( corner_pt1.longitude() + frame_center.longitude() );

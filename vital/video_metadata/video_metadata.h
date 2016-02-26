@@ -477,16 +477,6 @@ public:
    */
   static std::type_info const& typeid_for_tag( vital_metadata_tag tag );
 
-
-  // the corner points are a nested structure so it is in a nested name space.
-  struct geo_corner_points
-  {
-    geo_lat_lon p1;
-    geo_lat_lon p2;
-    geo_lat_lon p3;
-    geo_lat_lon p4;
-  };
-
 static std::string FormatString( std::string const& val );
 
 
@@ -498,8 +488,8 @@ private:
 
 typedef std::shared_ptr< video_metadata > video_metadata_sptr;
 
+
 VITAL_VIDEO_METADATA_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata );
-VITAL_VIDEO_METADATA_EXPORT std::ostream& operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj );
 
 } } // end namespace
 

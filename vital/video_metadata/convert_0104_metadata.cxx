@@ -305,7 +305,7 @@ case klv_0104::N:                                               \
     else
     {
       // If all points are set and valid, then build corner point structure
-      video_metadata::geo_corner_points corners;
+      kwiver::vital::geo_corner_points corners;
       corners.p1 = corner_pt1;
       corners.p2 = corner_pt2;
       corners.p3 = corner_pt3;

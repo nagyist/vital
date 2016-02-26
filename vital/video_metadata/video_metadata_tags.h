@@ -75,7 +75,7 @@ CALL( SLANT_RANGE,                 "Slant Range",                     double) \
 CALL( TARGET_WIDTH,                "Target Width",                    double) \
 CALL( FRAME_CENTER,                "Frame Center Lat/Lon",            geo_lat_lon) \
 CALL( FRAME_CENTER_ELEV,           "Frame Center Elevation",          double) \
-CALL( CORNER_POINTS,               "Corner points in lat/lon",        video_metadata::geo_corner_points) \
+CALL( CORNER_POINTS,               "Corner points in lat/lon",        geo_corner_points) \
 CALL( ICING_DETECTED,              "Icing Detected",                  uint64_t) \
 CALL( WIND_DIRECTION,              "Wind Direction",                  double) \
 CALL( WIND_SPEED,                  "Wind Speed",                      double) \
