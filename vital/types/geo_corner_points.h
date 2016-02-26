@@ -33,6 +33,7 @@
 
 #include <vital/vital_export.h>
 #include <vital/types/geo_lat_lon.h>
+ #include <vital/config/config_block.h>
 
 #include <ostream>
 
@@ -46,7 +47,6 @@ namespace vital {
  * points are usually stored upper-left, upper-right, lower-right,
  * lower-left.
  */
-
 class VITAL_EXPORT geo_corner_points
 {
 public:
@@ -55,6 +55,52 @@ public:
   geo_lat_lon p3;
   geo_lat_lon p4;
 };
+
+
+// ------------------------------------------------------------------
+template<>
+inline
+geo_corner_points
+config_block_get_value_cast( config_block_value_t const& value )
+{
+  // This is not robust and should be rewritten as such.
+  double val[8];
+  geo_corner_points obj;
+
+  // this is ugly (lat lon pairs)
+  sscanf( value.c_str(), "%lf %lf %lf %lf %lf %lf %lf %lf",
+          &val[0], &val[1],
+          &val[2], &val[3],
+          &val[4], &val[5],
+          &val[6], &val[7] );
+
+  // process 4 points
+  obj.p1 = geo_lat_lon( val[0], val[1] );
+  obj.p2 = geo_lat_lon( val[2], val[3] );
+  obj.p3 = geo_lat_lon( val[4], val[5] );
+  obj.p4 = geo_lat_lon( val[6], val[7] );
+
+  return obj;
+}
+
+
+// ------------------------------------------------------------------
+template<>
+inline
+config_block_value_t
+config_block_set_value_cast( geo_corner_points const& value )
+{
+  std::stringstream str_result;
+
+  str_result.precision( 20 );
+
+  str_result << value.p1.latitude() << " " << value.p1.longitude() << " ";
+  str_result << value.p2.latitude() << " " << value.p2.longitude() << " ";
+  str_result << value.p3.latitude() << " " << value.p3.longitude() << " ";
+  str_result << value.p4.latitude() << " " << value.p4.longitude() << " ";
+
+  return str_result.str();
+}
 
 VITAL_EXPORT std::ostream& operator<<( std::ostream& str, kwiver::vital::geo_corner_points const& obj );
 
