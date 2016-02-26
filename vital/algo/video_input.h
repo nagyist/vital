@@ -147,11 +147,12 @@ public:
    */
   void set_trait( trait_name_t const& name, bool val );
 
+  video_input_traits& operator=( video_input_traits const& other );
 
 private:
   /// private implementation class
   class priv;
-  const std::unique_ptr<priv> d;
+  std::unique_ptr<priv> d;
 };
 
 

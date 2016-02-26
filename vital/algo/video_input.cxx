@@ -82,6 +82,20 @@ video_input_traits
 
 
 // ------------------------------------------------------------------
+video_input_traits&
+video_input_traits
+::operator=( video_input_traits const& other )
+{
+  if ( this != &other)
+  {
+    this->d.reset( new video_input_traits::priv( *other.d ) ); // copy private implementation
+  }
+
+  return *this;
+}
+
+
+// ------------------------------------------------------------------
 bool
 video_input_traits
 ::has_trait( trait_name_t const& name ) const
