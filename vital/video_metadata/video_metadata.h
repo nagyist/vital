@@ -488,6 +488,7 @@ private:
 }; // end class video_metadata
 
 typedef std::shared_ptr< video_metadata > video_metadata_sptr;
+typedef std::vector< video_metadata_sptr > video_metadata_vector;
 
 
 VITAL_VIDEO_METADATA_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata );

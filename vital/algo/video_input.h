@@ -287,7 +287,7 @@ public:
    *
    * @return Pointer to metadata vector.
    */
-  virtual std::vector< kwiver::vital::video_metadata_sptr > frame_metadata() = 0;
+  virtual kwiver::vital::video_metadata_vector frame_metadata() = 0;
 
 
   /**

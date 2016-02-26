@@ -176,7 +176,7 @@ int main( int argc, char** argv )
     std::cout << "========== Read frame " << ts.get_frame()
               << " (index " << count << ") ==========" << std::endl;
 
-    std::vector< kwiver::vital::video_metadata_sptr > metadata = video_reader->frame_metadata();
+    kwiver::vital::video_metadata_vector metadata = video_reader->frame_metadata();
     VITAL_FOREACH( auto meta, metadata )
     {
       std::cout << "\n\n---------------- Metadata from: " << meta->timestamp() << std::endl;
