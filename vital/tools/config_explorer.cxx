@@ -74,7 +74,7 @@ print_help()
             << "  --help           displays usage information\n"
             << "  --path name      add directory to config search path(can appear multiple times)\n"
             << "  -Iname           add directory to coinfig search path(can appear multiple times)\n"
-            << "  -ds              generate detailed seatch path\n"
+            << "  -ds              generate detailed application based search path\n"
             << "  -dc              generate detailed config contents output\n"
             << "  -a name          alternate application name\n"
             << "  -v version       optional application version string\n"
@@ -119,7 +119,7 @@ main( int argc, char* argv[] )
   arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
 
   // details
-  arg.AddArgument( "-ds",            argT::NO_ARGUMENT, &opt_detail_ds, "Display detailed search path" );
+  arg.AddArgument( "-ds",            argT::NO_ARGUMENT, &opt_detail_ds, "Display detailed application search path" );
   arg.AddArgument( "-dc",            argT::NO_ARGUMENT, &opt_detail_dc, "Display detailed config contents" );
 
   // manual search path
