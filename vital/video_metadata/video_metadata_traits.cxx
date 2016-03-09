@@ -107,7 +107,7 @@ video_metadata_traits
   auto ix = m_trait_table.find( tag );
   if ( ix == m_trait_table.end() )
   {
-    LOG_WARN( m_logger, "Could not find trait for tag: " << tag );
+    LOG_INFO( m_logger, "Could not find trait for tag: " << tag );
     ix = m_trait_table.find(VITAL_META_UNKNOWN);
   }
   return *ix->second;

@@ -52,20 +52,6 @@ video_exception
 }
 
 // ------------------------------------------------------------------
-end_of_video_exception
-::end_of_video_exception() VITAL_NOTHROW
-{
-  m_what = "End of video exception";
-}
-
-
-end_of_video_exception
-::~end_of_video_exception() VITAL_NOTHROW
-{
-}
-
-
-// ------------------------------------------------------------------
 video_input_timeout_exception
 ::video_input_timeout_exception() VITAL_NOTHROW
 {
@@ -81,9 +67,9 @@ video_input_timeout_exception
 
 // ------------------------------------------------------------------
 video_stream_exception
-::video_stream_exception() VITAL_NOTHROW
+::video_stream_exception( std::string const& msg) VITAL_NOTHROW
 {
-  m_what = "Video stream exception";
+  m_what = "Video stream exception:" + msg;
 }
 
 

@@ -80,7 +80,7 @@ convert_metadata
   }
   catch (kwiver::vital::bad_any_cast const& e)
   {
-    LOG_INFO( m_logger, "Data not convertable for tag: "
+    LOG_DEBUG( m_logger, "Data not convertable for tag: "
               << m_metadata_traits.tag_to_symbol( vital_tag )
               << ",  " << e.what() );
   }
@@ -104,6 +104,12 @@ void convert_metadata
   geo_lat_lon corner_pt3;
   geo_lat_lon corner_pt4;
 
+  //
+  // Add our "origin" tag to indicate that the source of this metadata
+  // collection is from a 0104 spec packet.
+  //
+  metadata.add( NEW_METADATA_ITEM( VITAL_META_METADATA_ORIGIN, video_metadata::MISB_0104 ) );
+
   for ( auto itr = uds.begin(); itr != uds.end(); ++itr )
   {
     klv_0104::tag tag;
@@ -114,7 +120,7 @@ void convert_metadata
       tag = klv_0104::instance()->get_tag( itr->first );
       if ( tag == klv_0104::UNKNOWN )
       {
-        LOG_WARN( m_logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
+        LOG_DEBUG( m_logger, "Unknown key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
         continue;
       }
 
@@ -122,7 +128,7 @@ void convert_metadata
     }
     catch ( kwiver::vital::klv_exception const& e )
     {
-      LOG_WARN( m_logger, "Exception caught parsing 0104 klv: " << e.what() );
+      LOG_INFO( m_logger, "Exception caught parsing 0104 klv: " << e.what() );
       continue;
     }
 
@@ -228,7 +234,7 @@ case klv_0104::N:                                               \
       break;
 
     default:
-      LOG_WARN( m_logger, "Unprocessed key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
+      LOG_DEBUG( m_logger, "Unprocessed key: " << itr->first << "Length: " << itr->second.size() << " bytes" );
       break;
     } // end switch
 
@@ -241,7 +247,7 @@ case klv_0104::N:                                               \
   {
     if ( ! sensor_location.is_valid() )
     {
-      LOG_WARN( m_logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
+      LOG_DEBUG( m_logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
     }
     else
     {
@@ -253,7 +259,7 @@ case klv_0104::N:                                               \
   {
     if ( ! frame_center.is_valid() )
     {
-      LOG_WARN( m_logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
+      LOG_DEBUG( m_logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
     }
     else
     {
@@ -278,28 +284,28 @@ case klv_0104::N:                                               \
       // Decode which one(s) are not valie
       if ( ! corner_pt1.is_valid() )
       {
-        LOG_WARN( m_logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( m_logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt2.is_valid() )
       {
-        LOG_WARN( m_logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( m_logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt3.is_valid() )
       {
-        LOG_WARN( m_logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( m_logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt4.is_valid() )
       {
-        LOG_WARN( m_logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( m_logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
       }
     }
     else
     {
       // If all points are set and valid, then build corner point structure
-      video_metadata::geo_corner_points corners;
+      kwiver::vital::geo_corner_points corners;
       corners.p1 = corner_pt1;
       corners.p2 = corner_pt2;
       corners.p3 = corner_pt3;

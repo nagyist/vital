@@ -29,8 +29,9 @@ kwiver_add_executable( dump_klv
 
 target_link_libraries( dump_klv
   PRIVATE     vital
+              vital_apm
               vital_klv
               vital_logger
               vital_video_metadata
-              vidl
+
   )

@@ -41,6 +41,10 @@
 namespace kwiver {
 namespace vital {
 
+const std::string video_metadata::MISB_0104( "MISB_0104" );
+const std::string video_metadata::MISB_0601( "MISB_0601" );
+
+
 // ------------------------------------------------------------------
 // video metadata exception support
 video_metadata_exception
@@ -193,6 +197,16 @@ video_metadata
 }
 
 
+// ------------------------------------------------------------------
+bool
+video_metadata
+::erase( vital_metadata_tag tag )
+{
+  return m_metadata_map.erase( tag ) > 0;
+}
+
+
+// ------------------------------------------------------------------
 video_metadata::const_iterator_t
 video_metadata
 ::begin() const
@@ -206,6 +220,22 @@ video_metadata
 ::end() const
 {
   return m_metadata_map.end();
+}
+
+
+size_t
+video_metadata
+::size() const
+{
+  return m_metadata_map.size();
+}
+
+
+bool
+video_metadata
+::empty() const
+{
+  return m_metadata_map.empty();
 }
 
 
@@ -248,7 +278,7 @@ video_metadata
 // ------------------------------------------------------------------
 std::string
 video_metadata
-::FormatString( std::string const& val )
+::format_string( std::string const& val )
 {
   const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
                                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -291,7 +321,7 @@ video_metadata
 
 
 // ------------------------------------------------------------------
-std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
+std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata )
 {
   auto eix = metadata.end();
   for ( auto ix = metadata.begin(); ix != eix; ix++)
@@ -302,21 +332,10 @@ std::ostream& print_metadata( std::ostream& str, video_metadata& metadata )
 
    str << "Metadata item: "
        << name
-       << " (" << ix->second->name()
-       << " / <" << demangle( ix->second->type().name() )
-       << ">): "
-       << video_metadata::FormatString (ix->second->as_string())
+       << " <" << demangle( ix->second->type().name() ) << ">: "
+       << video_metadata::format_string (ix->second->as_string())
        << std::endl;
   } // end for
-
-  return str;
-}
-
-// ------------------------------------------------------------------
-std::ostream&
-operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj )
-{
-  str << "{ " << obj.p1 << obj.p2 << obj.p3 << obj.p4 << " }";
 
   return str;
 }

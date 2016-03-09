@@ -36,7 +36,7 @@
 #ifndef KWIVER_VITAL_VIDEO_METADATA_H
 #define KWIVER_VITAL_VIDEO_METADATA_H
 
-#include <vital/vital_export.h>
+#include <vital/video_metadata/vital_video_metadata_export.h>
 
 #include <vital/any.h>
 
@@ -46,20 +46,20 @@
 #include <vital/video_metadata/video_metadata_tags.h>
 
 #include <map>
+#include <vector>
 #include <string>
 #include <typeinfo>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <type_traits>
-
 #include <iostream>
 
 namespace kwiver {
 namespace vital {
 
 // ------------------------
-class VITAL_EXPORT video_metadata_exception
+class VITAL_VIDEO_METADATA_EXPORT video_metadata_exception
   : public vital_core_base_exception
 {
 public:
@@ -79,7 +79,7 @@ public:
  * All metadata items need a common base class so they can be managed
  * in a collection.
  */
-class VITAL_EXPORT metadata_item
+class VITAL_VIDEO_METADATA_EXPORT metadata_item
 {
 public:
   virtual ~metadata_item();
@@ -308,7 +308,7 @@ public:
  * the \c any object carefully.
  *
  */
-class VITAL_EXPORT video_metadata
+class VITAL_VIDEO_METADATA_EXPORT video_metadata
 {
 public:
   typedef std::map< vital_metadata_tag, std::unique_ptr< metadata_item > > metadata_map_t;
@@ -317,15 +317,48 @@ public:
   video_metadata();
   ~video_metadata();
 
+  /** Constants used to determine the source of this metadata
+   * collection. The value of the VITAL_META_METADATA_ORIGIN tag is
+   * set to one of the following values depending on the format of the
+   * metadata packet processed.
+   *
+   * Typical usage is:
+   \code
+   std::string type;
+   if (meta.has( VITAL_META_METADATA_ORIGIN ) )
+   {
+      type = meta.find( VITAL_META_METADATA_ORIGIN ).as_string();
+   }
+   if (video_metadata::MISB_0104 == type)
+   {
+       // metadata was from MISB 0104 packet
+   }
+   \endcode
+   */
+  const static std::string MISB_0104;
+  const static std::string MISB_0601;
+
 
   /// Add metadata item to collection.
   /**
-   *This method adds a metadata item to the collection. The collection
-   *takes ownership of the item and managed the memory.
+   * This method adds a metadata item to the collection. The collection
+   * takes ownership of the item and managed the memory.
    *
    * @param item New metadata item to be copied into collection.
    */
   void add( metadata_item* item );
+
+
+  /// Remove metadata item.
+  /**
+   * The metadata item that corresponds with the tag is deleted it it
+   * is in the collection.
+   *
+   * @param tag Tag of metadata to delete.
+   *
+   * @return \b true if specified item was found and deleted.
+   */
+  bool erase( vital_metadata_tag tag );
 
 
   /// Determine if metadata collection has tag.
@@ -350,7 +383,7 @@ public:
    *
    * @return metadata item object for tag.
    */
-  metadata_item const& find( vital_metadata_tag tag ); // needs not-found return value
+  metadata_item const& find( vital_metadata_tag tag );
 
 
   /// Get starting iterator for collection of metadata items.
@@ -370,6 +403,7 @@ public:
    */
   const_iterator_t begin() const;
 
+
   /// Get ending iterator for collection of video metadata.
   /**
    * This method returns the ending iterator for the collection of
@@ -386,6 +420,29 @@ public:
    * @return Ending iterator for collection
    */
   const_iterator_t end() const;
+
+
+  /// Get the number of metadata items in the collection.
+  /**
+   * This method returns the number of elements in the
+   * collection. There will usually be at least one element which
+   * defines the souce of the metadata items.
+   *
+   * @return Number of elements in the collection.
+   */
+  size_t size() const;
+
+
+  /// Test whether collection is empty.
+  /**
+   * This method returns whether the collection is empty
+   * (i.e. size() == 0).  There will usually be at least
+   * one element which defines
+   * the souce of the metadata items.
+   *
+   * @return \b true if collection is empty
+   */
+  bool empty() const;
 
 
   /// Set timestamp for this metadata set.
@@ -421,17 +478,7 @@ public:
    */
   static std::type_info const& typeid_for_tag( vital_metadata_tag tag );
 
-
-  // the corner points are a nested structure so it is in a nested name space.
-  struct geo_corner_points
-  {
-    geo_lat_lon p1;
-    geo_lat_lon p2;
-    geo_lat_lon p3;
-    geo_lat_lon p4;
-  };
-
-static std::string FormatString( std::string const& val );
+  static std::string format_string( std::string const& val );
 
 
 private:
@@ -440,9 +487,11 @@ private:
 
 }; // end class video_metadata
 
+typedef std::shared_ptr< video_metadata > video_metadata_sptr;
+typedef std::vector< video_metadata_sptr > video_metadata_vector;
 
-VITAL_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata& metadata );
-VITAL_EXPORT std::ostream& operator<<( std::ostream& str, video_metadata::geo_corner_points const& obj );
+
+VITAL_VIDEO_METADATA_EXPORT std::ostream& print_metadata( std::ostream& str, video_metadata const& metadata );
 
 } } // end namespace
 

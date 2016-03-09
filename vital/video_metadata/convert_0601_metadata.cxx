@@ -93,12 +93,12 @@ convert_metadata
   }
   catch (kwiver::vital::bad_any_cast const& e)
   {
-    LOG_INFO( m_logger, "Data not convertable for tag: "
+    LOG_DEBUG( m_logger, "Data not convertable for tag: "
               << m_metadata_traits.tag_to_symbol( vital_tag )
               << ",  " << e.what() );
   }
 
-    LOG_WARN( m_logger, "Tag data not converted for tag: "
+    LOG_DEBUG( m_logger, "Tag data not converted for tag: "
               << m_metadata_traits.tag_to_symbol( vital_tag ) );
 
   return data;
@@ -111,6 +111,8 @@ convert_metadata
 ::convert_0601_metadata( klv_lds_vector_t const& lds, video_metadata& metadata )
 {
   static kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.convert_metadata" ) );
+
+  metadata.add( NEW_METADATA_ITEM( VITAL_META_METADATA_ORIGIN, video_metadata::MISB_0601 ) );
 
   //
   // Data items that are used to collect multi-value metadataa items
@@ -128,7 +130,7 @@ convert_metadata
   {
     if ( ( itr->first <= KLV_0601_UNKNOWN ) || ( itr->first >= KLV_0601_ENUM_END ) )
     {
-      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported" );
+      LOG_DEBUG( logger, "KLV 0601 key: " << int(itr->first) << " is not supported" );
       continue;
     }
 
@@ -245,59 +247,89 @@ convert_metadata
     }
       break;
 
+      // Sometimes these offsets are set to zero. Even if the image is
+      // really that small, we can not create a meaningfull bounding
+      // box.  Currently we are ignoring the metadata if the offsets
+      // are zero. One could argue that the bounding box should be
+      // created and application level semantics should decide if it
+      // is meaningful or not.
     case KLV_0601_OFFSET_CORNER_LAT_PT_1:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_1, data );
-      corner_pt1.set_latitude( temp );
+      if (temp != 0)
+      {
+        corner_pt1.set_latitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_1:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_1, data );
-      corner_pt1.set_longitude( temp );
+      if (temp != 0)
+      {
+        corner_pt1.set_longitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_2:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_2, data );
-      corner_pt2.set_latitude( temp );
+      if (temp != 0)
+      {
+        corner_pt2.set_latitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_2:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_2, data );
-      corner_pt2.set_longitude( temp );
+      if (temp != 0)
+      {
+        corner_pt2.set_longitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_3:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_3, data );
-      corner_pt3.set_latitude( temp );
+      if (temp != 0)
+      {
+        corner_pt3.set_latitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_3:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_3, data );
-      corner_pt3.set_longitude( temp );
+      if (temp != 0)
+      {
+        corner_pt3.set_longitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LAT_PT_4:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LAT_PT_4, data );
-      corner_pt4.set_latitude( temp );
+      if (temp != 0)
+      {
+        corner_pt4.set_latitude( temp );
+      }
     }
       break;
 
     case KLV_0601_OFFSET_CORNER_LONG_PT_4:
     {
       double temp = klv_0601_value_double( KLV_0601_OFFSET_CORNER_LONG_PT_4, data );
-      corner_pt4.set_longitude( temp );
+      if (temp != 0)
+      {
+        corner_pt4.set_longitude( temp );
+      }
     }
       break;
 
@@ -316,7 +348,7 @@ convert_metadata
       break;
 
     default:
-      LOG_WARN( logger, "KLV 0601 key: " << int(itr->first) << " is not supported." );
+      LOG_DEBUG( logger, "KLV 0601 key: " << int(itr->first) << " is not supported." );
       break;
     } // end switch
   } // end for
@@ -328,7 +360,7 @@ convert_metadata
   {
     if ( ! sensor_location.is_valid() )
     {
-      LOG_WARN( logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
+      LOG_DEBUG( logger, "Sensor location lat/lon is not valid coordinate: " << sensor_location );
     }
     else
     {
@@ -340,7 +372,7 @@ convert_metadata
   {
     if ( ! frame_center.is_valid() )
     {
-      LOG_WARN( logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
+      LOG_DEBUG( logger, "Frame Center lat/lon is not valid coordinate: " << frame_center );
     }
     else
     {
@@ -352,7 +384,7 @@ convert_metadata
   {
     if ( ! target_location.is_valid() )
     {
-      LOG_WARN( logger, "Target location lat/lon is not valid coordinate: " << target_location );
+      LOG_DEBUG( logger, "Target location lat/lon is not valid coordinate: " << target_location );
     }
     else
     {
@@ -377,34 +409,34 @@ convert_metadata
       // Decode which one(s) are not valid
       if ( ! corner_pt1.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( logger, "Corner point 1 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt2.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( logger, "Corner point 2 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt3.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( logger, "Corner point 3 lat/lon is not valid coordinate: " << corner_pt1 );
       }
 
       if ( ! corner_pt4.is_valid() )
       {
-        LOG_WARN( logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
+        LOG_DEBUG( logger, "Corner point 4 lat/lon is not valid coordinate: " << corner_pt1 );
       }
     }
     else
     {
       if ( ! frame_center.is_valid() )
       {
-        LOG_WARN( logger, "Frame center not valid. Can not adjust frame corner offsets." );
+        LOG_DEBUG( logger, "Frame center not valid. Can not adjust frame corner offsets." );
       }
       else
       {
         // If all points are set and valid, then build corner point structure
-        video_metadata::geo_corner_points corners;
+        kwiver::vital::geo_corner_points corners;
 
         corners.p1.set_latitude( corner_pt1.latitude() + frame_center.latitude() );
         corners.p1.set_longitude( corner_pt1.longitude() + frame_center.longitude() );
@@ -421,7 +453,7 @@ convert_metadata
         metadata.add( NEW_METADATA_ITEM( VITAL_META_CORNER_POINTS, corners ) );
       }
     }
-  }
+  } // corner points are empty
 }
 
 } } // end namespace

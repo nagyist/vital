@@ -90,6 +90,7 @@ void convert_metadata
   {
     if ( ! klv_0601_checksum( klv ) )
     {
+      // serious error
       throw klv_exception( "checksum error on 0601 packet");
     }
 
@@ -103,7 +104,7 @@ void convert_metadata
   }
   else
   {
-    LOG_WARN( m_logger, "Unsupported UDS Key: "
+    LOG_DEBUG( m_logger, "Unsupported UDS Key: "
               << uds_key << " data size is "
               << klv.value_size() );
   }

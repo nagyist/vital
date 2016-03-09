@@ -25,6 +25,16 @@ set( vital_logger_sources
   default_logger.cxx
 )
 
+kwiver_add_library( vital_logger
+  ${vital_logger_public_headers}
+  ${vital_logger_private_headers}
+  ${vital_logger_sources}
+  )
+
+target_link_libraries( vital_logger
+  PRIVATE              kwiversys
+  )
+
 kwiver_install_headers(
   ${vital_logger_public_headers}
   SUBDIR      vital/logger
@@ -34,16 +44,6 @@ kwiver_install_headers(
   ${CMAKE_CURRENT_BINARY_DIR}/vital_logger_export.h
   NOPATH
   SUBDIR      vital/logger
-  )
-
-kwiver_add_library( vital_logger
-  ${vital_logger_public_headers}
-  ${vital_logger_private_headers}
-  ${vital_logger_sources}
-  )
-
-target_link_libraries( vital_logger
-  PRIVATE              kwiversys
   )
 
 ###

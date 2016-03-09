@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2015-2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,15 @@
 #define VITAL_ALGO_VIDEO_INPUT_H_
 
 #include <vital/vital_config.h>
-
-#include <string>
+#include <vital/vital_export.h>
 
 #include <vital/algo/algorithm.h>
 #include <vital/types/image_container.h>
 #include <vital/types/timestamp.h>
+#include <vital/video_metadata/video_metadata.h>
+
+#include <string>
+#include <vector>
 
 namespace kwiver {
 namespace vital {
@@ -83,7 +86,7 @@ namespace algo {
  *     KLV style metadata. The metadata could be in 0601 or 0104 data
  *     formats.
  */
-class video_input_traits
+class VITAL_EXPORT video_input_traits
 {
 public:
   typedef std::string trait_name_t;
@@ -93,9 +96,10 @@ public:
   static const trait_name_t HAS_EOV;         // has end of video indication
   static const trait_name_t HAS_FRAME_NUMBERS;
   static const trait_name_t HAS_FRAME_TIME;
-  static const trait_name_t HAS_KLV_METADATA;
+  static const trait_name_t HAS_METADATA;
 
   video_input_traits();
+  video_input_traits( video_input_traits const& other );
   ~video_input_traits();
 
 
@@ -109,7 +113,7 @@ public:
    *
    * \return \b true if trait is supported, \b false otherwise.
    */
-  bool has_trait( trait_name_t const& name );
+  bool has_trait( trait_name_t const& name ) const;
 
 
   /// Get list of supported traits.
@@ -131,7 +135,7 @@ public:
    *
    * @return Value of trait.
    */
-  bool trait( trait_name_t const& name );
+  bool trait( trait_name_t const& name ) const;
 
 
   /// Set trait value.
@@ -143,11 +147,12 @@ public:
    */
   void set_trait( trait_name_t const& name, bool val );
 
+  video_input_traits& operator=( video_input_traits const& other );
 
 private:
   /// private implementation class
   class priv;
-  const std::unique_ptr<priv> d;
+  std::unique_ptr<priv> d;
 };
 
 
@@ -241,8 +246,11 @@ public:
    * timestamp returned may be missing either frame number or time or
    * both, depending on the actual implementation.
    *
+   * Calling this method will make new metadata packets available
+   * while deleting any old ones.
+   *
    * If the video input is already an end, then calling this method
-   * will result in another end of video exception.
+   * will return \b false.
    *
    * \param[out] frame Next frame from source
    * \param[out] ts Time of returned frame
@@ -251,13 +259,36 @@ public:
    * \return \b true if frame returned, \b false if timeout or end of
    * video.
    *
-   * \throws end_of_video_exception when end of video is encountered.
    * \throws video_input_timeout_exception when the timeout expires.
    * \throws video_stream_exception when there is an error in the video stream.
    */
-  virtual void next_frame( kwiver::vital::image_container_sptr& frame,
+  virtual bool next_frame( kwiver::vital::image_container_sptr& frame,
                            kwiver::vital::timestamp& ts,
                            uint32_t timeout = 0 ) = 0;
+
+
+  /// Get metadata collection for current frame.
+  /**
+   * This method returns the metadata collection for the current
+   * frame. It is best to call this after calling next_frame() to make
+   * sure the metadata and video are synchronized and that no metadata
+   * collections are lost.
+   *
+   * Metadata typically occurs less frequently than video frames, so
+   * if you call next_frame() and frame_metadata() together while
+   * processing a video, the same set of metadata may be returned
+   * until new metadata is read from the stream.
+   *
+   * Also note that the metadata collection has a timestamp that can
+   * be used to determine where the metadata fits in the video stream.
+   *
+   * In video streams without metadata (as determined by the stream
+   * traits), this method may return and empty vector, indicating no
+   * new metadata has been found.
+   *
+   * @return Pointer to metadata vector.
+   */
+  virtual kwiver::vital::video_metadata_vector frame_metadata() = 0;
 
 
   /**
