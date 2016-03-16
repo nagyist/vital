@@ -57,14 +57,22 @@ namespace algo {
 /**
  * \brief Video input trait base class / interface
  *
- * This class represents a collection of traits for the current
- * video input algorithm.
+ * This class represents a collection of standard traits for the
+ * current video input algorithm.
  *
  * Video traits provide a way to flexibly query the concrete
- * implementation and determine the capabilities features and
+ * implementation and determine the capabilities, features and
  * limitations.
  *
- * A note about some traits
+ * All implementations \b must support the basic traits, in that they
+ * are registered with a \b true or \b false value. Additional
+ * implementation specific (extended) traits may be added. The
+ * application should first check to see if a extended trait is
+ * registered by calling has_trait() since the actual implementation
+ * is set by a configuration entry and not directly known by the
+ * application.
+ *
+ * A note about the basic traits:
  *
  * HAS_EOV - This trait is set to true if the video source can
  *     determine end of video. This is usually the case if the video
@@ -82,14 +90,24 @@ namespace algo {
  *     available in the time stamp for that frame. If the frame time
  *     is not supplied, then the timestamp will hot have the time set.
  *
- * HAS_KLV_METADATA - This trait is set if the video source supplies
- *     KLV style metadata. The metadata could be in 0601 or 0104 data
- *     formats.
+ * HAS_METADATA - This trait is set if the video source supplies
+ *     some type of metadata. The metadata could be in 0601 or 0104 data
+ *     formats or a different source.
+ *
+ * HAS_TIMEOUT - This trait is set if the implementation supports the
+ *     timeout parameter on the next_frame() method.
+ *
+ * Extended traits can be created to publish capabilities of
+ * non-standard video sources. These traits should be namespaced using
+ * the name (or abbreviation) of the concrete algorithm followed by
+ * the abbreviation of the capability.
+ *
  */
 class VITAL_EXPORT video_input_traits
 {
 public:
   typedef std::string trait_name_t;
+  typedef std::vector< trait_name_t > trait_list_t;
 
   // Common traits
   // -- basic traits --
@@ -97,6 +115,7 @@ public:
   static const trait_name_t HAS_FRAME_NUMBERS;
   static const trait_name_t HAS_FRAME_TIME;
   static const trait_name_t HAS_METADATA;
+  static const trait_name_t HAS_TIMEOUT;
 
   video_input_traits();
   video_input_traits( video_input_traits const& other );
@@ -107,7 +126,8 @@ public:
   /**
    * This method reports if the specified trait is supported by the
    * concrete implementation. If the trait is supported, then the
-   * value can be accessed with the trait() method.
+   * value can be accessed with the trait() method. The value may be
+   * \b true or \b false.
    *
    * \param name Trait name
    *
@@ -119,17 +139,20 @@ public:
   /// Get list of supported traits.
   /**
    * This method returns a vector of all traits supported by the
-   * current algorithm implementation.
+   * current algorithm implementation. Only the names are returned.
    *
    * @return Vector of supported traits.
    */
-  std::vector< trait_name_t > trait_list() const;
+  trait_list_t trait_list() const;
 
 
-  /// Return value of trait
+  /// Return value of trait,
   /**
-   * This method returns the value of the specified trait.
-   * \b false is also returned if the trait does not exist.
+   * This method returns the value of the specified trait.  \b false
+   * is also returned if the trait does not exist.  it is a
+   * best-practice to call has_trait() to determine if trait is
+   * present before getting its value, since a \b false return is
+   * otherwise ambiguous.
    *
    * @param name Trait name.
    *
@@ -141,6 +164,7 @@ public:
   /// Set trait value.
   /**
    * This method creates a trait and sets it to the specified value.
+   * The value is replaced if the trait already exists.
    *
    * @param name Trait name
    * @param val Trait value
@@ -240,35 +264,57 @@ public:
 
 
   /**
-   * \brief Get next frame from video stream.
+   * \brief Advance to next frame in video stream.
    *
-   * This method returns the next frame and timing information. The
-   * timestamp returned may be missing either frame number or time or
-   * both, depending on the actual implementation.
+   * This method advances the video stream to the next frame, making
+   * the image and metadata available. The returned timestamp is for
+   * new current frame.
    *
-   * Calling this method will make new metadata packets available
-   * while deleting any old ones.
+   * The timestamp returned may be missing either frame number or time
+   * or both, depending on the actual implementation.
+   *
+   * Calling this method will make a new image and metadata packets
+   * available. They can be retrieved by calling frame_image() and
+   * frame_metadata().
+   *
+   * Check the HAS_TIMEOUT trait from the concrete implementation to
+   * see if the timeout feature is supported.
    *
    * If the video input is already an end, then calling this method
    * will return \b false.
    *
-   * \param[out] frame Next frame from source
-   * \param[out] ts Time of returned frame
+   * \param[out] ts Time stamp of new frame.
    * \param[in] timeout Number of seconds to wait. 0 = no timeout.
    *
-   * \return \b true if frame returned, \b false if timeout or end of
-   * video.
+   * \return \b true if frame returned, \b false if end of video.
    *
    * \throws video_input_timeout_exception when the timeout expires.
    * \throws video_stream_exception when there is an error in the video stream.
    */
-  virtual bool next_frame( kwiver::vital::image_container_sptr& frame,
-                           kwiver::vital::timestamp& ts,
+  virtual bool next_frame( kwiver::vital::timestamp& ts,
                            uint32_t timeout = 0 ) = 0;
 
 
-  /// Get metadata collection for current frame.
   /**
+   * \brief Get current frame from video stream.
+   *
+   * This method returns the image from the current frame.  If the
+   * video input is already an end, then calling this method will
+   * return a null pointer.
+   *
+   * This method is idempotent. Calling it multiple times without
+   * calling next_frame() will return the same image.
+   *
+   * \return Pointer to image container.
+   *
+   * \throws video_stream_exception when there is an error in the video stream.
+   */
+  virtual kwiver::vital::image_container_sptr frame_image( ) = 0;
+
+
+  /**
+   * \brief Get metadata collection for current frame.
+   *
    * This method returns the metadata collection for the current
    * frame. It is best to call this after calling next_frame() to make
    * sure the metadata and video are synchronized and that no metadata
@@ -276,17 +322,26 @@ public:
    *
    * Metadata typically occurs less frequently than video frames, so
    * if you call next_frame() and frame_metadata() together while
-   * processing a video, the same set of metadata may be returned
-   * until new metadata is read from the stream.
+   * processing a video, there may be times where no metadata is
+   * returned.
    *
-   * Also note that the metadata collection has a timestamp that can
-   * be used to determine where the metadata fits in the video stream.
+   * Also note that the metadata collection contains a timestamp that
+   * can be used to determine where the metadata fits in the video
+   * stream.
    *
    * In video streams without metadata (as determined by the stream
    * traits), this method may return and empty vector, indicating no
    * new metadata has been found.
    *
-   * @return Pointer to metadata vector.
+   * Calling this method at end of video will return an empty metadata
+   * vector.
+   *
+   * This method is idempotent. Calling it multiple times without
+   * calling next_frame() will return the same metadata.
+   *
+   * @return Vector of metadata pointers.
+   *
+   * \throws video_stream_exception when there is an error in the video stream.
    */
   virtual kwiver::vital::video_metadata_vector frame_metadata() = 0;
 

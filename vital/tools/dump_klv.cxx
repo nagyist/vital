@@ -171,7 +171,7 @@ int main( int argc, char** argv )
   kwiver::vital::image_container_sptr frame;
   kwiver::vital::timestamp ts;
 
-  while ( video_reader->next_frame( frame, ts ) )
+  while ( video_reader->next_frame( ts ) )
   {
     std::cout << "========== Read frame " << ts.get_frame()
               << " (index " << count << ") ==========" << std::endl;
