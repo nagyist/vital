@@ -241,21 +241,49 @@ public:
 
 
   /**
-   * \brief Get next frame from video stream.
+   * \brief Advance to next frame in video stream.
    *
-   * This method returns the next frame and timing information. The
+   * This method advances the video stream to the next frame, making
+   * the image and metadata available. The returned timestamp is for
+   * new current frame.
+   *
+   * The timestamp returned may be missing either frame number or time
+   * or both, depending on the actual implementation.
+   *
+   * Calling this method will make a new image and metadata packets
+   * available. They can be retrieved by calling frame_image() and
+   * frame_metadata().
+   *
+   * Check the HAS_TIMEOUT trait from the concrete implementation to
+   * see if the timeout feature is supported.
+   *
+   * If the video input is already an end, then calling this method
+   * will return \b false.
+   *
+   * \param[out] ts Time stamp of new frame.
+   * \param[in] timeout Number of seconds to wait. 0 = no timeout.
+   *
+   * \return \b true if frame returned, \b false if end of video.
+   *
+   * \throws video_input_timeout_exception when the timeout expires.
+   * \throws video_stream_exception when there is an error in the video stream.
+   */
+  virtual bool next_frame( kwiver::vital::timestamp& ts,
+                           uint32_t timeout = 0 ) = 0;
+
+
+  /**
+   * \brief Get current frame from video stream.
+   *
+   * This method returns the current frame and timing information. The
    * timestamp returned may be missing either frame number or time or
    * both, depending on the actual implementation.
-   *
-   * Calling this method will make new metadata packets available
-   * while deleting any old ones.
    *
    * If the video input is already an end, then calling this method
    * will return \b false.
    *
    * \param[out] frame Next frame from source
-   * \param[out] ts Time of returned frame
-   * \param[in] timeout Number of seconds to wait. 0 = no timeout.
+   * \param[out] ts Time stamp of returned frame image
    *
    * \return \b true if frame returned, \b false if timeout or end of
    * video.
@@ -263,9 +291,8 @@ public:
    * \throws video_input_timeout_exception when the timeout expires.
    * \throws video_stream_exception when there is an error in the video stream.
    */
-  virtual bool next_frame( kwiver::vital::image_container_sptr& frame,
-                           kwiver::vital::timestamp& ts,
-                           uint32_t timeout = 0 ) = 0;
+  virtual bool frame_image( kwiver::vital::image_container_sptr& frame,
+                           kwiver::vital::timestamp& ts ) = 0;
 
 
   /// Get metadata collection for current frame.
@@ -277,8 +304,8 @@ public:
    *
    * Metadata typically occurs less frequently than video frames, so
    * if you call next_frame() and frame_metadata() together while
-   * processing a video, the same set of metadata may be returned
-   * until new metadata is read from the stream.
+   * processing a video, there may be times where no metadata is
+   * returned.
    *
    * Also note that the metadata collection has a timestamp that can
    * be used to determine where the metadata fits in the video stream.
@@ -287,7 +314,7 @@ public:
    * traits), this method may return and empty vector, indicating no
    * new metadata has been found.
    *
-   * @return Pointer to metadata vector.
+   * @return Vector of metadata pointers.
    */
   virtual kwiver::vital::video_metadata_vector frame_metadata() = 0;
 
