@@ -275,24 +275,15 @@ public:
   /**
    * \brief Get current frame from video stream.
    *
-   * This method returns the current frame and timing information. The
-   * timestamp returned may be missing either frame number or time or
-   * both, depending on the actual implementation.
+   * This method returns the image from the current frame.  If the
+   * video input is already an end, then calling this method will
+   * return a null pointer.
    *
-   * If the video input is already an end, then calling this method
-   * will return \b false.
+   * \return Pointer to image container. Pointer is null if at end of video.
    *
-   * \param[out] frame Next frame from source
-   * \param[out] ts Time stamp of returned frame image
-   *
-   * \return \b true if frame returned, \b false if timeout or end of
-   * video.
-   *
-   * \throws video_input_timeout_exception when the timeout expires.
    * \throws video_stream_exception when there is an error in the video stream.
    */
-  virtual bool frame_image( kwiver::vital::image_container_sptr& frame,
-                           kwiver::vital::timestamp& ts ) = 0;
+  virtual kwiver::vital::image_container_sptr frame_image( ) = 0;
 
 
   /// Get metadata collection for current frame.
