@@ -57,7 +57,6 @@ class video_input_traits::priv
 public:
 
   std::map< std::string, bool > m_traits;
-
 };
 
 
@@ -106,14 +105,13 @@ video_input_traits
 
 
 // ------------------------------------------------------------------
-std::vector< video_input_traits::trait_name_t >
+video_input_traits::trait_list_t
 video_input_traits
 :: trait_list() const
 {
-  std::vector< video_input_traits::trait_name_t > list;
+  video_input_traits::trait_list_t list;
 
-  std::map< std::string, bool >::const_iterator ix;
-  for (ix = d->m_traits.begin(); ix != d->m_traits.end(); ++ix )
+  for (auto ix = d->m_traits.begin(); ix != d->m_traits.end(); ++ix )
   {
     list.push_back( ix->first );
   }
@@ -129,7 +127,6 @@ video_input_traits
 {
   if ( ! has_trait( name ) )
   {
-    // TODO: throw something
     return false;
   }
 

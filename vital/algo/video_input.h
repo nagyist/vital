@@ -57,14 +57,22 @@ namespace algo {
 /**
  * \brief Video input trait base class / interface
  *
- * This class represents a collection of traits for the current
- * video input algorithm.
+ * This class represents a collection of standard traits for the
+ * current video input algorithm.
  *
  * Video traits provide a way to flexibly query the concrete
- * implementation and determine the capabilities features and
+ * implementation and determine the capabilities, features and
  * limitations.
  *
- * A note about some traits
+ * All implementations \b must support the basic traits, in that they
+ * are registered with a \b true or \b false value. Additional
+ * implementation specific (extended) traits may be added. The
+ * application should first check to see if a extended trait is
+ * registered by calling has_trait() since the actual implementation
+ * is set by a configuration entry and not directly known by the
+ * application.
+ *
+ * A note about the basic traits:
  *
  * HAS_EOV - This trait is set to true if the video source can
  *     determine end of video. This is usually the case if the video
@@ -88,11 +96,18 @@ namespace algo {
  *
  * HAS_TIMEOUT - This trait is set if the implementation supports the
  *     timeout parameter on the next_frame() method.
+ *
+ * Extended traits can be created to publish capabilities of
+ * non-standard video sources. These traits should be namespaced using
+ * the name (or abbreviation) of the concrete algorithm followed by
+ * the abbreviation of the capability.
+ *
  */
 class VITAL_EXPORT video_input_traits
 {
 public:
   typedef std::string trait_name_t;
+  typedef std::vector< trait_name_t > trait_list_t;
 
   // Common traits
   // -- basic traits --
@@ -111,7 +126,8 @@ public:
   /**
    * This method reports if the specified trait is supported by the
    * concrete implementation. If the trait is supported, then the
-   * value can be accessed with the trait() method.
+   * value can be accessed with the trait() method. The value may be
+   * \b true or \b false.
    *
    * \param name Trait name
    *
@@ -123,17 +139,20 @@ public:
   /// Get list of supported traits.
   /**
    * This method returns a vector of all traits supported by the
-   * current algorithm implementation.
+   * current algorithm implementation. Only the names are returned.
    *
    * @return Vector of supported traits.
    */
-  std::vector< trait_name_t > trait_list() const;
+  trait_list_t trait_list() const;
 
 
-  /// Return value of trait
+  /// Return value of trait,
   /**
-   * This method returns the value of the specified trait.
-   * \b false is also returned if the trait does not exist.
+   * This method returns the value of the specified trait.  \b false
+   * is also returned if the trait does not exist.  it is a
+   * best-practice to call has_trait() to determine if trait is
+   * present before getting its value, since a \b false return is
+   * otherwise ambiguous.
    *
    * @param name Trait name.
    *
@@ -145,6 +164,7 @@ public:
   /// Set trait value.
   /**
    * This method creates a trait and sets it to the specified value.
+   * The value is replaced if the trait already exists.
    *
    * @param name Trait name
    * @param val Trait value
