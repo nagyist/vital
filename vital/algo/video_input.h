@@ -82,9 +82,12 @@ namespace algo {
  *     available in the time stamp for that frame. If the frame time
  *     is not supplied, then the timestamp will hot have the time set.
  *
- * HAS_KLV_METADATA - This trait is set if the video source supplies
- *     KLV style metadata. The metadata could be in 0601 or 0104 data
- *     formats.
+ * HAS_METADATA - This trait is set if the video source supplies
+ *     some type of metadata. The metadata could be in 0601 or 0104 data
+ *     formats or a different source.
+ *
+ * HAS_TIMEOUT - This trait is set if the implementation supports the
+ *     timeout parameter on the next_frame() method.
  */
 class VITAL_EXPORT video_input_traits
 {
@@ -279,15 +282,19 @@ public:
    * video input is already an end, then calling this method will
    * return a null pointer.
    *
-   * \return Pointer to image container. Pointer is null if at end of video.
+   * This method is idempotent. Calling it multiple times without
+   * calling next_frame() will return the same image.
+   *
+   * \return Pointer to image container.
    *
    * \throws video_stream_exception when there is an error in the video stream.
    */
   virtual kwiver::vital::image_container_sptr frame_image( ) = 0;
 
 
-  /// Get metadata collection for current frame.
   /**
+   * \brief Get metadata collection for current frame.
+   *
    * This method returns the metadata collection for the current
    * frame. It is best to call this after calling next_frame() to make
    * sure the metadata and video are synchronized and that no metadata
@@ -298,14 +305,23 @@ public:
    * processing a video, there may be times where no metadata is
    * returned.
    *
-   * Also note that the metadata collection has a timestamp that can
-   * be used to determine where the metadata fits in the video stream.
+   * Also note that the metadata collection contains a timestamp that
+   * can be used to determine where the metadata fits in the video
+   * stream.
    *
    * In video streams without metadata (as determined by the stream
    * traits), this method may return and empty vector, indicating no
    * new metadata has been found.
    *
+   * Calling this method at end of video will return an empty metadata
+   * vector.
+   *
+   * This method is idempotent. Calling it multiple times without
+   * calling next_frame() will return the same metadata.
+   *
    * @return Vector of metadata pointers.
+   *
+   * \throws video_stream_exception when there is an error in the video stream.
    */
   virtual kwiver::vital::video_metadata_vector frame_metadata() = 0;
 
