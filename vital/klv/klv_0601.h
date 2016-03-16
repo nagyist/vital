@@ -38,7 +38,7 @@
 
 #include "klv_key.h"
 
-#include <vital/vital_export.h>
+#include <vital/klv/vital_klv_export.h>
 #include <vital/any.h>
 
 #include <vector>
@@ -51,7 +51,7 @@ namespace vital {
 
 /// Validate a KLV 0601 data packet using the checksum at the end
 /// @param[in] data is the klv packet to checksum
-VITAL_EXPORT bool klv_0601_checksum( klv_data const& data );
+VITAL_KLV_EXPORT bool klv_0601_checksum( klv_data const& data );
 
 
 /// Enumeration of tags in the MISB 0601 KLV standard
@@ -137,7 +137,7 @@ enum klv_0601_tag {KLV_0601_UNKNOWN                     = 0,
  *
  * @return Tag value from key.
  */
-VITAL_EXPORT klv_0601_tag
+VITAL_KLV_EXPORT klv_0601_tag
 klv_0601_get_tag( klv_lds_key key );
 
 
@@ -149,7 +149,7 @@ klv_0601_get_tag( klv_lds_key key );
  *
  * @return String name for tag.
  */
-VITAL_EXPORT std::string
+VITAL_KLV_EXPORT std::string
 klv_0601_tag_to_string(klv_0601_tag t);
 
 
@@ -162,7 +162,7 @@ klv_0601_tag_to_string(klv_0601_tag t);
  *
  * @return \b true if key is in 0601 format.
  */
-VITAL_EXPORT bool
+VITAL_KLV_EXPORT bool
 is_klv_0601_key( klv_uds_key const& key);
 
 
@@ -173,7 +173,7 @@ is_klv_0601_key( klv_uds_key const& key);
  *
  * @return 0601 key structure.
  */
-VITAL_EXPORT klv_uds_key
+VITAL_KLV_EXPORT klv_uds_key
 klv_0601_key();
 
 
@@ -188,7 +188,7 @@ klv_0601_key();
  *
  * @return Correctly typed data value in a kwiver::vital::any() object.
  */
-VITAL_EXPORT kwiver::vital::any
+VITAL_KLV_EXPORT kwiver::vital::any
 klv_0601_value( klv_0601_tag t, uint8_t const* data, std::size_t length );
 
 
@@ -201,7 +201,7 @@ klv_0601_value( klv_0601_tag t, uint8_t const* data, std::size_t length );
  * @return \b true -s value can be converted to double, \b false
  * otherwise.
  */
-VITAL_EXPORT bool
+VITAL_KLV_EXPORT bool
 klv_0601_has_double( klv_0601_tag t );
 
 
@@ -218,7 +218,7 @@ klv_0601_has_double( klv_0601_tag t );
  *
  * @return Metadata entry data value returned as a double.
  */
-VITAL_EXPORT double
+VITAL_KLV_EXPORT double
 klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
 
 
@@ -239,7 +239,7 @@ klv_0601_value_double(klv_0601_tag t, kwiver::vital::any const& data);
  * @return Metadata entry data as a string or "unknown" if value can
  * not be converted.
  */
-VITAL_EXPORT std::string
+VITAL_KLV_EXPORT std::string
 klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 
@@ -258,7 +258,7 @@ klv_0601_value_string(klv_0601_tag t, kwiver::vital::any const& data);
  * @return String containing the hex representation of the raw data is
  * returned.
  */
-VITAL_EXPORT std::string
+VITAL_KLV_EXPORT std::string
 klv_0601_value_hex_string(klv_0601_tag t, kwiver::vital::any const& data);
 
 } } // end namespace
