@@ -97,6 +97,7 @@ public:
   static const trait_name_t HAS_FRAME_NUMBERS;
   static const trait_name_t HAS_FRAME_TIME;
   static const trait_name_t HAS_METADATA;
+  static const trait_name_t HAS_TIMEOUT;
 
   video_input_traits();
   video_input_traits( video_input_traits const& other );
