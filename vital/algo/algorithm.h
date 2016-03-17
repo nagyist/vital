@@ -153,11 +153,11 @@ public:
    * parameters are merged with the given
    * \link kwiver::vital::config_block config_block \endlink.
    *
-   * \param     type_name   The type name of the nested algorithm.
-   * \param     name        An identifying name for the nested algorithm
-   * \param     config      The \c config_block instance in which to put the
-   *                          nested algorithm's configuration.
-   * \param     nested_algo The nested algorithm's sptr variable.
+   * \param[in]       type_name   The type name of the nested algorithm.
+   * \param[in]       name        An identifying name for the nested algorithm
+   * \param[in,out]   config      The \c config_block instance in which to put the
+   *                              nested algorithm's configuration.
+   * \param[in]       nested_algo The nested algorithm's sptr variable.
    */
   static void get_nested_algo_configuration(std::string const& type_name,
                                             std::string const& name,
@@ -175,11 +175,11 @@ public:
    * an invalid value relative to the registered names for this
    * \c type_name
    *
-   * \param type_name           The type name of the nested algorithm.
-   * \param name                An identifying name for the nested algorithm.
-   * \param config              The \c config_block instance from which we will
-   *                              draw configuration needed for the nested
-   *                              algorithm instance.
+   * \param[in] type_name           The type name of the nested algorithm.
+   * \param[in] name                An identifying name for the nested algorithm.
+   * \param[in] config              The \c config_block instance from which we will
+   *                                draw configuration needed for the nested
+   *                                algorithm instance.
    * \param[in,out] nested_algo The nested algorithm's sptr variable.
    */
   static void set_nested_algo_configuration(std::string const& type_name,
@@ -314,22 +314,22 @@ public:
                                             config_block_sptr config,
                                             base_sptr nested_algo);
 
-  /// Helper function for properly setting a nested algorithm's configuration
+  /// Instantiate nested algorighm.
   /**
-   * If the value for the config parameter "type" is supported by the
-   * concrete algorithm class, then a new algorithm object is created,
-   * configured and returned via the \c nested_algo pointer.
+   * A new concrete algorithm object is created if the value for the
+   * config parameter "type" is supported. The new object is returned
+   * through the nested_algo parameter.
    *
    * The nested algorithm will not be set if the implementation switch (as
    * defined in the \c get_nested_algo_configuration) is not present or set to
    * an invalid value relative to the registered names for this
    * \c algorithm_def.
    *
-   * \param name                An identifying name for the nested algorithm.
-   * \param config              The \c config_block instance from which we will
+   * \param[in] name              An identifying name for the nested algorithm.
+   * \param[in] config            The \c config_block instance from which we will
    *                              draw configuration needed for the nested
    *                              algorithm instance.
-   * \param[in,out] nested_algo The nested algorithm's sptr variable.
+   * \param[out] nested_algo      Pointer to the algorithm object is returned here.
    */
   static void set_nested_algo_configuration(std::string const& name,
                                             config_block_sptr config,
