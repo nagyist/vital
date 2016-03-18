@@ -66,7 +66,7 @@ void
 print_help()
 {
   std::cout << "This program assists in debugging config loading problems. It loads a configuration\n"
-            << "and displays the contents.\n"
+            << "and displays the contents or displays the search path.\n"
             << "Additional paths can be specified in \"KWIVER_CONFIG_PATH\" environment variable\n"
             << "or on the command line with the -I or --path options.\n"
             << "\n"
@@ -81,8 +81,10 @@ print_help()
             << "  --prefix dir     optional non-standard install prefix directory\n"
             << "\n"
             << "If -ds is specified, the detailed search path that applies to the application is displayed only\n"
-            << "otherwise, the config file is loaded. The option -dc only has effect when a config file is specified\n"
-            << "and causes a detailed output of the config entries\n"
+            << "otherwise, the config file is loaded.\n"
+            << "\n"
+            << "The option -dc only has effect when a config file is specified and causes a detailed\n"
+            << "output of the config entries.\n"
             << "\n"
             << "If -I or --path are specified, then the config file is only searched for using the specified path.\n"
             << "The application name based paths are not used.\n"
@@ -149,11 +151,11 @@ main( int argc, char* argv[] )
   arg.GetUnusedArguments(&newArgc, &newArgv);
 
   //
-  // Is detail path requested
+  // Display application specific search path.
   //
   if ( opt_detail_ds )
   {
-    kwiver::vital::config_path_list_t seatch_path =
+    kwiver::vital::config_path_list_t search_path =
       kwiver::vital::config_file_paths( opt_app_name,
                                         opt_app_version,
                                         opt_install_prefix );
@@ -164,7 +166,7 @@ main( int argc, char* argv[] )
               << " Install Prefix: " << opt_install_prefix << std::endl
               << std::endl;
 
-    VITAL_FOREACH( auto path, seatch_path )
+    VITAL_FOREACH( auto path, search_path )
     {
       std::cout << path << std::endl;
     }
@@ -187,12 +189,6 @@ main( int argc, char* argv[] )
   const std::string config_file = newArgv[1];
 
   arg.DeleteRemainingArguments(newArgc, &newArgv);
-
-  // Fill in our app name if not specified on command line
-  if ( opt_app_name.empty() )
-  {
-    opt_app_name = argv[0];
-  }
 
   kwiver::vital::config_block_sptr config;
 
