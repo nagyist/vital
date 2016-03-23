@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015-2016 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,60 +28,102 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief video_input algorithm definition instantiation
- */
+#include "algorithm_capabilities.h"
 
-#include <vital/algo/video_input.h>
-#include <vital/algo/algorithm.txx>
+#include <map>
 
 namespace kwiver {
 namespace vital {
-namespace algo {
 
 // ------------------------------------------------------------------
-const algorithm_capabilities::capability_name_t video_input::HAS_EOV( "has-eov" );
-const algorithm_capabilities::capability_name_t video_input::HAS_FRAME_NUMBERS( "has-frame-numbers" );
-const algorithm_capabilities::capability_name_t video_input::HAS_FRAME_TIME( "has-frame-time" );
-const algorithm_capabilities::capability_name_t video_input::HAS_METADATA( "has-metadata" );
-const algorithm_capabilities::capability_name_t video_input::HAS_TIMEOUT( "has-timeout" );
-
-
-// ------------------------------------------------------------------
-video_input
-::video_input()
+class algorithm_capabilities::priv
 {
-  attach_logger( "video_input" );
-}
+public:
+
+  std::map< std::string, bool > m_capabilities;
+};
 
 
-video_input
-::~video_input()
+// ==================================================================
+algorithm_capabilities
+::algorithm_capabilities()
+  : d( new algorithm_capabilities::priv )
 {
 }
 
 
-// ------------------------------------------------------------------
-algorithm_capabilities const&
-video_input
-::get_implementation_capabilities() const
+algorithm_capabilities
+::algorithm_capabilities( algorithm_capabilities const& other )
+  : d( new algorithm_capabilities::priv(*other.d) ) // copy private implementation
 {
-  return m_capabilities;
+}
+
+
+algorithm_capabilities
+::~algorithm_capabilities()
+{
+}
+
+
+// ------------------------------------------------------------------
+algorithm_capabilities&
+algorithm_capabilities
+::operator=( algorithm_capabilities const& other )
+{
+  if ( this != &other)
+  {
+    this->d.reset( new algorithm_capabilities::priv( *other.d ) ); // copy private implementation
+  }
+
+  return *this;
+}
+
+
+// ------------------------------------------------------------------
+bool
+algorithm_capabilities
+::has_capability( capability_name_t const& name ) const
+{
+  return ( d->m_capabilities.count( name ) > 0 );
+}
+
+
+// ------------------------------------------------------------------
+algorithm_capabilities::capability_list_t
+algorithm_capabilities
+:: capability_list() const
+{
+  algorithm_capabilities::capability_list_t list;
+
+  for (auto ix = d->m_capabilities.begin(); ix != d->m_capabilities.end(); ++ix )
+  {
+    list.push_back( ix->first );
+  }
+
+  return list;
+}
+
+
+// ------------------------------------------------------------------
+bool
+algorithm_capabilities
+::capability( capability_name_t const& name ) const
+{
+  if ( ! has_capability( name ) )
+  {
+    return false;
+  }
+
+  return d->m_capabilities[name];
 }
 
 
 // ------------------------------------------------------------------
 void
-video_input
-::set_capability( algorithm_capabilities::capability_name_t const& name, bool val )
+algorithm_capabilities
+::set_capability( capability_name_t const& name, bool val )
 {
-  m_capabilities.set_capability( name, val );
+  d->m_capabilities[name] = val;
 }
 
-
-} } } // end namespace
-
-/// \cond DoxygenSuppress
-INSTANTIATE_ALGORITHM_DEF(kwiver::vital::algo::video_input);
-/// \endcond
+} } // end namespace

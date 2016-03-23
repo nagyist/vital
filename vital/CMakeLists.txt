@@ -92,6 +92,7 @@ set( vital_public_headers
   vital_foreach.h
   noncopyable.h
   any.h
+  algorithm_capabilities.h
 
   algo/algorithm.txx
   algo/algorithm.h
@@ -174,6 +175,7 @@ set( vital_public_headers
 # ----------------------
 set( vital_sources
   registrar.cxx
+  algorithm_capabilities.cxx
 
   algo/algorithm.cxx
   algo/analyze_tracks.cxx
