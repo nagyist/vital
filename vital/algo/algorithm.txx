@@ -60,6 +60,12 @@ algorithm_def< Self >
     return false;
   }
 
+  // For logging
+  std::stringstream ss;
+  ss  << "Registering algo implementation '" << inst->impl_name()
+      << "' for def type '" << inst->type_name() << "'";
+  LOG_DEBUG(get_logger("algorithm.register_instance"), ss.str());
+
   std::string qualified_name = inst->type_name() + ":" + inst->impl_name();
   return reg.register_item< algorithm > ( qualified_name, inst ) &&
          reg.register_item< Self > ( inst->impl_name(), inst );
