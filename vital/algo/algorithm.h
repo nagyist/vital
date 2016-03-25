@@ -408,7 +408,7 @@ public:
     return algorithm_sptr(new Self(static_cast<const Self&>(*this)));
   }
 
-  /// Returns a clone of this algorithm as a specific algorithm pointer
+  /// Returns a clone of this algorithm as a pointer of the base definition type
   virtual base_sptr clone() const
   {
     return base_sptr(new Self(static_cast<const Self&>(*this)));
@@ -420,7 +420,7 @@ public:
     return "";
   }
 
-  /// Register this algorithm implementation
+  /// Register this algorithm implementation under the base definition (not parent)
   static bool register_self(registrar &reg = vital::registrar::instance())
   {
     return algorithm_def<BaseDef>::register_instance(reg, base_sptr(new Self));
