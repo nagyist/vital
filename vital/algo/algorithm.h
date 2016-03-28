@@ -373,7 +373,7 @@ public:
  *  While the above example shows the algorithm_impl taking two template
  *  arguments, the full definition takes 3: the implementation class, the parent
  *  definition class that's being sub-classed and the base definition class. We
- *  define here that the "base" definition class is teh first class along a
+ *  define here that the "base" definition class is the first class along a
  *  class hierarchy that implements the algorithm_def class (e.g. the
  *  detect_features class or the estimate_homography class defined in
  *  kwiver::vital::algo)
@@ -385,10 +385,10 @@ public:
  *  conflicting in one or more parts of the hierarchy. Thus, if an algorithm
  *  implementation is using a parent definition that is NOT the base definition,
  *  the base must also be provided as the third template argument. It also
- *  follows that the Parent algorithm_def type provided must descent from the
- *  BaseDef algorithm_def type provided. Some compilers may error if this is the
- *  case (e.g. GCC will fail with an "invalid covariant return type" due to the
- *  algorithm_impl's clone method).
+ *  follows that the Parent algorithm_def type provided must descend from the
+ *  BaseDef algorithm_def type provided. IF this is not the case, some compilers
+ *  may error if this is the case (e.g. GCC will fail with an "invalid covariant
+ *  return type" due to the algorithm_impl's clone method).
  *
  *  \sa algorithm_def
  */
@@ -420,7 +420,7 @@ public:
     return "";
   }
 
-  /// Register this algorithm implementation under the base definition (not parent)
+  /// Register this algorithm implementation under the BaseDef type definition
   static bool register_self(registrar &reg = vital::registrar::instance())
   {
     return algorithm_def<BaseDef>::register_instance(reg, base_sptr(new Self));
