@@ -168,6 +168,7 @@ set( vital_public_headers
   util/timer.h
   util/demangle.h
   util/any_converter.h
+  util/enumerate_matrix.h
 )
 
 # ----------------------
