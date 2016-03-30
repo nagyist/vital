@@ -106,12 +106,6 @@ public:
       return false;
     }
 
-    // For logging
-    std::stringstream ss;
-    ss  << "Registering algo implementation '" << name << "' for def type '"
-        << item->type_name() << "'";
-    this->debug_msg( ss.str() );
-
     // declaring map reference so we don't copy
     typename reg_type< T >::map& im = this->get_item_map< T > ();
     im[name] = item;
