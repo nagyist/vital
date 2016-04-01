@@ -65,8 +65,7 @@ include( kwiver-configcheck )
 include( vital-depends )
 
 # set the export group name for our package exports
-set(kwiver_export_name
-  vital_exports)
+set(kwiver_export_name      vital_exports)
 
 # ================================================================
 # project global includes

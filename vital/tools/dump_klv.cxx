@@ -160,8 +160,8 @@ int main( int argc, char** argv )
     return EXIT_FAILURE;
   }
 
-  kwiver::vital::algo::video_input_traits const& traits = video_reader->get_implementation_traits();
-  if ( ! traits.trait( kwiver::vital::algo::video_input_traits::HAS_METADATA ) )
+  kwiver::vital::algorithm_capabilities const& caps = video_reader->get_implementation_capabilities();
+  if ( ! caps.capability( kwiver::vital::algo::video_input::HAS_METADATA ) )
   {
     std::cerr << "No metadata stream found in " << video_file << '\n';
     return EXIT_FAILURE;
