@@ -26,4 +26,17 @@ target_link_libraries( dump_klv
               vital_logger
               vital_video_metadata
               kwiversys
+              vidl
+  )
+
+# -----------------------------------
+kwiver_add_executable( config_explorer
+  config_explorer.cxx
+  )
+
+target_link_libraries( config_explorer
+  vital
+  vital_apm
+  vital_logger
+  kwiversys
   )
