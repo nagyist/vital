@@ -26,7 +26,6 @@ target_link_libraries( dump_klv
               vital_logger
               vital_video_metadata
               kwiversys
-              vidl
   )
 
 # -----------------------------------
