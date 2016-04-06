@@ -311,7 +311,8 @@ public:
 class VITAL_VIDEO_METADATA_EXPORT video_metadata
 {
 public:
-  typedef std::map< vital_metadata_tag, std::unique_ptr< metadata_item > > metadata_map_t;
+  typedef std::unique_ptr< metadata_item > item_ptr;
+  typedef std::map< vital_metadata_tag, item_ptr > metadata_map_t;
   typedef metadata_map_t::const_iterator const_iterator_t;
 
   video_metadata();

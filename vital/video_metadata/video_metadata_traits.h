@@ -152,7 +152,7 @@ public:
 private:
   kwiver::vital::logger_handle_t m_logger;
 
-  typedef  std::unique_ptr<vital_meta_trait_base> trait_ptr;
+  typedef std::unique_ptr<vital_meta_trait_base> trait_ptr;
   std::map< kwiver::vital::vital_metadata_tag, trait_ptr> m_trait_table;
 
 }; // end class video_metadata_traits

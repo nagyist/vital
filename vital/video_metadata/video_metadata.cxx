@@ -168,7 +168,7 @@ void
 video_metadata
 ::add( metadata_item* item )
 {
-  this->m_metadata_map[item->tag()] = std::unique_ptr< metadata_item >(item);
+  this->m_metadata_map[item->tag()] = item_ptr(item);
 }
 
 
