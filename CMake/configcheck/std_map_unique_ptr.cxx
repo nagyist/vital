@@ -1,6 +1,5 @@
 #include <map>
 #include <memory>
-#include "../../../../../../../usr/include/c++/5.3.1/map"
 
 
 int main(int argc, char *argv[])
