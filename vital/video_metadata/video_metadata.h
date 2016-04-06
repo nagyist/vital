@@ -311,7 +311,11 @@ public:
 class VITAL_VIDEO_METADATA_EXPORT video_metadata
 {
 public:
+#ifdef VITAL_STD_MAP_UNIQUE_PTR_ALLOWED
   typedef std::unique_ptr< metadata_item > item_ptr;
+#else
+  typedef std::shared_ptr< metadata_item > item_ptr;
+#endif
   typedef std::map< vital_metadata_tag, item_ptr > metadata_map_t;
   typedef metadata_map_t::const_iterator const_iterator_t;
 
