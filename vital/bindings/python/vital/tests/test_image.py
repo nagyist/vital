@@ -34,11 +34,12 @@ Test Python interface to vital::image
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'paul.tunison@kitware.com'
+import nose.tools
 
 from vital import Image
 
-import nose.tools
+
+__author__ = 'paul.tunison@kitware.com'
 
 
 class TestVitalImage (object):

@@ -301,6 +301,11 @@ algorithm_plugin_manager
     // Split supplied path into separate items using PATH_SEPARATOR_CHAR as delimiter
     ST::Split( extra_module_dirs, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
   }
+  else
+  {
+    LOG_INFO( m_impl->m_logger,
+              "No additional paths on " << environment_variable_name );
+  }
 
   ST::Split( default_module_paths, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
 }

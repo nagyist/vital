@@ -47,18 +47,10 @@ class Test_AlgorithmPluginManager (object):
     def test_load(self):
         apm.register_plugins()
 
-    def test_load_named(self):
-        apm.register_plugins("vital_core")
-
     def test_add_search_path(self):
         apm.add_search_path("/")
-        self.test_load_named()
+        apm.register_plugins()
 
     def test_add_search_path_bad_dir(self):
         apm.add_search_path("/probably/not/a/directory/foo")
-        self.test_load_named()
-
-    def test_registered_names(self):
-        apm.register_plugins('vital_core')
-        nose.tools.assert_in('vital_core',
-                             apm.registered_module_names())
+        apm.register_plugins()

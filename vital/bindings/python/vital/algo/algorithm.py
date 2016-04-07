@@ -43,14 +43,6 @@ from vital.exceptions.base import VitalNullPointerException
 from vital.util import VitalObject, VitalErrorHandle
 
 
-# noinspection PyPep8Naming
-class _vital_algorithm_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
-
-
 class VitalAlgorithm (VitalObject):
     """
     Base class for VITAL algorithms
