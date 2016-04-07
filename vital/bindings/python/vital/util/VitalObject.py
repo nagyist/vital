@@ -39,7 +39,7 @@ __author__ = 'paul.tunison@kitware.com'
 import abc
 import ctypes
 
-from vital.util import find_vital_library
+from vital.util.find_vital_library import find_vital_library
 from vital.util.string import vital_string_t
 
 
