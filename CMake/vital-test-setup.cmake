@@ -1,5 +1,5 @@
 #
-# Script to set up testing environment for kwiver core and subdirectories
+# Script to set up testing environment
 #
 
 set(no_install TRUE)
