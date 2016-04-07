@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,12 +36,5 @@ vital.util module
 # -*- coding: utf-8 -*-
 __author__ = 'paul.tunison@kitware.com'
 
-try:
-    from .find_vital_library import find_vital_library
-except ImportError:
-    raise ImportError("Failed to import library finder module, must not have "
-                      "enabled Python in CMake.")
-
 from .VitalObject import VitalObject
 from .error_handle import VitalErrorHandle
-from .find_vital_library import find_library_path

@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -108,18 +108,22 @@ def _system_path_separator():
         return ':'
 
 
-def _find_vital_library_path():
+def find_vital_library_path(use_cache=True):
     """
     Discover the path to a VITAL C interface library based on the directory
-    structure this file is in, and then to system directories in the PATH
-    (NOT python's sys.path, the actual OS environment PATH).
+    structure this file is in, and then to system directories in the
+    LD_LIBRARY_PATH.
+
+    :param use_cache: Store and use the cached path, preventing redundant
+        searching (default = True).
+    :type use_cache: bool
 
     :return: The string path to the VITAL C interface library
     :rtype: str
 
     """
     global __LIBRARY_PATH_CACHE__
-    if __LIBRARY_PATH_CACHE__:
+    if use_cache and __LIBRARY_PATH_CACHE__:
         return __LIBRARY_PATH_CACHE__
 
     # Otherwise, find the Vital C library
@@ -130,7 +134,8 @@ def _find_vital_library_path():
     for d in search_dirs:
         r = _search_up_directory(d, __LIBRARY_NAME_RE__)
         if r is not None:
-            __LIBRARY_PATH_CACHE__ = r
+            if use_cache:
+                __LIBRARY_PATH_CACHE__ = r
             return r
 
     # No library found in any paths given at this point
@@ -138,46 +143,26 @@ def _find_vital_library_path():
                        % __LIBRARY_NAME__)
 
 
-def find_vital_library():
+def find_vital_library(use_cache=True):
     """
     Discover and return the ctypes-loaded VITAL C interface library.
 
-    :return:
-    :rtype:
+    :param use_cache: Use the cached library instance or cache the discovered
+        library. Otherwise, search for the library again, not storing it in the
+        cache. Default is True.
+    :type use_cache: bool
+
+    :return: The cached Vital C library ctypes instance.
+    :rtype: ctypes.CDLL
 
     """
-    global __LIBRARY_CACHE__
-    if not __LIBRARY_CACHE__:
-        __LIBRARY_CACHE__ = ctypes.CDLL(_find_vital_library_path())
-    return __LIBRARY_CACHE__
-
-
-# ==================================================================
-# Library finders without cache
-#
-def find_library_path(lib):
-    library_name_re = re.compile("(?:lib)?%s.(?:so|dylib|dll)"
-                                     % lib)
-
-    # start the search in the current directory
-    search_dirs = [os.path.dirname(os.path.abspath(__file__))]
-
-    # NOTE this is not cover all possible systems
-    search_dirs.extend(os.environ['LD_LIBRARY_PATH'].split(_system_path_separator()))
-
-    if __BUILD_DIR__:
-        search_dirs = [__BUILD_DIR__] + search_dirs
-
-    for d in search_dirs:
-        r = _search_up_directory(d, library_name_re)
-        if r is not None:
-            library_path = r
-            return r
-
-    # No library found in any paths given at this point
-    raise RuntimeError("Failed to find a valid '%s' library!"
-                       % lib)
-
+    if use_cache:
+        global __LIBRARY_CACHE__
+        if not __LIBRARY_CACHE__:
+            __LIBRARY_CACHE__ = ctypes.CDLL(find_vital_library_path(use_cache))
+        return __LIBRARY_CACHE__
+    else:
+        return ctypes.CDLL(find_vital_library_path(use_cache))
 
 
 # ==================================================================
@@ -218,7 +203,7 @@ def __test_search_up_dir__():
 
 def __test_find_libraray_path__():
     r0 = __LIBRARY_PATH_CACHE__
-    r1 = _find_vital_library_path()
+    r1 = find_vital_library_path()
     r2 = __LIBRARY_PATH_CACHE__
 
     print "__test_find_libraray_path__::PATH:", os.environ['PATH']
