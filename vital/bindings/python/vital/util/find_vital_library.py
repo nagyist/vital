@@ -49,9 +49,6 @@ __LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll).*"
 __LIBRARY_PATH_CACHE__ = None
 __LIBRARY_CACHE__ = None
 
-# TODO: Replace with environment variable set by cannonical setup script
-__BUILD_DIR__ = "@VITAL_BUILD_DIRECTORY@"
-
 
 def _system_library_dirs():
     """
@@ -125,11 +122,10 @@ def _find_vital_library_path():
     if __LIBRARY_PATH_CACHE__:
         return __LIBRARY_PATH_CACHE__
 
+    # Otherwise, find the Vital C library
     search_dirs = [os.path.dirname(os.path.abspath(__file__))]
     # NOTE this is not cover all possible systems
     search_dirs.extend(os.environ['LD_LIBRARY_PATH'].split(_system_path_separator()))
-    if __BUILD_DIR__:
-        search_dirs = [__BUILD_DIR__] + search_dirs
 
     for d in search_dirs:
         r = _search_up_directory(d, __LIBRARY_NAME_RE__)
