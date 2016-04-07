@@ -44,8 +44,8 @@ import sys
 
 
 __LIBRARY_NAME__ = "vital_c"
-__LIBRARY_NAME_RE__ = re.compile("(?:lib)?%s.(?:so|dylib|dll).*"
-                                 % __LIBRARY_NAME__)
+__LIBRARY_NAME_RE_BASE__ = "(?:lib)?%s.(?:so|dylib|dll).*"
+__LIBRARY_NAME_RE__ = re.compile(__LIBRARY_NAME_RE_BASE__ % __LIBRARY_NAME__)
 __LIBRARY_PATH_CACHE__ = None
 __LIBRARY_CACHE__ = None
 
@@ -80,18 +80,14 @@ def _search_up_directory(d, library_re):
     # Stopping search when we see the root twice, based on ``os.path.dirname``
     # returning the root directory when the root directory is passed to it.
     prev_dir = None
+    d = os.path.abspath(d)
     while d != prev_dir:
-        hit = False
         for l in _system_library_dirs():
             l_dir = os.path.join(d, l)
             if os.path.isdir(l_dir):
                 for f in os.listdir(l_dir):
                     if library_re.match(f):
                         return os.path.join(l_dir, f)
-                hit = True
-        if hit:
-            # Found a library directory(s), but didn't find desired library
-            return None
         prev_dir = d
         d = os.path.dirname(d)
     return None
