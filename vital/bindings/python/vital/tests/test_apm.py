@@ -36,7 +36,7 @@ Tests for vital::algorithm_plugin_manager interface
 # -*- coding: utf-8 -*-
 __author__ = 'paul.tunison@kitware.com'
 
-from vital import AlgorithmPluginManager
+from vital import apm
 
 import nose.tools
 
@@ -45,20 +45,20 @@ import nose.tools
 class Test_AlgorithmPluginManager (object):
 
     def test_load(self):
-        AlgorithmPluginManager.register_plugins()
+        apm.register_plugins()
 
     def test_load_named(self):
-        AlgorithmPluginManager.register_plugins("vital_core")
+        apm.register_plugins("vital_core")
 
     def test_add_search_path(self):
-        AlgorithmPluginManager.add_search_path("/")
+        apm.add_search_path("/")
         self.test_load_named()
 
     def test_add_search_path_bad_dir(self):
-        AlgorithmPluginManager.add_search_path("/probably/not/a/directory/foo")
+        apm.add_search_path("/probably/not/a/directory/foo")
         self.test_load_named()
 
     def test_registered_names(self):
-        AlgorithmPluginManager.register_plugins('vital_core')
+        apm.register_plugins('vital_core')
         nose.tools.assert_in('vital_core',
-                             AlgorithmPluginManager.registered_module_names())
+                             apm.registered_module_names())

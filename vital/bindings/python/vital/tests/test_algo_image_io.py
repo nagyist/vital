@@ -37,7 +37,7 @@ Tests for vital::algo::image_io
 __author__ = 'paul.tunison@kitware.com'
 
 from vital import (
-    AlgorithmPluginManager,
+    apm,
     ConfigBlock,
 )
 from vital.algo import ImageIo
@@ -53,7 +53,7 @@ class TestVitalAlgoImageIo (object):
 
     @classmethod
     def setup_class(cls):
-        AlgorithmPluginManager.register_plugins()
+        apm.register_plugins()
 
         cls.test_image_filepath = osp.join(TEST_DATA_DIR,
                                            'test_kitware_logo.jpg')

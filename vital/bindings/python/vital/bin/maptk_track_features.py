@@ -43,7 +43,7 @@ import os
 import os.path
 
 from vital import (
-    AlgorithmPluginManager,
+    apm,
     ConfigBlock,
     TrackSet
 )
@@ -102,7 +102,7 @@ class TrackFeaturesTool (object):
         return logging.getLogger("TrackFeaturesTool")
 
     def __init__(self):
-        AlgorithmPluginManager.register_plugins()
+        apm.register_plugins()
 
         # Algorithms
         self.algo_convert_img = ConvertImage("convert_image")

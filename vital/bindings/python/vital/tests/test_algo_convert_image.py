@@ -39,7 +39,7 @@ __author__ = 'paul.tunison@kitware.com'
 import ctypes
 
 from vital import (
-    AlgorithmPluginManager,
+    apm,
     ConfigBlock,
     Image,
     ImageContainer,
@@ -62,7 +62,7 @@ class TestVitalAlgoConvertImage (object):
 
     @classmethod
     def setup_class(cls):
-        AlgorithmPluginManager.register_plugins()
+        apm.register_plugins()
 
     def test_from_c_ptr_null(self):
         ci = ConvertImage.from_c_pointer(

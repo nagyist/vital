@@ -37,7 +37,6 @@ vital module
 __author__ = 'paul.tunison@kitware.com'
 
 # Common VITAL Components for easy access
-from .apm import AlgorithmPluginManager
 from .camera import Camera
 from .camera_map import CameraMap
 from .config_block import ConfigBlock
