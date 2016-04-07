@@ -34,7 +34,7 @@ Tests for Python interface to vital::track_set
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 from vital import Track
 from vital import TrackSet

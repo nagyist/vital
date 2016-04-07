@@ -34,7 +34,7 @@ vital.util module
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 try:
     from .find_vital_library import find_vital_library

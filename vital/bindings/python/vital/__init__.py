@@ -34,7 +34,7 @@ vital module
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 # Common VITAL Components for easy access
 from .apm import AlgorithmPluginManager

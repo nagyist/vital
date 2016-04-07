@@ -34,7 +34,7 @@ Tests for vital::algo::image_io
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 from vital import (
     AlgorithmPluginManager,

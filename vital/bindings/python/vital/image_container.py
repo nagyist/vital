@@ -34,7 +34,7 @@ Interface to VITAL image_container class.
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import ctypes
 

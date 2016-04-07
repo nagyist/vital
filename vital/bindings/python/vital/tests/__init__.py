@@ -37,7 +37,7 @@ trees due to the required test data (which is of course not installed).
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 
 # Absolute path to the tests data directory

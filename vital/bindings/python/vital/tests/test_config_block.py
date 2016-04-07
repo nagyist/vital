@@ -34,7 +34,7 @@ Tests for the Python interface to VITAL class config_block.
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 from vital import ConfigBlock
 from vital.exceptions.config_block import *

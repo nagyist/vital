@@ -34,7 +34,7 @@ VITAL config_block related exceptions
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 from .base import VitalBaseException
 

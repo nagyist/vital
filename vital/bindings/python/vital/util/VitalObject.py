@@ -34,7 +34,7 @@ Base class for all VITAL Python interface classes
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import abc
 import ctypes

@@ -36,7 +36,7 @@ interface usage.
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import logging
 import os
