@@ -65,6 +65,16 @@ void vital_apm_register_single_plugin( char const *name )
 }
 
 
+/// Load all plugins on first call
+void vital_apm_load_plugins_once()
+{
+  STANDARD_CATCH(
+    "C::apm::load_plugins_once", 0,
+    kwiver::vital::algorithm_plugin_manager::instance().load_plugins_once();
+  );
+}
+
+
 /// Add an additional directory to search for plugins in
 void vital_apm_add_search_path( char const *dirpath )
 {

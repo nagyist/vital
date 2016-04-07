@@ -59,6 +59,25 @@ VITAL_C_EXPORT
 void vital_apm_register_single_plugin( char const *name );
 
 
+/// Load all plugins on first call
+/**
+ * This static method loads all plugins on the first call and does
+ * nothing on all subsequent calls. This is designed to load plugins
+ * in a concurrent application where the first thread to start is
+ * non-deterministic. All threads would call this method on starting
+ * and the first one that completes has loaded all plugins and the
+ * other callers will return.
+ *
+ * If you must reload plugins after this method has been called, use
+ * the vital_apm_register_plugins() method.
+ *
+ * @return \b true if plugins were loaded, \b false if plugins were
+ * already loaded.
+ */
+VITAL_C_EXPORT
+void vital_apm_load_plugins_once();
+
+
 /// Add an additional directory to search for plugins in
 /**
  * Directory paths that don't exist will simply be ignored.

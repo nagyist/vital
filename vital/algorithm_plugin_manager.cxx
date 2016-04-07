@@ -295,7 +295,7 @@ algorithm_plugin_manager
   const char * env_ptr = kwiversys::SystemTools::GetEnv( environment_variable_name );
   if ( 0 != env_ptr )
   {
-    LOG_INFO( m_impl->m_logger, "Adding path \"" << env_ptr << "\" from environment" );
+    LOG_INFO( m_impl->m_logger, "Adding path(s) \"" << env_ptr << "\" from environment" );
     std::string const extra_module_dirs(env_ptr);
 
     // Split supplied path into separate items using PATH_SEPARATOR_CHAR as delimiter

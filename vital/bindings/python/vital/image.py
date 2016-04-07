@@ -162,7 +162,7 @@ class Image (VitalObject):
 
     def first_pixel_address(self):
         """
-        Get the address of thei first pixel in the image
+        Get the address of the first pixel in the image
         """
         first_pixel = self.VITAL_LIB.vital_image_first_pixel
         first_pixel.restype = ctypes.c_void_p
