@@ -96,6 +96,12 @@ configure_file(
   ${VITAL_SETUP_SCRIPT_FILE}
   )
 
+# install testing infrastructure support
+kwiver_install_headers( tests/test_common.h
+  SUBDIR   vital/tests
+  NOPATH
+)
+
 # install set up script
 install( PROGRAMS   ${VITAL_SETUP_SCRIPT_FILE}
   DESTINATION ${CMAKE_INSTALL_PREFIX} )

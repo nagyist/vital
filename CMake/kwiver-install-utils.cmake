@@ -5,23 +5,24 @@
 #   kwiver_cmake_install_dir
 #     - Directory to install files to
 #
-set(utils_dir "${CMAKE_CURRENT_LIST_DIR}")
+set(src_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 install(
-  FILES "${utils_dir}/kwiver-utils.cmake"
-        "${utils_dir}/FindEigen3.cmake"
-        "${utils_dir}/FindLog4cxx.cmake"
-        "${utils_dir}/vital-flags.cmake"
-        "${utils_dir}/vital-flags-gnu.cmake"
-        "${utils_dir}/vital-flags-msvc.cmake"
-        "${utils_dir}/vital-flags-clang.cmake"
-        "${utils_dir}/kwiver-configcheck.cmake"
+  FILES "${src_dir}/kwiver-utils.cmake"
+        "${src_dir}/FindEigen3.cmake"
+        "${src_dir}/FindLog4cxx.cmake"
+        "${src_dir}/vital-flags.cmake"
+        "${src_dir}/vital-flags-gnu.cmake"
+        "${src_dir}/vital-flags-msvc.cmake"
+        "${src_dir}/vital-flags-clang.cmake"
+        "${src_dir}/kwiver-configcheck.cmake"
+        "${src_dir}/CommonFindMacros.cmake"
   DESTINATION "${kwiver_cmake_install_dir}"
   )
 
 install(
-  DIRECTORY "${utils_dir}/utils"
-            "${utils_dir}/tools"
-            "${utils_dir}/configcheck"
+  DIRECTORY "${src_dir}/utils"
+            "${src_dir}/tools"
+            "${src_dir}/configcheck"
   DESTINATION "${kwiver_cmake_install_dir}"
   )
