@@ -38,6 +38,7 @@ __author__ = 'paul.tunison@kitware.com'
 
 import abc
 import ctypes
+import logging
 
 from vital.util.find_vital_library import find_vital_library
 from vital.util.string import vital_string_t
@@ -163,9 +164,10 @@ class VitalObject (object):
     @property
     def _as_parameter_(self):
         """
-        Ctypes interface attribute for passing object instance as argument to
-        C function. This basically means that when an instance of this class
-        is passed as an argument, the underlying opaque pointer is passed.
+        Ctypes interface attribute for allowing a user to pass the python object
+        instance as argument to a C function instead of the opaque pointer.
+        This means that when an instance of this class is passed as an argument,
+        the underlying opaque pointer is automatically passed in its place.
         """
         return self.c_pointer
 

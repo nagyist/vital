@@ -83,7 +83,7 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
  * an exception is thrown within the provided code block.
  *
  * Assuming \c eh_ptr points to an initialized vital_error_handle_t instance.
- * An arbitrary catch sets a -1 error code and assignes to the message field
+ * An arbitrary catch sets a -1 error code and assigns to the message field
  * the same thing that is printed to logging statement.
  */
 #define STANDARD_CATCH(log_prefix, eh_ptr, code)                \
