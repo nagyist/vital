@@ -70,6 +70,16 @@ VITAL_C_EXPORT \
 vital_eigen_matrix##R##x##C##S##_t* \
 vital_eigen_matrix##R##x##C##S##_new(); \
 \
+/**
+ * Create a new Eigen type-based matrix with the given rows and columns.
+ *
+ * This is only useful for dynamic-size matrices, as fixed sized matrices can
+ * only take their size as valid parameters here
+ */ \
+VITAL_C_EXPORT \
+vital_eigen_matrix##R##x##C##S##_t* \
+vital_eigen_matrix##R##x##C##S##_new_sized( size_t rows, size_t cols ); \
+\
 /** Destroy a given Eigen matrix instance */ \
 VITAL_C_EXPORT \
 void \
@@ -129,6 +139,12 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
 
 /// Declare operations for all shapes
 /**
+ * The use of `X` in the below macros referrs to matrices that are "dynamic" in
+ * size (Eigen's definition). This basically means that the matrix size is
+ * determined at run-time instead of compile time. With types that include `X`
+ * size dimensions, the "...new_sized" constructor function must be used in
+ * order to create a non-zero sized dimension.
+ *
  * \param T Data type
  * \param S Type suffix
  */
@@ -137,6 +153,7 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
 DECLARE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, X, 1 )   \
 /* Other matrix shapes */                \
 DECLARE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
@@ -144,7 +161,8 @@ DECLARE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 4, 4 )
+DECLARE_EIGEN_OPERATIONS( T, S, 4, 4 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, X, X )
 
 
 DECLARE_EIGEN_ALL_SHAPES( double, d )

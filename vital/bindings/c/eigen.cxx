@@ -70,7 +70,19 @@ vital_eigen_matrix##R##x##C##S##_new() \
   STANDARD_CATCH( \
     "vital_eigen_matrix" #R "x" #C #S ".new.", 0, \
     return reinterpret_cast<vital_eigen_matrix##R##x##C##S##_t*>( \
-      new Eigen::Matrix< T, R, C > \
+      new Eigen::Matrix< T, R, C >() \
+    ); \
+  ); \
+  return 0; \
+} \
+/** Create a new Eigen type-based Matrix of the given shape */ \
+vital_eigen_matrix##R##x##C##S##_t* \
+vital_eigen_matrix##R##x##C##S##_new_sized( size_t rows, size_t cols ) \
+{ \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".new.", 0, \
+    return reinterpret_cast<vital_eigen_matrix##R##x##C##S##_t*>( \
+      new Eigen::Matrix< T, R, C >(rows, cols) \
     ); \
   ); \
   return 0; \
@@ -157,6 +169,7 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
 DEFINE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, X, 1 )   \
 /* Other matrix shapes */               \
 DEFINE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
@@ -164,7 +177,15 @@ DEFINE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 4, 4 )
+DEFINE_EIGEN_OPERATIONS( T, S, 4, 4 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, X, X )
+
+
+
+// Set a constant X for convenience in struct/function naming
+namespace {
+int const X = Eigen::Dynamic;
+}
 
 
 DEFINE_EIGEN_ALL_SHAPES( double, d )

@@ -58,7 +58,7 @@ class VitalEigenMatrix (VitalObject):
     # Valid data type keys.
     MAT_TYPE_KEYS = ('double', 'float')
 
-    FUNC_SPEC = "{rows:d}x{cols:d}{type:s}"
+    FUNC_SPEC = "{rows:s}x{cols:s}{type:s}"
 
     @classmethod
     def from_c_pointer(cls, ptr, rows, cols, dtype, shallow_copy_of=None):
@@ -70,7 +70,8 @@ class VitalEigenMatrix (VitalObject):
 
         return m
 
-    def __init__(self, rows, cols=1, dtype='double'):
+    def __init__(self, rows, cols=1, dynamic_rows=False, dynamic_cols=False,
+                 dtype='double'):
         """
         Create a new Eigen matrix via the Vital C interface
 
@@ -80,48 +81,59 @@ class VitalEigenMatrix (VitalObject):
         correspoding C interface functions cannot be found.*
 
         :param rows: Number of rows.
+        :type rows: int
 
         :param cols: Number of columns.
+        :type cols: int
 
         :param dtype: Name of the C type to use as the core data representation
             type. See the ``MAT_TYPE_KEYS`` tuple on this class for valid
             options.
         :type dtype: str
 
+        :param dynamic_rows: If the rows of the matrix considered "dynamic" in
+            eigen's sense. This allows for creating matrices that
+
         """
         super(VitalEigenMatrix, self).__init__()
-        self._init_function_map(rows, cols, dtype)
+        self._init_function_map(rows, cols, dtype, dynamic_rows, dynamic_cols)
 
         # Creating new eigen matrix of the input shape
-        m_new = self.VITAL_LIB[self._func_map['new']]
+        m_new = self.VITAL_LIB[self._func_map['new_sized']]
+        m_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
         m_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = m_new()
+        self._inst_ptr = m_new(rows, cols)
         if not bool(self.c_pointer):
             raise RuntimeError("Failed to construct new vector instance")
 
         # numpy-wrapper cache
         self._n_cache = None
 
-    def _init_function_map(self, rows, cols, dtype):
+    def _init_function_map(self, rows, cols, dtype, dynamic_rows, dynamic_cols):
         self._shape = (rows, cols)
+        self._dynamic_rows = dynamic_rows
+        self._dynamic_cols = dynamic_cols
         if dtype == self.MAT_TYPE_KEYS[0]:  # double
             self._c_type = ctypes.c_double
-            self._func_spec = self.FUNC_SPEC.format(
-                rows=rows, cols=cols, type='d',
-            )
+            type_char = 'd'
         elif dtype == self.MAT_TYPE_KEYS[1]:  # float
             self._c_type = ctypes.c_float
-            self._func_spec = self.FUNC_SPEC.format(
-                rows=rows, cols=cols, type='f',
-            )
+            type_char = 'f'
         else:
             raise ValueError("Invalid data type given ('%s'). "
                              "Must be one of %s."
                              % (dtype, self.MAT_TYPE_KEYS))
 
+        self._func_spec = self.FUNC_SPEC.format(
+            rows=(dynamic_rows and 'X') or str(rows),
+            cols=(dynamic_cols and 'X') or str(cols),
+            type=type_char,
+        )
+
         # Determine function methods to use for the given shape
         self._func_map = {
             'new': 'vital_eigen_matrix{}_new'.format(self._func_spec),
+            'new_sized': 'vital_eigen_matrix{}_new_sized'.format(self._func_spec),
             'destroy': 'vital_eigen_matrix{}_destroy'.format(self._func_spec),
             'get': 'vital_eigen_matrix{}_get'.format(self._func_spec),
             'set': 'vital_eigen_matrix{}_set'.format(self._func_spec),
@@ -137,7 +149,13 @@ class VitalEigenMatrix (VitalObject):
             self._inst_ptr = self.C_TYPE_PTR()
 
     def __getitem__(self, spec):
-        row, col = spec
+        if self._shape[1] == 1:
+            row = int(spec)
+            col = 0
+        else:
+            row, col = spec
+            row = int(row)
+            col = int(col)
 
         v_get = self.VITAL_LIB[self._func_map['get']]
         v_get.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
@@ -147,7 +165,13 @@ class VitalEigenMatrix (VitalObject):
             return v_get(self, ctypes.c_uint(row), ctypes.c_uint(col), eh)
 
     def __setitem__(self, spec, value):
-        row, col = spec
+        if self._shape[1] == 1:
+            row = int(spec)
+            col = 1
+        else:
+            row, col = spec
+            row = int(row)
+            col = int(col)
 
         v_set = self.VITAL_LIB[self._func_map['set']]
         v_set.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
