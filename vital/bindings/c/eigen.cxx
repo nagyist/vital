@@ -38,9 +38,8 @@
 
 #include "eigen.h"
 
+#include <Eigen/Core>
 #include <vital/bindings/c/helpers/c_utils.h>
-#include <vital/types/matrix.h>
-#include <vital/types/vector.h>
 
 
 #define REINTERP_TYPE( new_type, c_ptr, var )           \
@@ -174,3 +173,4 @@ DEFINE_EIGEN_ALL_SHAPES( float,  f )
 
 #undef DEFINE_EIGEN_OPERATIONS
 #undef DEFINE_EIGEN_ALL_SHAPES
+#undef REINTERP_TYPE
