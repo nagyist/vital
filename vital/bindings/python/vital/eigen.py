@@ -140,6 +140,18 @@ class VitalEigenMatrix (VitalObject):
             'data': 'vital_eigen_matrix{}_data'.format(self._func_spec),
         }
 
+    def _check_bounds(self, r, c):
+        """
+        Manually checking row/col bounds so as not to trigger assert in library,
+        which would crash everything.
+        :param r: Rows index value
+        :param c: col index value
+        :raises IndexError: If one or both index values are out of range
+        """
+        if not (0 <= r < self._shape[0] and 0 <= c < self._shape[1]):
+            raise IndexError("Invalid index ({}, {}) for matrix with shape "
+                             "({}, {}).".format(r, c, *self._shape))
+
     def _destroy(self):
         if self.c_pointer:
             m_del = self.VITAL_LIB[self._func_map['destroy']]
@@ -156,6 +168,7 @@ class VitalEigenMatrix (VitalObject):
             row, col = spec
             row = int(row)
             col = int(col)
+        self._check_bounds(row, col)
 
         v_get = self.VITAL_LIB[self._func_map['get']]
         v_get.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
@@ -172,6 +185,7 @@ class VitalEigenMatrix (VitalObject):
             row, col = spec
             row = int(row)
             col = int(col)
+        self._check_bounds(row, col)
 
         v_set = self.VITAL_LIB[self._func_map['set']]
         v_set.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
@@ -213,14 +227,11 @@ class VitalEigenMatrix (VitalObject):
             n = numpy.ctypeslib.as_array(data, (rows * cols,))
             dtype_bytes = numpy.dtype(self._c_type).alignment
             if is_row_major:
-                print "col minor, row major"
                 strides = (outer_stride * dtype_bytes,
                            inner_stride * dtype_bytes)
             else:
-                print 'row minor, col major'
                 strides = (inner_stride * dtype_bytes,
                            outer_stride * dtype_bytes)
-            print strides
             self._n_cache = numpy.lib.stride_tricks.as_strided(
                 n, shape=(rows, cols), strides=strides, subok=True
             )
