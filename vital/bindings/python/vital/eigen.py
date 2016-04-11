@@ -46,114 +46,6 @@ from vital.util import (
 __author__ = 'paul.tunison@kitware.com'
 
 
-class VitalVector2D (VitalObject):
-    """
-    Wrapper for Eigen matrix use within Vital. This class coveres both
-    "Vector<dim><type>", "Matrix<dim><type>" and
-    """
-
-    def __init__(self):
-        super(VitalVector2D, self).__init__()
-
-        v_new = self.VITAL_LIB['vital_vector2d_new']
-        v_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = v_new()
-        if not bool(self.c_pointer):
-            raise RuntimeError("Failed to construct new vector instance")
-
-        # numpy-wrapper cache
-        self._n_cache = None
-
-    def _destroy(self):
-        v_del = self.VITAL_LIB['vital_vector2d_destroy']
-        v_del.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        with VitalErrorHandle() as eh:
-            v_del(self, eh)
-        self._inst_ptr = self.C_TYPE_PTR()
-
-    def __getitem__(self, idx):
-        if idx not in (0, 1):
-            raise IndexError(idx)
-        v_get = self.VITAL_LIB['vital_vector2d_get']
-        v_get.argtypes = \
-            [self.C_TYPE_PTR, ctypes.c_int, VitalErrorHandle.C_TYPE_PTR]
-        v_get.restype = ctypes.c_double
-        with VitalErrorHandle() as eh:
-            return v_get(self, ctypes.c_int(idx), eh)
-
-    def __setitem__(self, idx, value):
-        v_set = self.VITAL_LIB['vital_vector2d_set']
-        v_set.argtypes = [self.C_TYPE_PTR, ctypes.c_int, ctypes.c_double,
-                          VitalErrorHandle.C_TYPE_PTR]
-        with VitalErrorHandle() as eh:
-            v_set(self, ctypes.c_int(idx), ctypes.c_double(value), eh)
-
-    def __repr__(self):
-        return "%s(%f, %f)" % (self.__class__.__name__, self[0], self[1])
-
-    def as_numpy(self):
-        if not self._n_cache:
-            v_data = self.VITAL_LIB['vital_vector2d_data']
-            v_data.argtypes = [self.C_TYPE_PTR,
-                               ctypes.POINTER(ctypes.c_uint),
-                               ctypes.POINTER(ctypes.c_uint),
-                               ctypes.POINTER(ctypes.c_uint),
-                               ctypes.POINTER(ctypes.c_uint),
-                               ctypes.POINTER(ctypes.c_uint),
-                               ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-                               VitalErrorHandle.C_TYPE_PTR]
-            rows = ctypes.c_uint()
-            cols = ctypes.c_uint()
-            inner_stride = ctypes.c_uint()
-            outer_stride = ctypes.c_uint()
-            is_row_major = ctypes.c_uint()
-            data = ctypes.POINTER(ctypes.c_double)()
-            with VitalErrorHandle() as eh:
-                v_data(self,
-                       ctypes.byref(rows), ctypes.byref(cols),
-                       ctypes.byref(inner_stride), ctypes.byref(outer_stride),
-                       ctypes.byref(is_row_major),
-                       ctypes.byref(data), eh)
-
-            rows = rows.value
-            cols = cols.value
-            inner_stride = inner_stride.value
-            outer_stride = outer_stride.value
-            is_row_major = bool(is_row_major.value)
-
-            n = numpy.ctypeslib.as_array(data, (rows, cols))
-            if bool(is_row_major):
-                print "Reshaping to Fortran byte order"
-                n = n.reshape((rows, cols), order='F')
-            self._n_cache = n
-
-        return self._n_cache
-
-
-"""
-
-innerSize ::
-For a vector, this is just the size. For a matrix (non-vector), this is the
-minor dimension with respect to the storage order, i.e., the number of rows for
-a column-major matrix, and the number of columns for a row-major matrix
-
-innerStride ::
-The pointer increment between two consecutive elements within a slice in the
-inner direction.
-
-outerSize ::
-For a vector, this returns just 1. For a matrix (non-vector), this is the major
-dimension with respect to the storage order, i.e., the number of columns for a
-column-major matrix, and the number of rows for a row-major matrix.
-
-outerStride ::
-The pointer increment between two consecutive inner slices (for example, between
-two consecutive columns in a column-major matrix).
-
-
-"""
-
-
 class VitalEigenMatrix (VitalObject):
     """
     Wrapper for Eigen matrix use within Vital. This class covers both
@@ -166,19 +58,60 @@ class VitalEigenMatrix (VitalObject):
     # Valid data type keys.
     MAT_TYPE_KEYS = ('double', 'float')
 
-    FUNC_SUFFIX_TMPL = "_{rows:d}x{cols:d}{type:s}"
+    FUNC_SPEC = "{rows:d}x{cols:d}{type:s}"
+
+    @classmethod
+    def from_c_pointer(cls, ptr, rows, cols, dtype, shallow_copy_of=None):
+        #: :type: VitalEigenMatrix
+        m = super(VitalEigenMatrix, cls).from_c_pointer(ptr, shallow_copy_of)
+
+        # Initialize shape and function map into object
+        m._init_function_map(rows, cols, dtype)
+
+        return m
 
     def __init__(self, rows, cols=1, dtype='double'):
-        super(VitalEigenMatrix, self).__init__()
+        """
+        Create a new Eigen matrix via the Vital C interface
 
+        **Note:** *Not all sizes are supported. Only the standard vector and
+        matrix sizes supported are valid through this constructor. If an invalid
+        shape is provided, an exception will be raised stating that the
+        correspoding C interface functions cannot be found.*
+
+        :param rows: Number of rows.
+
+        :param cols: Number of columns.
+
+        :param dtype: Name of the C type to use as the core data representation
+            type. See the ``MAT_TYPE_KEYS`` tuple on this class for valid
+            options.
+        :type dtype: str
+
+        """
+        super(VitalEigenMatrix, self).__init__()
+        self._init_function_map(rows, cols, dtype)
+
+        # Creating new eigen matrix of the input shape
+        m_new = self.VITAL_LIB[self._func_map['new']]
+        m_new.restype = self.C_TYPE_PTR
+        self._inst_ptr = m_new()
+        if not bool(self.c_pointer):
+            raise RuntimeError("Failed to construct new vector instance")
+
+        # numpy-wrapper cache
+        self._n_cache = None
+
+    def _init_function_map(self, rows, cols, dtype):
+        self._shape = (rows, cols)
         if dtype == self.MAT_TYPE_KEYS[0]:  # double
             self._c_type = ctypes.c_double
-            self._func_suffix = self.FUNC_SUFFIX_TMPL.format(
+            self._func_spec = self.FUNC_SPEC.format(
                 rows=rows, cols=cols, type='d',
             )
         elif dtype == self.MAT_TYPE_KEYS[1]:  # float
             self._c_type = ctypes.c_float
-            self._func_suffix = self.FUNC_SUFFIX_TMPL.format(
+            self._func_spec = self.FUNC_SPEC.format(
                 rows=rows, cols=cols, type='f',
             )
         else:
@@ -186,20 +119,18 @@ class VitalEigenMatrix (VitalObject):
                              "Must be one of %s."
                              % (dtype, self.MAT_TYPE_KEYS))
 
-        # numpy-wrapper cache
-        self._n_cache = None
-
-        # Creating new eigen matrix of the input shape
-        m_new = self.VITAL_LIB['vital_eigen_new' + self._func_suffix]
-        m_new.argtypes = [ctypes.c_uint, ctypes.c_uint]
-        m_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = m_new(int(rows), int(cols))
-        if not bool(self.c_pointer):
-            raise RuntimeError("Failed to construct new vector instance")
+        # Determine function methods to use for the given shape
+        self._func_map = {
+            'new': 'vital_eigen_matrix{}_new'.format(self._func_spec),
+            'destroy': 'vital_eigen_matrix{}_destroy'.format(self._func_spec),
+            'get': 'vital_eigen_matrix{}_get'.format(self._func_spec),
+            'set': 'vital_eigen_matrix{}_set'.format(self._func_spec),
+            'data': 'vital_eigen_matrix{}_data'.format(self._func_spec),
+        }
 
     def _destroy(self):
         if self.c_pointer:
-            m_del = self.VITAL_LIB['vital_eigen_destroy' + self._func_suffix]
+            m_del = self.VITAL_LIB[self._func_map['destroy']]
             m_del.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
             with VitalErrorHandle() as eh:
                 m_del(self, eh)
@@ -208,7 +139,7 @@ class VitalEigenMatrix (VitalObject):
     def __getitem__(self, spec):
         row, col = spec
 
-        v_get = self.VITAL_LIB['vital_eigen_get' + self._func_suffix]
+        v_get = self.VITAL_LIB[self._func_map['get']]
         v_get.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
                           VitalErrorHandle.C_TYPE_PTR]
         v_get.restype = self._c_type
@@ -218,7 +149,7 @@ class VitalEigenMatrix (VitalObject):
     def __setitem__(self, spec, value):
         row, col = spec
 
-        v_set = self.VITAL_LIB['vital_eigen_set' + self._func_suffix]
+        v_set = self.VITAL_LIB[self._func_map['set']]
         v_set.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
                           self._c_type, VitalErrorHandle.C_TYPE_PTR]
         with VitalErrorHandle() as eh:
@@ -226,8 +157,8 @@ class VitalEigenMatrix (VitalObject):
                   self._c_type(value), eh)
 
     def as_numpy(self):
-        if not self._n_cache:
-            v_data = self.VITAL_LIB['vital_eigen_data' + self._func_suffix]
+        if self._n_cache is None:
+            v_data = self.VITAL_LIB[self._func_map['data']]
             v_data.argtypes = [self.C_TYPE_PTR,
                                ctypes.POINTER(ctypes.c_uint),  # rows
                                ctypes.POINTER(ctypes.c_uint),  # cols

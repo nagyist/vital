@@ -48,140 +48,111 @@ extern "C"
 #include <vital/bindings/c/error_handle.h>
 
 
-/// Opaque Pointer Types
-typedef struct vital_vector_s vital_vector_t;
-typedef struct vital_vector2d_s vital_vector2d_t;
-// The other types could probably be created by doing all this in a macro
-// Probably the same with the matrix types, maybe in the same macro
-//typedef struct vital_vector2f_s vital_vector2f_t;
-//typedef struct vital_vector3d_s vital_vector3d_t;
-//typedef struct vital_vector3f_s vital_vector3f_t;
-//typedef struct vital_vector4d_s vital_vector4d_t;
-//typedef struct vital_vector4f_s vital_vector4f_t;
-
-
-/// Create new vector2d instance
+/// Declare Eigen matrix interface functions for use with MAPTK
 /**
- * Initial vector values are uninitialized.
- * \returns New vector of size 2 consisting of double values.
+ * \param T The data storage type like double or float
+ * \param S The character suffix to use for naming of functions.
+ * \param R Number of rows in the matrix. "Vector" types use this as the size
+ *          parameter.
+ * \param C Number of columns in the matrix. "Vector" types have a value of 1
+ *          here.
  */
-VITAL_C_EXPORT
-vital_vector2d_t* vital_vector2d_new();
-
-
-/// Destroy vital_vector2d_t instance
-VITAL_C_EXPORT
-void vital_vector2d_destroy( vital_vector2d_t *v, vital_error_handle_t *eh );
-
-
-/// Get the value at a location
+#define DECLARE_EIGEN_OPERATIONS( T, S, R, C ) \
+/** Opaque Pointer Type */ \
+typedef struct vital_eigen_matrix##R##x##C##S##_s vital_eigen_matrix##R##x##C##S##_t; \
+\
 /**
- * \param[in] v Vector instance to get the data of
- * \param[in] row The row of the value to access
- * \param[in] col The column of the value to access
- * \param[in,out] eh Vital C error handle structure
- * \returns The double value at the position specified
- */
-VITAL_C_EXPORT
-double vital_vector2d_get( vital_vector2d_t *v, int idx,
-                           vital_error_handle_t *eh );
-
-
-/// Set the value at a location
-VITAL_C_EXPORT
-void vital_vector2d_set( vital_vector2d_t *v, int idx, double value,
-                         vital_error_handle_t *eh );
-
-
-/// Get the pointer to the vector's data array
-/**
- * \param[in] v Vector instance to get the data of
- * \param[out] rows Number of rows in the matrix
- * \param[out] cols Number of columns in the matrix
- * \param[out] data Pointer to the matrix data array.
- * \param[in,out] eh Vital C error handle structure
- */
-VITAL_C_EXPORT
-void vital_vector2d_data( vital_vector2d_t *v,
-                          unsigned int *rows,
-                          unsigned int *cols,
-                          unsigned int *inner_stride,
-                          unsigned int *outer_stride,
-                          unsigned int *is_row_major,
-                          double **data,
-                          vital_error_handle_t *eh );
-
-
-/// === More generic functions === ///
-
-
-//#define CREATE_FUNCTIONS_FOR_TYPE( T, ROWS, COLS, SUFFIX )
-//do {
-
-/// Opaque Pointer Type
-typedef struct vital_matrix_2x3d_s vital_matrix_2x3d_t;
-
-/// Create a new Eigen type-based Matrix of the given shape
-/**
+ * Create a new Eigen type-based Matrix of the given shape
+ *
  * New matrices are column major in storage and uninitialized.
- */
-VITAL_C_EXPORT
-vital_matrix_2x3d_t* vital_eigen_new_2x3d( unsigned int const rows,
-                                      unsigned int const cols );
-
-/// Destroy a given Eigen matrix instance 
-VITAL_C_EXPORT 
-void vital_eigen_destroy_2x3d( vital_matrix_2x3d_t *m,
-                               vital_error_handle_t *eh );
-
-/// Get the value at a location
+ */ \
+VITAL_C_EXPORT \
+vital_eigen_matrix##R##x##C##S##_t* \
+vital_eigen_matrix##R##x##C##S##_new(); \
+\
+/** Destroy a given Eigen matrix instance */ \
+VITAL_C_EXPORT \
+void \
+vital_eigen_matrix##R##x##C##S##_destroy( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                          vital_error_handle_t *eh ); \
+\
 /**
+ * Get the value at a location
  * \param[in] m Matrix instance to get the data of
  * \param[in] row The row of the value to access
  * \param[in] col The column of the value to access
  * \param[in,out] eh Vital C error handle structure
  * \returns The value at the position specified
- */
-VITAL_C_EXPORT
-double vital_eigen_get_2x3d( vital_matrix_2x3d_t *m,
-                             unsigned int row, unsigned int col,
-                             vital_error_handle_t *eh );
-
-/// Set the value at a location
+ */ \
+VITAL_C_EXPORT \
+T \
+vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                      unsigned int row, unsigned int col, \
+                                      vital_error_handle_t *eh ); \
+\
 /**
+ * Set the value at a location
+ *
  * \param[in] m Matrix instance to set the values of
  * \param[in] row The row of the value to set
  * \param[in] col The column of the value to set
  * \param[in] value The value to set
  * \param[in,out] eh Vital C error handle structure
- */
-VITAL_C_EXPORT
-void vital_eigen_set_2x3d( vital_matrix_2x3d_t *m,
-                           unsigned int row, unsigned int col,
-                           double value, vital_error_handle_t *eh );
-
-/// Get the pointer to the vector's data array
+ */ \
+VITAL_C_EXPORT \
+void \
+vital_eigen_matrix##R##x##C##S##_set( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                      unsigned int row, unsigned int col, \
+                                      T value, \
+                                      vital_error_handle_t *eh ); \
+\
 /**
+ * Get the pointer to the vector's data array
+ *
  * \param[in] v Vector instance to get the data of
  * \param[out] rows Number of rows in the matrix
  * \param[out] cols Number of columns in the matrix
  * \param[out] data Pointer to the matrix data array.
  * \param[in,out] eh Vital C error handle structure
+ */ \
+VITAL_C_EXPORT \
+void \
+vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       unsigned int *rows, \
+                                       unsigned int *cols, \
+                                       unsigned int *inner_stride, \
+                                       unsigned int *outer_stride, \
+                                       unsigned int *is_row_major, \
+                                       T **data, \
+                                       vital_error_handle_t *eh );
+
+
+/// Declare operations for all shapes
+/**
+ * \param T Data type
+ * \param S Type suffix
  */
-VITAL_C_EXPORT
-void vital_eigen_data_2x3d( vital_matrix_2x3d_t *m,
-                            unsigned int *rows,
-                            unsigned int *cols,
-                            unsigned int *inner_stride,
-                            unsigned int *outer_stride,
-                            unsigned int *is_row_major,
-                            double **data,
-                            vital_error_handle_t *eh );
+#define DECLARE_EIGEN_ALL_SHAPES( T, S ) \
+/* "Vector" types */                     \
+DECLARE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
+/* Other matrix shapes */                \
+DECLARE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
+DECLARE_EIGEN_OPERATIONS( T, S, 4, 4 )
 
-//} while(0)
 
-//CREATE_FUNCTIONS_FOR_TYPE( double, 2, 3, d );
-//CREATE_FUNCTIONS_FOR_TYPE( float,  2, 3, f );
+DECLARE_EIGEN_ALL_SHAPES( double, d )
+DECLARE_EIGEN_ALL_SHAPES( float,  f )
+
+
+#undef DECLARE_EIGEN_OPERATIONS
+#undef DECLARE_EIGEN_ALL_SHAPES
 
 
 #ifdef __cplusplus

@@ -32,6 +32,8 @@
  * \file
  * \brief C Interface implementation to Vital use of Eigen vector and matrix
  *        classes
+ *
+ * Eigen is Column-major by default, i.e. (rows, cols) indexing
  */
 
 #include "eigen.h"
@@ -52,180 +54,123 @@
   } while(0)
 
 
-
-vital_vector2d_t* vital_vector2d_new()
-{
-  STANDARD_CATCH(
-    "vector2d.new", 0,
-    return reinterpret_cast<vital_vector2d_t*>(
-      new kwiver::vital::vector_2d()
-    );
-  );
-  return 0;
+/// Define Eigen matrix interface functions for use with MAPTK
+/**
+ * \param T The data storage type like double or float
+ * \param S The character suffix to use for naming of functions.
+ * \param R Number of rows in the matrix. "Vector" types use this as the size
+ *          parameter.
+ * \param C Number of columns in the matrix. "Vector" types have a value of 1
+ *          here.
+ */
+#define DEFINE_EIGEN_OPERATIONS( T, S, R, C ) \
+/** Create a new Eigen type-based Matrix of the given shape */ \
+vital_eigen_matrix##R##x##C##S##_t* \
+vital_eigen_matrix##R##x##C##S##_new() \
+{ \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".new.", 0, \
+    return reinterpret_cast<vital_eigen_matrix##R##x##C##S##_t*>( \
+      new Eigen::Matrix< T, R, C > \
+    ); \
+  ); \
+  return 0; \
+} \
+\
+/** Destroy a given Eigen matrix instance */ \
+void \
+vital_eigen_matrix##R##x##C##S##_destroy( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                          vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".destroy", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    if( mp ) \
+    { \
+      delete( mp ); \
+    } \
+  ); \
+} \
+\
+/** Get the value at a location */ \
+T \
+vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                      unsigned int row, unsigned int col, \
+                                      vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".get", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    return (*mp)(row, col); \
+  ); \
+  return 0; \
+} \
+\
+/** Set the value at a location */ \
+void \
+vital_eigen_matrix##R##x##C##S##_set( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                      unsigned int row, unsigned int col, \
+                                      T value, \
+                                      vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".set", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    (*mp)(row, col) = value; \
+  ); \
+} \
+\
+/** Get the pointer to the vector's data array */ \
+void \
+vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       unsigned int *rows, \
+                                       unsigned int *cols, \
+                                       unsigned int *inner_stride, \
+                                       unsigned int *outer_stride, \
+                                       unsigned int *is_row_major, \
+                                       T **data, \
+                                       vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".data", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    *rows = mp->rows(); \
+    *cols = mp->cols(); \
+    *inner_stride = mp->innerStride(); \
+    *outer_stride = mp->outerStride(); \
+    *is_row_major = (unsigned int)(mp->Flags & Eigen::RowMajorBit); \
+    *data = mp->data(); \
+  ); \
 }
 
 
-void vital_vector2d_destroy( vital_vector2d_t *v, vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "vector2d.desctroy", eh,
-    kwiver::vital::vector_2d *v_ptr = reinterpret_cast<kwiver::vital::vector_2d *>( v );
-    if( v_ptr )
-    {
-      delete( v_ptr );
-    }
-  );
-}
+/// DEFINE operations for all shapes
+/**
+ * \param T Data type
+ * \param S Type suffix
+ */
+#define DEFINE_EIGEN_ALL_SHAPES( T, S ) \
+/* "Vector" types */                    \
+DEFINE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
+/* Other matrix shapes */               \
+DEFINE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
+DEFINE_EIGEN_OPERATIONS( T, S, 4, 4 )
 
 
-double vital_vector2d_get( vital_vector2d_t *v, int idx,
-                           vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "vector2d.get", eh,
-    REINTERP_TYPE( kwiver::vital::vector_2d, v, v_ptr );
-    return (*v_ptr)(idx);
-  );
-  return 0.0;
-}
+DEFINE_EIGEN_ALL_SHAPES( double, d )
+DEFINE_EIGEN_ALL_SHAPES( float,  f )
 
 
-void vital_vector2d_set( vital_vector2d_t *v, int idx, double value,
-                         vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "vector2d.set", eh,
-    REINTERP_TYPE( kwiver::vital::vector_2d, v, v_ptr );
-    (*v_ptr)(idx) = value;
-  );
-}
-
-
-void vital_vector2d_data( vital_vector2d_t *v,
-                          unsigned int *rows,
-                          unsigned int *cols,
-                          unsigned int *inner_stride,
-                          unsigned int *outer_stride,
-                          unsigned int *is_row_major,
-                          double **data,
-                          vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "vector2d.data", eh,
-    REINTERP_TYPE( kwiver::vital::vector_2d, v, v_ptr );
-    // Eigen is Column-major by default, i.e. (rows, cols) indexing
-
-    LOG_DEBUG(m_logger, "v.rows: " << v_ptr->rows());
-    *rows = v_ptr->rows();
-
-    LOG_DEBUG(m_logger, "v.cols: " << v_ptr->cols());
-    *cols = v_ptr->cols();
-
-    LOG_DEBUG(m_logger, "v.innerSize: " << v_ptr->innerSize());
-    LOG_DEBUG(m_logger, "v.innerStride: " << v_ptr->innerStride());
-    *inner_stride = v_ptr->innerStride();
-
-    LOG_DEBUG(m_logger, "v.outerSize: " << v_ptr->outerSize());
-    LOG_DEBUG(m_logger, "v.outerStride: " << v_ptr->outerStride());
-    *outer_stride = v_ptr->outerStride();
-
-    LOG_DEBUG(m_logger, "v.options&RowMajorBit: " << (v_ptr->Flags&Eigen::RowMajorBit));
-    *is_row_major = (unsigned int)(v_ptr->Flags & Eigen::RowMajorBit);
-
-    *data = v_ptr->data();
-  );
-}
-
-
-/// === More generic functions === ///
-// // Eigen is Column-major by default, i.e. (rows, cols) indexing
-// TODO: Check that dynamically created instances can be cast to Vital typedef types
-
-
-/// Create a new Eigen type-based Matrix of the given shape
-vital_matrix_2x3d_t* vital_eigen_new_2x3d( unsigned int const rows,
-                                           unsigned int const cols )
-{
-  STANDARD_CATCH(
-    "eigen_matrix.new.2x3d", 0,
-    return reinterpret_cast<vital_matrix_2x3d_t*>(
-      new kwiver::vital::matrix_2x3d()
-    );
-  );
-  return 0;
-}
-
-/// Destroy a given Eigen matrix instance
-void vital_eigen_destroy_2x3d( vital_matrix_2x3d_t *m,
-                               vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "eigen_matrix.destroy.2x3d", eh,
-    REINTERP_TYPE( kwiver::vital::matrix_2x3d, m, mp );
-    if( mp )
-    {
-      delete( mp );
-    }
-  );
-}
-
-/// Get the value at a location
-double vital_eigen_get_2x3d( vital_matrix_2x3d_t *m,
-                             unsigned int row, unsigned int col,
-                             vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "eigen_matrix.get.2x3d", eh,
-    REINTERP_TYPE( kwiver::vital::matrix_2x3d, m, mp );
-    return (*mp)(row, col);
-  );
-  return 0;
-}
-
-/// Set the value at a location
-void vital_eigen_set_2x3d( vital_matrix_2x3d_t *m,
-                           unsigned int row, unsigned int col,
-                           double value, vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "eigen_matrix.set.2x3d", eh,
-    REINTERP_TYPE( kwiver::vital::matrix_2x3d, m, mp );
-    (*mp)(row, col) = value;
-  );
-}
-
-/// Get the pointer to the vector's data array
-void vital_eigen_data_2x3d( vital_matrix_2x3d_t *m,
-                            unsigned int *rows,
-                            unsigned int *cols,
-                            unsigned int *inner_stride,
-                            unsigned int *outer_stride,
-                            unsigned int *is_row_major,
-                            double **data,
-                            vital_error_handle_t *eh )
-{
-  STANDARD_CATCH(
-    "eigen_matrix.data.2x3d", eh,
-
-    REINTERP_TYPE( kwiver::vital::matrix_2x3d, m, mp );
-
-    LOG_DEBUG(m_logger, "m.rows: " << mp->rows());
-    *rows = mp->rows();
-
-    LOG_DEBUG(m_logger, "m.cols: " << mp->cols());
-    *cols = mp->cols();
-
-    LOG_DEBUG(m_logger, "m.innerSize: " << mp->innerSize());
-    LOG_DEBUG(m_logger, "m.innerStride: " << mp->innerStride());
-    *inner_stride = mp->innerStride();
-
-    LOG_DEBUG(m_logger, "m.outerSize: " << mp->outerSize());
-    LOG_DEBUG(m_logger, "m.outerStride: " << mp->outerStride());
-    *outer_stride = mp->outerStride();
-
-    LOG_DEBUG(m_logger, "m.options&RowMajorBit: " << (mp->Flags&Eigen::RowMajorBit));
-    *is_row_major = (unsigned int)(mp->Flags & Eigen::RowMajorBit);
-
-    *data = mp->data();
-  );
-}
+#undef DEFINE_EIGEN_OPERATIONS
+#undef DEFINE_EIGEN_ALL_SHAPES
