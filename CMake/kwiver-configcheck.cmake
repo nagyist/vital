@@ -84,4 +84,16 @@ try_compile( success
 
 set( VITAL_USE_ABI_DEMANGLE ${success} )
 
+###
+# See if the use of std::unique_ptr values in an std::map is supported
+try_compile( success
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/configcheck/std_map_unique_ptr.cxx
+  CMAKE_FLAGS
+      -DCMAKE_CXX_FLAGS:STRING=#${CMAKE_CXX_FLAGS}
+  OUTPUT_VARIABLE OUTPUT
+  )
+set( VITAL_STD_MAP_UNIQUE_PTR_ALLOWED ${success} )
+message( STATUS "VITAL_STD_MAP_UNIQUE_PTR: ${VITAL_STD_MAP_UNIQUE_PTR_ALLOWED}" )
+
 #
