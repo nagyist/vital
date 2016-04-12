@@ -224,16 +224,24 @@ class VitalEigenMatrix (VitalObject):
             outer_stride = outer_stride.value
             is_row_major = bool(is_row_major.value)
 
-            n = numpy.ctypeslib.as_array(data, (rows * cols,))
-            dtype_bytes = numpy.dtype(self._c_type).alignment
-            if is_row_major:
-                strides = (outer_stride * dtype_bytes,
-                           inner_stride * dtype_bytes)
+            # data will be null of one of our dimensions is 0
+            if data:
+                n = numpy.ctypeslib.as_array(data, (rows * cols,))
+                dtype_bytes = numpy.dtype(self._c_type).alignment
+                if is_row_major:
+                    strides = (outer_stride * dtype_bytes,
+                               inner_stride * dtype_bytes)
+                else:
+                    strides = (inner_stride * dtype_bytes,
+                               outer_stride * dtype_bytes)
+                n = numpy.lib.stride_tricks.as_strided(
+                    n, shape=(rows, cols), strides=strides, subok=True
+                )
             else:
-                strides = (inner_stride * dtype_bytes,
-                           outer_stride * dtype_bytes)
-            self._n_cache = numpy.lib.stride_tricks.as_strided(
-                n, shape=(rows, cols), strides=strides, subok=True
-            )
+                # null pointer, just make a number array of the given 0-area
+                # shape
+                n = numpy.ndarray(self._shape, numpy.dtype(self._c_type))
+
+            self._n_cache = n
 
         return self._n_cache
