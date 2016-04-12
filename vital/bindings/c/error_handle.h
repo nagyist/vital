@@ -45,6 +45,12 @@ extern "C"
 
 
 /// Common error handle structure
+/**
+ * When an instance of this structure is to be used multiple times, if the
+ * message from a previous error is to be retained, it should be copied before
+ * being used again. The message, if non-null, is freed when used as an error
+ * handle.
+ */
 typedef struct vital_error_handle_s {
   int error_code;
   char *message;
