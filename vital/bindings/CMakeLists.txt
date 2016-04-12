@@ -20,9 +20,9 @@ cmake_dependent_option( VITAL_ENABLE_PYTHON
 if (VITAL_ENABLE_C_LIB )
   add_subdirectory( c )
 
-if (VITAL_ENABLE_PYTHON)
-  add_subdirectory( python )
-endif ()
+  if (VITAL_ENABLE_PYTHON)
+    add_subdirectory( python )
+  endif ()
 
 else()
   unset( VITAL_ENABLE_PYTHON CACHE )
