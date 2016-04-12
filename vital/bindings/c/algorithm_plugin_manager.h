@@ -75,7 +75,7 @@ void vital_apm_register_single_plugin( char const *name );
  * already loaded.
  */
 VITAL_C_EXPORT
-void vital_apm_load_plugins_once();
+bool vital_apm_load_plugins_once();
 
 
 /// Add an additional directory to search for plugins in
