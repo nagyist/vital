@@ -4,6 +4,7 @@ set(vital_c_public_headers
   algorithm.h
   algorithm_plugin_manager.h
   camera.h
+  camera_intrinsics.h
   camera_map.h
   common.h
   config_block.h
@@ -27,6 +28,7 @@ set(vital_c_private_headers
   helpers/algorithm.h
   helpers/c_utils.h
   helpers/camera.h
+  helpers/camera_intrinsics.h
   helpers/camera_map.h
   helpers/config_block.h
   helpers/image_container.h
@@ -38,6 +40,7 @@ set(vital_c_sources
   algorithm.cxx
   algorithm_plugin_manager.cxx
   camera.cxx
+  camera_intrinsics.cxx
   camera_map.cxx
   common.cxx
   config_block.cxx

@@ -273,13 +273,13 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
                                "is not of the same type (%s). Cannot inherit "
                                "required information." % type(obj))
 
-    def __array_prepare__(self, obj, context=None):
-        # Don't propagate this class and its stored references needlessly
-        return obj
-
-    def __array_wrap__(self, out_arr, context=None):
-        # Don't propagate this class and its stored references needlessly
-        return out_arr
+    # def __array_prepare__(self, obj, context=None):
+    #     # Don't propagate this class and its stored references needlessly
+    #     return obj
+    #
+    # def __array_wrap__(self, out_arr, context=None):
+    #     # Don't propagate this class and its stored references needlessly
+    #     return out_arr
 
     def _destroy(self):
         # Not smart-pointer controlled in C++. We might not own the data we're
