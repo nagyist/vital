@@ -17,7 +17,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${VITAL_BINARY_DIR}/bin")
 #
 set(VITAL_VERSION_MAJOR 0)
 set(VITAL_VERSION_MINOR 1)
-set(VITAL_VERSION_PATCH 1)
+set(VITAL_VERSION_PATCH 0)
 set(VITAL_VERSION "${VITAL_VERSION_MAJOR}.${VITAL_VERSION_MINOR}.${VITAL_VERSION_PATCH}")
 
 ##
@@ -96,6 +96,12 @@ configure_file(
   ${VITAL_SETUP_SCRIPT_FILE}
   @ONLY
   )
+
+# install testing infrastructure support
+kwiver_install_headers( tests/test_common.h
+  SUBDIR   vital/tests
+  NOPATH
+)
 
 # install set up script
 install( PROGRAMS   ${VITAL_SETUP_SCRIPT_FILE}

@@ -66,7 +66,12 @@ try_compile( success
      -DCMAKE_CXX_FLAGS:STRING=#${CMAKE_CXX_FLAGS}
   OUTPUT_VARIABLE OUTPUT)
 
-set( VITAL_USE_STD_RANDOM ${success} )
+# Known issue with std::random in GCC 4.4.7 and probably below.
+if( CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.5 )
+  set( VITAL_USE_STD_RANDOM FALSE )
+else()
+  set( VITAL_USE_STD_RANDOM ${success} )
+endif()
 
 ###
 # see if demangle ABI is supported
@@ -78,5 +83,17 @@ try_compile( success
   OUTPUT_VARIABLE OUTPUT)
 
 set( VITAL_USE_ABI_DEMANGLE ${success} )
+
+###
+# See if the use of std::unique_ptr values in an std::map is supported
+try_compile( success
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_LIST_DIR}/configcheck/std_map_unique_ptr.cxx
+  CMAKE_FLAGS
+      -DCMAKE_CXX_FLAGS:STRING=#${CMAKE_CXX_FLAGS}
+  OUTPUT_VARIABLE OUTPUT
+  )
+set( VITAL_STD_MAP_UNIQUE_PTR_ALLOWED ${success} )
+message( STATUS "VITAL_STD_MAP_UNIQUE_PTR: ${VITAL_STD_MAP_UNIQUE_PTR_ALLOWED}" )
 
 #

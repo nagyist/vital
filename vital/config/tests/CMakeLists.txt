@@ -1,9 +1,8 @@
-project(kwiver_config_tests)
+project(vital_config_tests)
 
 include(vital-test-setup)
 
 set( test_libraries vital_config kwiversys )
-
 
 
 ##############################
