@@ -52,7 +52,9 @@ namespace vital_c {
 SharedPointerCache< kwiver::vital::algorithm,
                     vital_algorithm_t > ALGORITHM_SPTR_CACHE( "algorithm" );
 
-}
+} // end namespace vital_c
+} // end namespace kwiver
+
 
 
 // ===========================================================================
@@ -127,5 +129,4 @@ vital_algorithm_check_impl_configuration( vital_algorithm_t *algo,
     );
   );
   return false;
-
-} } // end namespace
+}

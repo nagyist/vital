@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,21 +34,13 @@ Base VITAL algorithm structure
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import ctypes
 
 from vital import ConfigBlock
 from vital.exceptions.base import VitalNullPointerException
 from vital.util import VitalObject, VitalErrorHandle
-
-
-# noinspection PyPep8Naming
-class _vital_algorithm_t (ctypes.Structure):
-    """
-    Opaque structure type used in C interface.
-    """
-    pass
 
 
 class VitalAlgorithm (VitalObject):

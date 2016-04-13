@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,12 +34,12 @@ Base class for all VITAL Python interface classes
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import abc
 import ctypes
 
-from vital.util import find_vital_library
+from vital.util.find_vital_library import find_vital_library
 from vital.util.string import vital_string_t
 
 

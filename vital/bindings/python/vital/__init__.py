@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,9 @@ vital module
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 # Common VITAL Components for easy access
-from .apm import AlgorithmPluginManager
 from .camera import Camera
 from .camera_map import CameraMap
 from .config_block import ConfigBlock

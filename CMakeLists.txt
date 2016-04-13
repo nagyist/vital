@@ -94,6 +94,7 @@ set(VITAL_SETUP_SCRIPT_FILE  ${VITAL_BINARY_DIR}/setup_VITAL.sh )
 configure_file(
   ${VITAL_CMAKE_DIR}/setup_VITAL.sh.in
   ${VITAL_SETUP_SCRIPT_FILE}
+  @ONLY
   )
 
 # install testing infrastructure support

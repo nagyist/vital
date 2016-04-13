@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015 by Kitware, Inc.
+Copyright 2015-2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ Interface to VITAL image class.
 
 """
 # -*- coding: utf-8 -*-
-__author__ = 'purg'
+__author__ = 'paul.tunison@kitware.com'
 
 import ctypes
 from vital.util import VitalObject
@@ -162,7 +162,7 @@ class Image (VitalObject):
 
     def first_pixel_address(self):
         """
-        Get the address of thei first pixel in the image
+        Get the address of the first pixel in the image
         """
         first_pixel = self.VITAL_LIB.vital_image_first_pixel
         first_pixel.restype = ctypes.c_void_p

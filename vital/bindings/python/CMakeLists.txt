@@ -15,27 +15,13 @@ else()
   message(STATUS "Python site-packages to install into: ${python_site_packages}")
 endif()
 
-if( VITAL_PYTHON_SEARCH_BUILD_DIR )
-  set(VITAL_BUILD_DIRECTORY "${VITAL_BINARY_DIR}")
-endif()
-
 ##
 # add our python path to setup script
 file( APPEND ${VITAL_SETUP_SCRIPT_FILE}
   "export PYTHONPATH=$this_dir/${python_site_packages}:$PYTHONPATH\n"
   )
 
-kwiver_configure_file(python-find_vital_libraray.py
-  "${CMAKE_CURRENT_SOURCE_DIR}/vital/util/find_vital_library.py.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/vital/util/find_vital_library.py"
-  VITAL_BUILD_DIRECTORY
-  )
-
 # this command in inadvertently installing the input file also.
 kwiver_install( DIRECTORY      vital
   DESTINATION                  ${python_site_packages}
-  )
-
-kwiver_install( FILES ${CMAKE_CURRENT_BINARY_DIR}/vital/util/find_vital_library.py
-  DESTINATION                  ${python_site_packages}/vital/util
   )
