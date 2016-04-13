@@ -89,7 +89,8 @@ class VitalObject (object):
     @classmethod
     def from_c_pointer(cls, ptr, shallow_copy_of=None):
         """
-        Create an instance of the derived class from a C API opaque pointer.
+        Default implementation of how to create an instance of the derived class
+        from a C API opaque pointer.
 
         If this the C pointer given to ptr is taken from an existing Python
         object instance, that object instance should be given to the

@@ -46,202 +46,211 @@ from vital.util import (
 __author__ = 'paul.tunison@kitware.com'
 
 
-class VitalEigenMatrix (VitalObject):
-    """
-    Wrapper for Eigen matrix use within Vital. This class covers both
-    "Vector<dim><type>", "Matrix<dim><type>" and custom Eigen matrix types.
+class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
-    All matrices created and interacted through this class are dense (vs.
-    sparse).
-    """
+    # Valid dtype possibilities
+    MAT_TYPE_KEYS = (numpy.double, numpy.float32)
 
-    # Valid data type keys.
-    MAT_TYPE_KEYS = ('double', 'float')
-
+    # C library function component template
     FUNC_SPEC = "{rows:s}x{cols:s}{type:s}"
 
+    def __new__(cls, rows, cols=1, dynamic_rows=False, dynamic_cols=False,
+                dtype=numpy.double, c_ptr=None):
+        """
+        Create a new Vital Eigen matrix and interface
+
+        :param rows: Number of rows in the matrix
+        :param cols: Number of columns in the matrix
+        :param dynamic_rows: If we should not use compile-time generated types
+            in regards to the row specification.
+        :param dynamic_cols: If we should not use compile-time generated types
+            in regards to the column specification.
+        :param dtype: numpy dtype to use
+        :param c_ptr: Optional existing C Eigen matrix instance pointer to use
+            instead of constructing a new one.
+
+        :return: Interface to a new or existing Eigen matrix instance.
+
+        """
+        func_map, c_type = cls._init_func_map(rows, cols,
+                                              dynamic_rows, dynamic_cols,
+                                              dtype)
+
+        # Create new Eigen matrix
+        if c_ptr is None:
+            c_new = cls.VITAL_LIB[func_map['new_sized']]
+            c_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
+            c_new.restype = cls.C_TYPE_PTR
+            inst_ptr = c_new(ctypes.c_size_t(rows), ctypes.c_size_t(cols))
+            if not bool(inst_ptr):
+                raise RuntimeError("Failed to construct new Eigen matrix")
+        else:
+            inst_ptr = c_ptr
+
+        # Get information, data pointer and base transformed array
+        rows, cols, inner_stride, outer_stride, is_row_major, data = \
+            cls._get_data_components(inst_ptr, c_type, func_map)
+        dtype_bytes = numpy.dtype(c_type).alignment
+        # Might have to swap out the use of ``dtype_bytes`` for
+        # inner/outer size values from Eigen if matrices are ever NOT
+        # densely packed.
+        if is_row_major:
+            strides = (outer_stride * dtype_bytes,
+                       inner_stride * dtype_bytes)
+        else:
+            strides = (inner_stride * dtype_bytes,
+                       outer_stride * dtype_bytes)
+        if data:
+            b = numpy.ctypeslib.as_array(data, (rows * cols,))
+        else:
+            b = buffer('')
+
+        # args: (subclass, shape, dtype, buffer, offset, strides, order)
+        # TODO: Get offset from eigen matrix, too.
+        obj = numpy.ndarray.__new__(cls, (rows, cols), dtype, b, 0, strides)
+
+        # local properties
+        obj._dynamic_rows = dynamic_rows
+        obj._dynamic_cols = dynamic_cols
+        obj._func_map = func_map
+
+        VitalObject.__init__(obj)
+
+        obj._inst_ptr = inst_ptr
+        obj._parent = None
+
+        return obj
+
+    # noinspection PyMethodOverriding
     @classmethod
-    def from_c_pointer(cls, ptr, rows, cols, dtype, shallow_copy_of=None):
-        #: :type: VitalEigenMatrix
-        m = super(VitalEigenMatrix, cls).from_c_pointer(ptr, shallow_copy_of)
+    def from_c_pointer(cls, ptr, rows, cols=1,
+                       dynamic_rows=False, dynamic_cols=False,
+                       dtype=numpy.double, shallow_copy_of=None):
+        """
+        Special implementation from C pointer due to both needing more
+        information and because we are sub-classing numpy.ndarray.
 
-        # Initialize shape and function map into object
-        m._init_function_map(rows, cols, dtype)
+        :param ptr: C API opaque structure pointer type instance
+        :type ptr: VitalAlgorithm.C_TYPE_PTR
 
+        :param rows: Number of rows in the matrix
+        :param cols: Number of columns in the matrix
+        :param dynamic_rows: If we should not use compile-time generated types
+            in regards to the row specification.
+        :param dynamic_cols: If we should not use compile-time generated types
+            in regards to the column specification.
+        :param dtype: numpy dtype to use
+
+        :param shallow_copy_of: Optional parent object instance when the ptr
+            given is coming from an existing python object.
+        :type shallow_copy_of: VitalObject or None
+
+        """
+        m = VitalEigenNumpyArray(rows, cols, dynamic_rows, dynamic_cols,
+                                 dtype, ptr)
+        m._parent = shallow_copy_of
         return m
 
-    def __init__(self, rows, cols=1, dynamic_rows=False, dynamic_cols=False,
-                 dtype='double'):
+    # noinspection PyMissingConstructor
+    def __init__(self, *args, **kwds):
+        # initialization handled in __new__
+        pass
+
+    def __array_finalize__(self, obj):
         """
-        Create a new Eigen matrix via the Vital C interface
-
-        **Note:** *Not all sizes are supported. Only the standard vector and
-        matrix sizes supported are valid through this constructor. If an invalid
-        shape is provided, an exception will be raised stating that the
-        correspoding C interface functions cannot be found.*
-
-        :param rows: Number of rows.
-        :type rows: int
-
-        :param cols: Number of columns.
-        :type cols: int
-
-        :param dtype: Name of the C type to use as the core data representation
-            type. See the ``MAT_TYPE_KEYS`` tuple on this class for valid
-            options.
-        :type dtype: str
-
-        :param dynamic_rows: If the rows of the matrix considered "dynamic" in
-            eigen's sense. This allows for creating matrices that
-
+        Where numpy finalized instance properties of an array instance when
+        created due to __new__, casting or new-from-template.
         """
-        super(VitalEigenMatrix, self).__init__()
-        self._init_function_map(rows, cols, dtype, dynamic_rows, dynamic_cols)
+        # git here from __new__, nothing to transfer
+        if obj is None:
+            return
 
-        # Creating new eigen matrix of the input shape
-        m_new = self.VITAL_LIB[self._func_map['new_sized']]
-        m_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
-        m_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = m_new(rows, cols)
-        if not bool(self.c_pointer):
-            raise RuntimeError("Failed to construct new vector instance")
+        # copy/move over attributes from parent as necessary
+        #   self => New class of this type
+        #   obj  => other class MAYBE this type
+        if isinstance(obj, VitalEigenNumpyArray):
+            self._func_map = obj._func_map
+            self._dynamic_rows = obj._dynamic_rows
+            self._dynamic_cols = obj._dynamic_cols
 
-        # numpy-wrapper cache
-        self._n_cache = None
-
-    def _init_function_map(self, rows, cols, dtype, dynamic_rows, dynamic_cols):
-        self._shape = (rows, cols)
-        self._dynamic_rows = dynamic_rows
-        self._dynamic_cols = dynamic_cols
-        if dtype == self.MAT_TYPE_KEYS[0]:  # double
-            self._c_type = ctypes.c_double
-            type_char = 'd'
-        elif dtype == self.MAT_TYPE_KEYS[1]:  # float
-            self._c_type = ctypes.c_float
-            type_char = 'f'
+            self._inst_ptr = obj._inst_ptr
+            if obj._parent is None:
+                # obj is the root parent object
+                self._parent = obj
+            else:
+                # transfer parent reference
+                self._parent = obj._parent
         else:
-            raise ValueError("Invalid data type given ('%s'). "
-                             "Must be one of %s."
-                             % (dtype, self.MAT_TYPE_KEYS))
+            raise RuntimeError("Finalizing VitalEigenNumpyArray whose parent "
+                               "is not of the same type: %s" % type(obj))
 
-        self._func_spec = self.FUNC_SPEC.format(
-            rows=(dynamic_rows and 'X') or str(rows),
-            cols=(dynamic_cols and 'X') or str(cols),
-            type=type_char,
-        )
-
-        # Determine function methods to use for the given shape
-        self._func_map = {
-            'new': 'vital_eigen_matrix{}_new'.format(self._func_spec),
-            'new_sized': 'vital_eigen_matrix{}_new_sized'.format(self._func_spec),
-            'destroy': 'vital_eigen_matrix{}_destroy'.format(self._func_spec),
-            'get': 'vital_eigen_matrix{}_get'.format(self._func_spec),
-            'set': 'vital_eigen_matrix{}_set'.format(self._func_spec),
-            'data': 'vital_eigen_matrix{}_data'.format(self._func_spec),
-        }
-
-    def _check_bounds(self, r, c):
-        """
-        Manually checking row/col bounds so as not to trigger assert in library,
-        which would crash everything.
-        :param r: Rows index value
-        :param c: col index value
-        :raises IndexError: If one or both index values are out of range
-        """
-        if not (0 <= r < self._shape[0] and 0 <= c < self._shape[1]):
-            raise IndexError("Invalid index ({}, {}) for matrix with shape "
-                             "({}, {}).".format(r, c, *self._shape))
+    def __array_wrap__(self, out_arr, context=None):
+        # Don't propagate this class and reference?
+        return numpy.asarray(out_arr)
 
     def _destroy(self):
         if self.c_pointer:
+            # print "Destroying"
             m_del = self.VITAL_LIB[self._func_map['destroy']]
             m_del.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
             with VitalErrorHandle() as eh:
                 m_del(self, eh)
             self._inst_ptr = self.C_TYPE_PTR()
 
-    def __getitem__(self, spec):
-        if self._shape[1] == 1:
-            row = int(spec)
-            col = 0
+    @classmethod
+    def _init_func_map(cls, rows, cols, d_rows, d_cols, dtype):
+        if dtype == cls.MAT_TYPE_KEYS[0]:  # C double
+            type_char = 'd'
+            c_type = ctypes.c_double
+        elif dtype == cls.MAT_TYPE_KEYS[1]:  # C float
+            type_char = 'f'
+            c_type = ctypes.c_float
         else:
-            row, col = spec
-            row = int(row)
-            col = int(col)
-        self._check_bounds(row, col)
+            raise ValueError("Invalid data type given ('%s'). "
+                             "Must be one of %s."
+                             % (dtype, cls.MAT_TYPE_KEYS))
+        func_spec = cls.FUNC_SPEC.format(
+            rows=(d_rows and 'X') or str(rows),
+            cols=(d_cols and 'X') or str(cols),
+            type=type_char,
+        )
+        func_map = {
+            'new': 'vital_eigen_matrix{}_new'.format(func_spec),
+            'new_sized': 'vital_eigen_matrix{}_new_sized'.format(func_spec),
+            'destroy': 'vital_eigen_matrix{}_destroy'.format(func_spec),
+            'get': 'vital_eigen_matrix{}_get'.format(func_spec),
+            'set': 'vital_eigen_matrix{}_set'.format(func_spec),
+            'data': 'vital_eigen_matrix{}_data'.format(func_spec),
+        }
+        return func_map, c_type
 
-        v_get = self.VITAL_LIB[self._func_map['get']]
-        v_get.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
-                          VitalErrorHandle.C_TYPE_PTR]
-        v_get.restype = self._c_type
+    @classmethod
+    def _get_data_components(cls, ptr, c_type, func_map):
+        v_data = cls.VITAL_LIB[func_map['data']]
+        v_data.argtypes = [cls.C_TYPE_PTR,
+                           ctypes.POINTER(ctypes.c_uint),  # rows
+                           ctypes.POINTER(ctypes.c_uint),  # cols
+                           ctypes.POINTER(ctypes.c_uint),  # inner stride
+                           ctypes.POINTER(ctypes.c_uint),  # outer stride
+                           ctypes.POINTER(ctypes.c_uint),  # is-row-major
+                           ctypes.POINTER(ctypes.POINTER(c_type)),
+                           VitalErrorHandle.C_TYPE_PTR]
+        rows = ctypes.c_uint()
+        cols = ctypes.c_uint()
+        inner_stride = ctypes.c_uint()
+        outer_stride = ctypes.c_uint()
+        is_row_major = ctypes.c_uint()
+        data = ctypes.POINTER(c_type)()
         with VitalErrorHandle() as eh:
-            return v_get(self, ctypes.c_uint(row), ctypes.c_uint(col), eh)
+            v_data(ptr,
+                   ctypes.byref(rows), ctypes.byref(cols),
+                   ctypes.byref(inner_stride), ctypes.byref(outer_stride),
+                   ctypes.byref(is_row_major),
+                   ctypes.byref(data), eh)
 
-    def __setitem__(self, spec, value):
-        if self._shape[1] == 1:
-            row = int(spec)
-            col = 1
-        else:
-            row, col = spec
-            row = int(row)
-            col = int(col)
-        self._check_bounds(row, col)
-
-        v_set = self.VITAL_LIB[self._func_map['set']]
-        v_set.argtypes = [self.C_TYPE_PTR, ctypes.c_uint, ctypes.c_uint,
-                          self._c_type, VitalErrorHandle.C_TYPE_PTR]
-        with VitalErrorHandle() as eh:
-            v_set(self, ctypes.c_uint(row), ctypes.c_uint(col),
-                  self._c_type(value), eh)
-
-    def as_numpy(self):
-        if self._n_cache is None:
-            v_data = self.VITAL_LIB[self._func_map['data']]
-            v_data.argtypes = [self.C_TYPE_PTR,
-                               ctypes.POINTER(ctypes.c_uint),  # rows
-                               ctypes.POINTER(ctypes.c_uint),  # cols
-                               ctypes.POINTER(ctypes.c_uint),  # inner stride
-                               ctypes.POINTER(ctypes.c_uint),  # outer stride
-                               ctypes.POINTER(ctypes.c_uint),  # is-row-major
-                               ctypes.POINTER(ctypes.POINTER(self._c_type)),
-                               VitalErrorHandle.C_TYPE_PTR]
-            rows = ctypes.c_uint()
-            cols = ctypes.c_uint()
-            inner_stride = ctypes.c_uint()
-            outer_stride = ctypes.c_uint()
-            is_row_major = ctypes.c_uint()
-            data = ctypes.POINTER(self._c_type)()
-            with VitalErrorHandle() as eh:
-                v_data(self,
-                       ctypes.byref(rows), ctypes.byref(cols),
-                       ctypes.byref(inner_stride), ctypes.byref(outer_stride),
-                       ctypes.byref(is_row_major),
-                       ctypes.byref(data), eh)
-
-            rows = rows.value
-            cols = cols.value
-            inner_stride = inner_stride.value
-            outer_stride = outer_stride.value
-            is_row_major = bool(is_row_major.value)
-
-            # data will be null of one of our dimensions is 0
-            if data:
-                n = numpy.ctypeslib.as_array(data, (rows * cols,))
-                dtype_bytes = numpy.dtype(self._c_type).alignment
-                if is_row_major:
-                    strides = (outer_stride * dtype_bytes,
-                               inner_stride * dtype_bytes)
-                else:
-                    strides = (inner_stride * dtype_bytes,
-                               outer_stride * dtype_bytes)
-                n = numpy.lib.stride_tricks.as_strided(
-                    n, shape=(rows, cols), strides=strides, subok=True
-                )
-            else:
-                # null pointer, just make a number array of the given 0-area
-                # shape
-                n = numpy.ndarray(self._shape, numpy.dtype(self._c_type))
-
-            self._n_cache = n
-
-        return self._n_cache
+        rows = rows.value
+        cols = cols.value
+        inner_stride = inner_stride.value
+        outer_stride = outer_stride.value
+        is_row_major = bool(is_row_major.value)
+        return rows, cols, inner_stride, outer_stride, is_row_major, data
