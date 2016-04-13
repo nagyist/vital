@@ -77,7 +77,7 @@ vital_eigen_matrix##R##x##C##S##_new() \
 } \
 /** Create a new Eigen type-based Matrix of the given shape */ \
 vital_eigen_matrix##R##x##C##S##_t* \
-vital_eigen_matrix##R##x##C##S##_new_sized( size_t rows, size_t cols ) \
+vital_eigen_matrix##R##x##C##S##_new_sized( ptrdiff_t rows, ptrdiff_t cols ) \
 { \
   STANDARD_CATCH( \
     "vital_eigen_matrix" #R "x" #C #S ".new.", 0, \
@@ -107,7 +107,7 @@ vital_eigen_matrix##R##x##C##S##_destroy( vital_eigen_matrix##R##x##C##S##_t *m,
 /** Get the value at a location */ \
 T \
 vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                      unsigned int row, unsigned int col, \
+                                      ptrdiff_t row, ptrdiff_t col, \
                                       vital_error_handle_t *eh ) \
 { \
   typedef Eigen::Matrix< T, R, C > matrix_t; \
@@ -122,7 +122,7 @@ vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
 /** Set the value at a location */ \
 void \
 vital_eigen_matrix##R##x##C##S##_set( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                      unsigned int row, unsigned int col, \
+                                      ptrdiff_t row, ptrdiff_t col, \
                                       T value, \
                                       vital_error_handle_t *eh ) \
 { \
@@ -134,28 +134,74 @@ vital_eigen_matrix##R##x##C##S##_set( vital_eigen_matrix##R##x##C##S##_t *m, \
   ); \
 } \
 \
+/** Get the number of rows in the matrix */ \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_rows( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".rows", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    return mp->rows(); \
+  ); \
+  return 0; \
+} \
+\
+/** Get the number of columns in the matrix */ \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_cols( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".cols", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    return mp->cols(); \
+  ); \
+  return 0; \
+} \
+\
+/** Get the pointer increment betweentwo consecutive rows. */ \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_row_stride( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                             vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".row_stride", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    return mp->rowStride(); \
+  ); \
+  return 0; \
+} \
+\
+/** Get the pointer increment betweentwo consecutive columns */ \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_col_stride( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                             vital_error_handle_t *eh ) \
+{ \
+  typedef Eigen::Matrix< T, R, C > matrix_t; \
+  STANDARD_CATCH( \
+    "vital_eigen_matrix" #R "x" #C #S ".col_stride", eh, \
+    REINTERP_TYPE( matrix_t, m, mp ); \
+    return mp->colStride(); \
+  ); \
+  return 0; \
+} \
+\
 /** Get the pointer to the vector's data array */ \
-void \
+T* \
 vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                       unsigned int *rows, \
-                                       unsigned int *cols, \
-                                       unsigned int *inner_stride, \
-                                       unsigned int *outer_stride, \
-                                       unsigned int *is_row_major, \
-                                       T **data, \
                                        vital_error_handle_t *eh ) \
 { \
   typedef Eigen::Matrix< T, R, C > matrix_t; \
   STANDARD_CATCH( \
     "vital_eigen_matrix" #R "x" #C #S ".data", eh, \
     REINTERP_TYPE( matrix_t, m, mp ); \
-    *rows = mp->rows(); \
-    *cols = mp->cols(); \
-    *inner_stride = mp->innerStride(); \
-    *outer_stride = mp->outerStride(); \
-    *is_row_major = (unsigned int)(mp->Flags & Eigen::RowMajorBit); \
-    *data = mp->data(); \
+    return mp->data(); \
   ); \
+  return 0; \
 }
 
 

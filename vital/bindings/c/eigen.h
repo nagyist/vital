@@ -36,13 +36,12 @@
 #ifndef VITAL_C_EIGEN_H_
 #define VITAL_C_EIGEN_H_
 
-#include <sys/types.h>
-
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#include <stddef.h>
 
 #include <vital/bindings/c/vital_c_export.h>
 #include <vital/bindings/c/error_handle.h>
@@ -78,7 +77,7 @@ vital_eigen_matrix##R##x##C##S##_new(); \
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix##R##x##C##S##_t* \
-vital_eigen_matrix##R##x##C##S##_new_sized( size_t rows, size_t cols ); \
+vital_eigen_matrix##R##x##C##S##_new_sized( ptrdiff_t rows, ptrdiff_t cols ); \
 \
 /** Destroy a given Eigen matrix instance */ \
 VITAL_C_EXPORT \
@@ -97,7 +96,7 @@ vital_eigen_matrix##R##x##C##S##_destroy( vital_eigen_matrix##R##x##C##S##_t *m,
 VITAL_C_EXPORT \
 T \
 vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                      unsigned int row, unsigned int col, \
+                                      ptrdiff_t row, ptrdiff_t col, \
                                       vital_error_handle_t *eh ); \
 \
 /**
@@ -112,28 +111,48 @@ vital_eigen_matrix##R##x##C##S##_get( vital_eigen_matrix##R##x##C##S##_t *m, \
 VITAL_C_EXPORT \
 void \
 vital_eigen_matrix##R##x##C##S##_set( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                      unsigned int row, unsigned int col, \
+                                      ptrdiff_t row, ptrdiff_t col, \
                                       T value, \
                                       vital_error_handle_t *eh ); \
 \
 /**
- * Get the pointer to the vector's data array
- *
- * \param[in] v Vector instance to get the data of
- * \param[out] rows Number of rows in the matrix
- * \param[out] cols Number of columns in the matrix
- * \param[out] data Pointer to the matrix data array.
- * \param[in,out] eh Vital C error handle structure
+ * Get the number of rows in the matrix
  */ \
 VITAL_C_EXPORT \
-void \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_rows( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       vital_error_handle_t *eh ); \
+\
+/**
+ * Get the number of columns in the matrix
+ */ \
+VITAL_C_EXPORT \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_cols( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                       vital_error_handle_t *eh ); \
+\
+/**
+ * Get the pointer increment betweentwo consecutive rows.
+ */ \
+VITAL_C_EXPORT \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_row_stride( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                             vital_error_handle_t *eh ); \
+\
+/**
+ * Get the pointer increment betweentwo consecutive columns.
+ */ \
+VITAL_C_EXPORT \
+ptrdiff_t \
+vital_eigen_matrix##R##x##C##S##_col_stride( vital_eigen_matrix##R##x##C##S##_t *m, \
+                                             vital_error_handle_t *eh ); \
+\
+/**
+ * Get the pointer to the vector's data array
+ */ \
+VITAL_C_EXPORT \
+T* \
 vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
-                                       unsigned int *rows, \
-                                       unsigned int *cols, \
-                                       unsigned int *inner_stride, \
-                                       unsigned int *outer_stride, \
-                                       unsigned int *is_row_major, \
-                                       T **data, \
                                        vital_error_handle_t *eh );
 
 

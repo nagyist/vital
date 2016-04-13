@@ -46,6 +46,15 @@ from vital.util import (
 __author__ = 'paul.tunison@kitware.com'
 
 
+if ctypes.sizeof(ctypes.c_void_p) == 4:
+    c_ptrdiff_t = ctypes.c_int32
+elif ctypes.sizeof(ctypes.c_void_p) == 8:
+    c_ptrdiff_t = ctypes.c_int64
+else:
+    raise RuntimeError("Invalid c_void_p size? =%d"
+                       % ctypes.sizeof(ctypes.c_void_p))
+
+
 class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
     # Valid dtype possibilities
@@ -54,7 +63,7 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
     # C library function component template
     FUNC_SPEC = "{rows:s}x{cols:s}{type:s}"
 
-    def __new__(cls, rows, cols=1, dynamic_rows=False, dynamic_cols=False,
+    def __new__(cls, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
                 dtype=numpy.double, c_ptr=None):
         """
         Create a new Vital Eigen matrix and interface
@@ -79,27 +88,23 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         # Create new Eigen matrix
         if c_ptr is None:
             c_new = cls.VITAL_LIB[func_map['new_sized']]
-            c_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t]
+            c_new.argtypes = [c_ptrdiff_t, c_ptrdiff_t]
             c_new.restype = cls.C_TYPE_PTR
-            inst_ptr = c_new(ctypes.c_size_t(rows), ctypes.c_size_t(cols))
+            inst_ptr = c_new(c_ptrdiff_t(rows), c_ptrdiff_t(cols))
             if not bool(inst_ptr):
                 raise RuntimeError("Failed to construct new Eigen matrix")
         else:
             inst_ptr = c_ptr
 
         # Get information, data pointer and base transformed array
-        rows, cols, inner_stride, outer_stride, is_row_major, data = \
+        rows, cols, row_stride, col_stride, data = \
             cls._get_data_components(inst_ptr, c_type, func_map)
-        dtype_bytes = numpy.dtype(c_type).alignment
         # Might have to swap out the use of ``dtype_bytes`` for
         # inner/outer size values from Eigen if matrices are ever NOT
         # densely packed.
-        if is_row_major:
-            strides = (outer_stride * dtype_bytes,
-                       inner_stride * dtype_bytes)
-        else:
-            strides = (inner_stride * dtype_bytes,
-                       outer_stride * dtype_bytes)
+        dtype_bytes = numpy.dtype(c_type).alignment
+        strides = (row_stride * dtype_bytes,
+                   col_stride * dtype_bytes)
         if data:
             b = numpy.ctypeslib.as_array(data, (rows * cols,))
         else:
@@ -107,6 +112,9 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
         # args: (subclass, shape, dtype, buffer, offset, strides, order)
         # TODO: Get offset from eigen matrix, too.
+        print "Construction ({}, {}, {}, {}, {})".format(
+            (rows, cols), dtype, b, 0, strides
+        )
         obj = numpy.ndarray.__new__(cls, (rows, cols), dtype, b, 0, strides)
 
         # local properties
@@ -123,7 +131,7 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
     # noinspection PyMethodOverriding
     @classmethod
-    def from_c_pointer(cls, ptr, rows, cols=1,
+    def from_c_pointer(cls, ptr, rows=2, cols=1,
                        dynamic_rows=False, dynamic_cols=False,
                        dtype=numpy.double, shallow_copy_of=None):
         """
@@ -185,7 +193,7 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
                                "is not of the same type: %s" % type(obj))
 
     def __array_wrap__(self, out_arr, context=None):
-        # Don't propagate this class and reference?
+        # Don't propagate this class and its stored references needlessly
         return numpy.asarray(out_arr)
 
     def _destroy(self):
@@ -220,37 +228,39 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
             'destroy': 'vital_eigen_matrix{}_destroy'.format(func_spec),
             'get': 'vital_eigen_matrix{}_get'.format(func_spec),
             'set': 'vital_eigen_matrix{}_set'.format(func_spec),
+            'rows': 'vital_eigen_matrix{}_rows'.format(func_spec),
+            'cols': 'vital_eigen_matrix{}_cols'.format(func_spec),
+            'row_stride': 'vital_eigen_matrix{}_row_stride'.format(func_spec),
+            'col_stride': 'vital_eigen_matrix{}_col_stride'.format(func_spec),
             'data': 'vital_eigen_matrix{}_data'.format(func_spec),
         }
         return func_map, c_type
 
     @classmethod
     def _get_data_components(cls, ptr, c_type, func_map):
+        v_rows = cls.VITAL_LIB[func_map['rows']]
+        v_cols = cls.VITAL_LIB[func_map['cols']]
+        v_row_stride = cls.VITAL_LIB[func_map['row_stride']]
+        v_col_stride = cls.VITAL_LIB[func_map['col_stride']]
         v_data = cls.VITAL_LIB[func_map['data']]
-        v_data.argtypes = [cls.C_TYPE_PTR,
-                           ctypes.POINTER(ctypes.c_uint),  # rows
-                           ctypes.POINTER(ctypes.c_uint),  # cols
-                           ctypes.POINTER(ctypes.c_uint),  # inner stride
-                           ctypes.POINTER(ctypes.c_uint),  # outer stride
-                           ctypes.POINTER(ctypes.c_uint),  # is-row-major
-                           ctypes.POINTER(ctypes.POINTER(c_type)),
-                           VitalErrorHandle.C_TYPE_PTR]
-        rows = ctypes.c_uint()
-        cols = ctypes.c_uint()
-        inner_stride = ctypes.c_uint()
-        outer_stride = ctypes.c_uint()
-        is_row_major = ctypes.c_uint()
-        data = ctypes.POINTER(c_type)()
-        with VitalErrorHandle() as eh:
-            v_data(ptr,
-                   ctypes.byref(rows), ctypes.byref(cols),
-                   ctypes.byref(inner_stride), ctypes.byref(outer_stride),
-                   ctypes.byref(is_row_major),
-                   ctypes.byref(data), eh)
 
-        rows = rows.value
-        cols = cols.value
-        inner_stride = inner_stride.value
-        outer_stride = outer_stride.value
-        is_row_major = bool(is_row_major.value)
-        return rows, cols, inner_stride, outer_stride, is_row_major, data
+        v_rows.argtypes = [cls.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+        v_cols.argtypes = [cls.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+        v_row_stride.argtypes = [cls.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+        v_col_stride.argtypes = [cls.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+        v_data.argtypes = [cls.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+
+        v_rows.restype = c_ptrdiff_t
+        v_cols.restype = c_ptrdiff_t
+        v_row_stride.restype = c_ptrdiff_t
+        v_col_stride.restype = c_ptrdiff_t
+        v_data.restype = ctypes.POINTER(c_type)
+
+        with VitalErrorHandle() as eh:
+            rows = v_rows(ptr, eh)
+            cols = v_cols(ptr, eh)
+            row_stride = v_row_stride(ptr, eh)
+            col_stride = v_col_stride(ptr, eh)
+            data = v_data(ptr, eh)
+
+        return rows, cols, row_stride, col_stride, data
