@@ -63,77 +63,12 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
     # C library function component template
     FUNC_SPEC = "{rows:s}x{cols:s}{type:s}"
 
-    def __new__(cls, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
-                dtype=numpy.double, c_ptr=None):
-        """
-        Create a new Vital Eigen matrix and interface
-
-        :param rows: Number of rows in the matrix
-        :param cols: Number of columns in the matrix
-        :param dynamic_rows: If we should not use compile-time generated types
-            in regards to the row specification.
-        :param dynamic_cols: If we should not use compile-time generated types
-            in regards to the column specification.
-        :param dtype: numpy dtype to use
-        :param c_ptr: Optional existing C Eigen matrix instance pointer to use
-            instead of constructing a new one.
-
-        :return: Interface to a new or existing Eigen matrix instance.
-
-        """
-        func_map, c_type = cls._init_func_map(rows, cols,
-                                              dynamic_rows, dynamic_cols,
-                                              dtype)
-
-        # Create new Eigen matrix
-        if c_ptr is None:
-            c_new = cls.VITAL_LIB[func_map['new_sized']]
-            c_new.argtypes = [c_ptrdiff_t, c_ptrdiff_t]
-            c_new.restype = cls.C_TYPE_PTR
-            inst_ptr = c_new(c_ptrdiff_t(rows), c_ptrdiff_t(cols))
-            if not bool(inst_ptr):
-                raise RuntimeError("Failed to construct new Eigen matrix")
-        else:
-            inst_ptr = c_ptr
-
-        # Get information, data pointer and base transformed array
-        rows, cols, row_stride, col_stride, data = \
-            cls._get_data_components(inst_ptr, c_type, func_map)
-        # Might have to swap out the use of ``dtype_bytes`` for
-        # inner/outer size values from Eigen if matrices are ever NOT
-        # densely packed.
-        dtype_bytes = numpy.dtype(c_type).alignment
-        strides = (row_stride * dtype_bytes,
-                   col_stride * dtype_bytes)
-        if data:
-            b = numpy.ctypeslib.as_array(data, (rows * cols,))
-        else:
-            b = buffer('')
-
-        # args: (subclass, shape, dtype, buffer, offset, strides, order)
-        # TODO: Get offset from eigen matrix, too.
-        print "Construction ({}, {}, {}, {}, {})".format(
-            (rows, cols), dtype, b, 0, strides
-        )
-        obj = numpy.ndarray.__new__(cls, (rows, cols), dtype, b, 0, strides)
-
-        # local properties
-        obj._dynamic_rows = dynamic_rows
-        obj._dynamic_cols = dynamic_cols
-        obj._func_map = func_map
-
-        VitalObject.__init__(obj)
-
-        obj._inst_ptr = inst_ptr
-        obj._parent = None
-
-        return obj
-
     # noinspection PyMethodOverriding
     @classmethod
     def from_c_pointer(cls, ptr, rows=2, cols=1,
                        dynamic_rows=False, dynamic_cols=False,
-                       dtype=numpy.double, shallow_copy_of=None):
+                       dtype=numpy.double, owns_data=True,
+                       shallow_copy_of=None):
         """
         Special implementation from C pointer due to both needing more
         information and because we are sub-classing numpy.ndarray.
@@ -148,6 +83,8 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         :param dynamic_cols: If we should not use compile-time generated types
             in regards to the column specification.
         :param dtype: numpy dtype to use
+        :param owns_data: When given a c-pointer, if we should take ownership of
+            the underlying data.
 
         :param shallow_copy_of: Optional parent object instance when the ptr
             given is coming from an existing python object.
@@ -155,58 +92,20 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
         """
         m = VitalEigenNumpyArray(rows, cols, dynamic_rows, dynamic_cols,
-                                 dtype, ptr)
+                                 dtype, ptr, owns_data)
         m._parent = shallow_copy_of
         return m
 
-    # noinspection PyMissingConstructor
-    def __init__(self, *args, **kwds):
-        # initialization handled in __new__
-        pass
-
-    def __array_finalize__(self, obj):
-        """
-        Where numpy finalized instance properties of an array instance when
-        created due to __new__, casting or new-from-template.
-        """
-        # git here from __new__, nothing to transfer
-        if obj is None:
-            return
-
-        # copy/move over attributes from parent as necessary
-        #   self => New class of this type
-        #   obj  => other class MAYBE this type
-        if isinstance(obj, VitalEigenNumpyArray):
-            self._func_map = obj._func_map
-            self._dynamic_rows = obj._dynamic_rows
-            self._dynamic_cols = obj._dynamic_cols
-
-            self._inst_ptr = obj._inst_ptr
-            if obj._parent is None:
-                # obj is the root parent object
-                self._parent = obj
-            else:
-                # transfer parent reference
-                self._parent = obj._parent
-        else:
-            raise RuntimeError("Finalizing VitalEigenNumpyArray whose parent "
-                               "is not of the same type: %s" % type(obj))
-
-    def __array_wrap__(self, out_arr, context=None):
-        # Don't propagate this class and its stored references needlessly
-        return numpy.asarray(out_arr)
-
-    def _destroy(self):
-        if self.c_pointer:
-            # print "Destroying"
-            m_del = self.VITAL_LIB[self._func_map['destroy']]
-            m_del.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-            with VitalErrorHandle() as eh:
-                m_del(self, eh)
-            self._inst_ptr = self.C_TYPE_PTR()
-
     @classmethod
     def _init_func_map(cls, rows, cols, d_rows, d_cols, dtype):
+        """
+        Initialize C function naming map for the given shape and type
+        information.
+
+        :returns: Function name mapping and associated ctypes data type
+        :rtype: (dict[str, str], _ctypes._SimpleCData)
+
+        """
         if dtype == cls.MAT_TYPE_KEYS[0]:  # C double
             type_char = 'd'
             c_type = ctypes.c_double
@@ -238,6 +137,9 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
     @classmethod
     def _get_data_components(cls, ptr, c_type, func_map):
+        """
+        Get underlying Eigen matrix shape, stride and data pointer
+        """
         v_rows = cls.VITAL_LIB[func_map['rows']]
         v_cols = cls.VITAL_LIB[func_map['cols']]
         v_row_stride = cls.VITAL_LIB[func_map['row_stride']]
@@ -264,3 +166,150 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
             data = v_data(ptr, eh)
 
         return rows, cols, row_stride, col_stride, data
+
+    def __new__(cls, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
+                dtype=numpy.double, c_ptr=None, owns_data=True):
+        """
+        Create a new Vital Eigen matrix and interface
+
+        :param rows: Number of rows in the matrix
+        :param cols: Number of columns in the matrix
+        :param dynamic_rows: If we should not use compile-time generated types
+            in regards to the row specification.
+        :param dynamic_cols: If we should not use compile-time generated types
+            in regards to the column specification.
+        :param dtype: numpy dtype to use
+        :param c_ptr: Optional existing C Eigen matrix instance pointer to use
+            instead of constructing a new one.
+        :param owns_data: When given a c-pointer, if we should take ownership of
+            the underlying data.
+
+        :return: Interface to a new or existing Eigen matrix instance.
+
+        """
+        func_map, c_type = cls._init_func_map(rows, cols,
+                                              dynamic_rows, dynamic_cols,
+                                              dtype)
+
+        # Create new Eigen matrix
+        if c_ptr is None:
+            c_new = cls.VITAL_LIB[func_map['new_sized']]
+            c_new.argtypes = [c_ptrdiff_t, c_ptrdiff_t]
+            c_new.restype = cls.C_TYPE_PTR
+            inst_ptr = c_new(c_ptrdiff_t(rows), c_ptrdiff_t(cols))
+            if not bool(inst_ptr):
+                raise RuntimeError("Failed to construct new Eigen matrix")
+            owns_data = True
+        else:
+            inst_ptr = c_ptr
+
+        # Get information, data pointer and base transformed array
+        rows, cols, row_stride, col_stride, data = \
+            cls._get_data_components(inst_ptr, c_type, func_map)
+        # Might have to swap out the use of ``dtype_bytes`` for
+        # inner/outer size values from Eigen if matrices are ever NOT
+        # densely packed.
+        dtype_bytes = numpy.dtype(c_type).alignment
+        strides = (row_stride * dtype_bytes,
+                   col_stride * dtype_bytes)
+        if data:
+            b = numpy.ctypeslib.as_array(data, (rows * cols,))
+        else:
+            b = buffer('')
+
+        # args: (subclass, shape, dtype, buffer, offset, strides, order)
+        # TODO: Get offset from eigen matrix, too.
+        # print "Construction ({}, {}, {}, {}, {})".format(
+        #     (rows, cols), dtype, b, 0, strides
+        # )
+        obj = numpy.ndarray.__new__(cls, (rows, cols), dtype, b, 0, strides)
+
+        # local properties
+        obj._dynamic_rows = dynamic_rows
+        obj._dynamic_cols = dynamic_cols
+        obj._func_map = func_map
+        obj._owns_data = owns_data
+
+        VitalObject.__init__(obj)
+
+        obj._inst_ptr = inst_ptr
+        obj._parent = None
+
+        return obj
+
+    # noinspection PyMissingConstructor
+    def __init__(self, *args, **kwds):
+        # initialization handled in __new__
+        pass
+
+    def __array_finalize__(self, obj):
+        """
+        Where numpy finalizes instance properties of an array instance when
+        created due to __new__, casting or new-from-template.
+        """
+        # got here from __new__, nothing to transfer
+        if obj is None:
+            return
+
+        # copy/move over attributes from parent as necessary
+        #   self => New class of this type
+        #   obj  => other class MAYBE this type
+        if isinstance(obj, VitalEigenNumpyArray):
+            self._dynamic_rows = obj._dynamic_rows
+            self._dynamic_cols = obj._dynamic_cols
+            self._func_map = obj._func_map
+            # Always false because we are view of obj. See parent switch below.
+            self._owns_data = False
+
+            self._inst_ptr = obj._inst_ptr
+            if obj._parent is None:
+                # obj is the root parent object
+                self._parent = obj
+            else:
+                # transfer parent reference
+                self._parent = obj._parent
+        else:
+            raise RuntimeError("Finalizing VitalEigenNumpyArray whose parent "
+                               "is not of the same type (%s). Cannot inherit "
+                               "required information." % type(obj))
+
+    def __array_prepare__(self, obj, context=None):
+        # Don't propagate this class and its stored references needlessly
+        return obj
+
+    def __array_wrap__(self, out_arr, context=None):
+        # Don't propagate this class and its stored references needlessly
+        return out_arr
+
+    def _destroy(self):
+        # Not smart-pointer controlled in C++. We might not own the data we're
+        # viewing.
+        if self.c_pointer and self._owns_data:
+            # print "Destroying"
+            m_del = self.VITAL_LIB[self._func_map['destroy']]
+            m_del.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
+            with VitalErrorHandle() as eh:
+                m_del(self, eh)
+            self._inst_ptr = self.C_TYPE_PTR()
+
+    def at_eigen_base_index(self, row, col=0):
+        """
+        Get the value at the specified index in the base Eigen matrix.
+
+        **Note:** *The base Eigen matrix may not be the same shape as the
+        current instance as this might be a sliced view of the base matrix.*
+
+        :param row: Row of the value
+        :param col: Column of the value
+
+        :return: Value at the specified index.
+
+        """
+        assert 0 <= row < self.shape[0], "Row out of range"
+        assert 0 <= col < self.shape[1], "Col out of range"
+        f = self.VITAL_LIB[self._func_map['get']]
+        f.argtypes = [self.C_TYPE_PTR, c_ptrdiff_t, c_ptrdiff_t,
+                      VitalErrorHandle.C_TYPE_PTR]
+        f.restype = self.c_type
+        with VitalErrorHandle() as eh:
+            return f(self, row, col, eh)
