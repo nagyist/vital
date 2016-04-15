@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief C Interface to Vital use of Eigen vector class use
+ * \brief C Interface to the Eigen matrix class
  */
 
 #ifndef VITAL_C_EIGEN_H_
@@ -47,7 +47,7 @@ extern "C"
 #include <vital/bindings/c/error_handle.h>
 
 
-/// Declare Eigen matrix interface functions for use with MAPTK
+/// Declare Eigen matrix interface functions for use with Vital
 /**
  * \param T The data storage type like double or float
  * \param S The character suffix to use for naming of functions.

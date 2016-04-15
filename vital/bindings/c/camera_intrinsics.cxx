@@ -35,6 +35,8 @@
 
 #include "camera_intrinsics.h"
 
+#include <memory>
+
 #include <vital/bindings/c/helpers/camera_intrinsics.h>
 #include <vital/types/camera_intrinsics.h>
 
@@ -56,9 +58,7 @@ vital_camera_intrinsics_new_default( vital_error_handle_t *eh )
   STANDARD_CATCH(
     "camera_intrinsics.new_default", eh,
 
-    kwiver::vital::camera_intrinsics_sptr ci_sptr(
-      new kwiver::vital::simple_camera_intrinsics()
-    );
+    auto ci_sptr = std::make_shared<kwiver::vital::simple_camera_intrinsics>();
     kwiver::vital_c::CAMERA_INTRINSICS_SPTR_CACHE.store( ci_sptr );
     return reinterpret_cast<vital_camera_intrinsics_t*>( ci_sptr.get() );
 
@@ -79,10 +79,10 @@ vital_camera_intrinsics_new_partial( double focal_length,
   STANDARD_CATCH(
     "camera_intrinsics.new_partial", eh,
 
-    kwiver::vital::vector_2d *v2d
+    kwiver::vital::vector_2d *pp
       = reinterpret_cast<kwiver::vital::vector_2d*>(principle_point);
-    kwiver::vital::camera_intrinsics_sptr ci_sptr(
-      new kwiver::vital::simple_camera_intrinsics( focal_length, *v2d )
+    auto ci_sptr = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+      focal_length, *pp
     );
     kwiver::vital_c::CAMERA_INTRINSICS_SPTR_CACHE.store( ci_sptr );
     return reinterpret_cast<vital_camera_intrinsics_t*>( ci_sptr.get() );
@@ -104,17 +104,15 @@ vital_camera_intrinsics_new( double focal_length,
   STANDARD_CATCH(
     "camera_intrinsics.new", eh,
 
-    kwiver::vital::vector_2d *v2d
+    kwiver::vital::vector_2d *pp
       = reinterpret_cast<kwiver::vital::vector_2d*>(principle_point);
 
     // Build up temporary VectorXd for constructor
     Eigen::VectorXd *coeff_vec
       = reinterpret_cast<Eigen::VectorXd*>( dist_coeffs );
 
-    kwiver::vital::camera_intrinsics_sptr ci_sptr(
-      new kwiver::vital::simple_camera_intrinsics(
-        focal_length, *v2d, aspect_ratio, skew, *coeff_vec
-      )
+    auto ci_sptr = std::make_shared<kwiver::vital::simple_camera_intrinsics>(
+      focal_length, *pp, aspect_ratio, skew, *coeff_vec
     );
     kwiver::vital_c::CAMERA_INTRINSICS_SPTR_CACHE.store( ci_sptr );
     return reinterpret_cast<vital_camera_intrinsics_t*>( ci_sptr.get() );

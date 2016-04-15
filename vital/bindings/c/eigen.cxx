@@ -53,7 +53,7 @@
   } while(0)
 
 
-/// Define Eigen matrix interface functions for use with MAPTK
+/// Define Eigen matrix interface functions for use with Vital
 /**
  * \param T The data storage type like double or float
  * \param S The character suffix to use for naming of functions.

@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Interface to VITAL Eigen vector classes through numpy
+Interface to VITAL Eigen matrix classes through numpy
 
 """
 import ctypes
