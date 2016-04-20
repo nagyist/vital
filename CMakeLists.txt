@@ -23,7 +23,7 @@ set(VITAL_VERSION "${VITAL_VERSION_MAJOR}.${VITAL_VERSION_MINOR}.${VITAL_VERSION
 ##
 # Look for and use Fletch to find dependencies
 #
-set( fletch_DIR "" CACHE PATH "Path to FLETCH packages" )
+set( fletch_DIR "fletch_DIR-NOTFOUND" CACHE PATH "Path to FLETCH packages" )
 if ( IS_DIRECTORY ${fletch_DIR} )
   find_package( fletch NO_MODULE )
 endif()
