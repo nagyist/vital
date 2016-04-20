@@ -59,20 +59,23 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
  * Only does anything if error handle pointer is non-NULL.
  * \p msg should be a C string (char const*)
  *
- * \todo Verify memory management of message string. Memory can leak
- * if an error handle is used twice.
+ * If the given error handle has an existing message pointer, it will be freed
+ * before setting the new message. If it is desired to retain the message for
+ * some other purpose, it should be copied/duplicated before re-using an error
+ * handle.
  */
-#define POPULATE_EH(eh_ptr, ec, msg)                                         \
-  do                                                                         \
-  {                                                                          \
-    if( reinterpret_cast<vital_error_handle_t*>(eh_ptr) != NULL )            \
-    {                                                                        \
-      vital_error_handle_t *PEH_eh_ptr_cast =                                \
-        reinterpret_cast<vital_error_handle_t*>(eh_ptr);                     \
-      PEH_eh_ptr_cast->error_code = ec;                                      \
-      PEH_eh_ptr_cast->message = (char*)malloc(sizeof(char) * strlen(msg));  \
-      strcpy(PEH_eh_ptr_cast->message, msg);                                 \
-    }                                                                        \
+#define POPULATE_EH(eh_ptr, ec, msg)                                        \
+  do                                                                        \
+  {                                                                         \
+    vital_error_handle_t *PEH_eh_ptr_cast =                                 \
+        reinterpret_cast<vital_error_handle_t*>(eh_ptr);                    \
+    if( PEH_eh_ptr_cast != NULL )                                           \
+    {                                                                       \
+      PEH_eh_ptr_cast->error_code = ec;                                     \
+      free(PEH_eh_ptr_cast->message); /* Does nothing if already null */    \
+      PEH_eh_ptr_cast->message = (char*)malloc(sizeof(char) * strlen(msg)); \
+      strcpy(PEH_eh_ptr_cast->message, msg);                                \
+    }                                                                       \
   } while(0)
 
 
@@ -83,7 +86,7 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
  * an exception is thrown within the provided code block.
  *
  * Assuming \c eh_ptr points to an initialized vital_error_handle_t instance.
- * An arbitrary catch sets a -1 error code and assignes to the message field
+ * An arbitrary catch sets a -1 error code and assigns to the message field
  * the same thing that is printed to logging statement.
  */
 #define STANDARD_CATCH(log_prefix, eh_ptr, code)                \

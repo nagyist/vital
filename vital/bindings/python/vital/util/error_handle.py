@@ -87,6 +87,14 @@ class VitalErrorHandle (VitalObject):
             self.propagate_exception()
         return True
 
+    @property
+    def error_code(self):
+        return self.c_pointer[0].error_code
+
+    @property
+    def message(self):
+        return self.c_pointer[0].message
+
     def set_exception_map(self, ec_exception_map):
         """
         Extend the current return code to exception mapping.
@@ -110,9 +118,8 @@ class VitalErrorHandle (VitalObject):
         code matches an entry, that will be raised instead.
 
         """
-        c_ptr = self.c_pointer
-        if c_ptr[0].error_code != 0:
-            if c_ptr[0].error_code in self._ec_exception_map:
-                raise self._ec_exception_map[c_ptr[0].error_code](c_ptr[0].message)
+        if self.error_code != 0:
+            if self.error_code in self._ec_exception_map:
+                raise self._ec_exception_map[self.error_code](self.message)
             else:
-                raise VitalBaseException(c_ptr[0].message)
+                raise VitalBaseException(self.message)

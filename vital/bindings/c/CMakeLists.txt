@@ -4,6 +4,7 @@ set(vital_c_public_headers
   algorithm.h
   algorithm_plugin_manager.h
   camera.h
+  camera_intrinsics.h
   camera_map.h
   common.h
   config_block.h
@@ -13,6 +14,7 @@ set(vital_c_public_headers
   image_container.hxx
   track.h
   track_set.h
+  eigen.h
 
   algo_def/convert_image.h
   algo_def/image_io.h
@@ -20,10 +22,13 @@ set(vital_c_public_headers
   )
 
 set(vital_c_private_headers
+  # Installed later manually, so we can ignore the files path prefix
   ${CMAKE_CURRENT_BINARY_DIR}/vital_c_export.h
+
   helpers/algorithm.h
   helpers/c_utils.h
   helpers/camera.h
+  helpers/camera_intrinsics.h
   helpers/camera_map.h
   helpers/config_block.h
   helpers/image_container.h
@@ -35,6 +40,7 @@ set(vital_c_sources
   algorithm.cxx
   algorithm_plugin_manager.cxx
   camera.cxx
+  camera_intrinsics.cxx
   camera_map.cxx
   common.cxx
   config_block.cxx
@@ -43,6 +49,7 @@ set(vital_c_sources
   image_container.cxx
   track.cxx
   track_set.cxx
+  eigen.cxx
 
   helpers/c_utils.cxx
 
