@@ -79,5 +79,19 @@ video_stream_exception
 }
 
 
+// ------------------------------------------------------------------
+video_config_exception
+::video_config_exception( std::string const& msg) VITAL_NOTHROW
+{
+  m_what = "Video config exception:" + msg;
+}
+
+
+video_config_exception
+::~video_config_exception() VITAL_NOTHROW
+{
+}
+
+
 
 } } // end namespace
