@@ -35,7 +35,7 @@ Interface to VITAL camera_intrinsics objects
 """
 import ctypes
 
-from vital.types.eigen import VitalEigenNumpyArray
+from vital.types.eigen import VitalEigenArray
 from vital.util import VitalErrorHandle, VitalObject
 
 
@@ -66,17 +66,17 @@ class VitalCameraIntrinsics (VitalObject):
         ci_new = self.VITAL_LIB['vital_camera_intrinsics_new']
         ci_new.argtypes = [
             ctypes.c_double,
-            VitalEigenNumpyArray.C_TYPE_PTR,
+            VitalEigenArray.C_TYPE_PTR,
             ctypes.c_double,
             ctypes.c_double,
-            VitalEigenNumpyArray.C_TYPE_PTR,
+            VitalEigenArray.C_TYPE_PTR,
             VitalErrorHandle.C_TYPE_PTR,
         ]
         ci_new.restype = self.C_TYPE_PTR
         # Make "vectors"
-        pp = VitalEigenNumpyArray(2)
+        pp = VitalEigenArray(2)
         pp.T[:] = principle_point
-        dc = VitalEigenNumpyArray(len(dist_coeffs), dynamic_rows=True)
+        dc = VitalEigenArray(len(dist_coeffs), dynamic_rows=True)
         if len(dist_coeffs):
             dc.T[:] = dist_coeffs
 
@@ -105,10 +105,10 @@ class VitalCameraIntrinsics (VitalObject):
     def principle_point(self):
         f = self.VITAL_LIB['vital_camera_intrinsics_get_principle_point']
         f.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
+        f.restype = VitalEigenArray.C_TYPE_PTR
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return VitalEigenNumpyArray.from_c_pointer(m_ptr, 2)
+            return VitalEigenArray(2, c_ptr=m_ptr, owns_data=True)
 
     @property
     def aspect_ratio(self):
@@ -130,10 +130,10 @@ class VitalCameraIntrinsics (VitalObject):
     def dist_coeffs(self):
         f = self.VITAL_LIB['vital_camera_intrinsics_get_dist_coeffs']
         f.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
+        f.restype = VitalEigenArray.C_TYPE_PTR
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return VitalEigenNumpyArray.from_c_pointer(m_ptr, dynamic_rows=1)
+            return VitalEigenArray(dynamic_rows=1, c_ptr=m_ptr, owns_data=True)
 
     def as_matrix(self):
         """
@@ -147,10 +147,10 @@ class VitalCameraIntrinsics (VitalObject):
         """
         f = self.VITAL_LIB['vital_camera_intrinsics_as_matrix']
         f.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
+        f.restype = VitalEigenArray.C_TYPE_PTR
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return VitalEigenNumpyArray(3, 3, c_ptr=m_ptr)
+            return VitalEigenArray(3, 3, c_ptr=m_ptr, owns_data=True)
 
     def map_2d(self, norm_pt):
         """
@@ -164,19 +164,19 @@ class VitalCameraIntrinsics (VitalObject):
         :type norm_pt: collections.Sequence[float]
 
         :return: Mapped 2D image coordinate
-        :rtype: VitalEigenNumpyArray[float]
+        :rtype: VitalEigenArray[float]
 
         """
         assert len(norm_pt) == 2, "Input sequence was not of length 2"
         f = self.VITAL_LIB['vital_camera_intrinsics_map_2d']
-        f.argtypes = [self.C_TYPE_PTR, VitalEigenNumpyArray.C_TYPE_PTR,
+        f.argtypes = [self.C_TYPE_PTR, VitalEigenArray.C_TYPE_PTR,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
-        p = VitalEigenNumpyArray(2)
+        f.restype = VitalEigenArray.C_TYPE_PTR
+        p = VitalEigenArray(2)
         p.T[:] = norm_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return VitalEigenNumpyArray(2, 1, c_ptr=m_ptr)
+            return VitalEigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
 
     def map_3d(self, norm_hpt):
         """
@@ -187,19 +187,19 @@ class VitalCameraIntrinsics (VitalObject):
         :type norm_hpt: collections.Sequence[float]
 
         :return: Mapped 2D image coordinate
-        :rtype: VitalEigenNumpyArray[float]
+        :rtype: VitalEigenArray[float]
 
         """
         assert len(norm_hpt) == 3, "Input sequence was not of length 3"
         f = self.VITAL_LIB['vital_camera_intrinsics_map_3d']
-        f.argtypes = [self.C_TYPE_PTR, VitalEigenNumpyArray.C_TYPE_PTR,
+        f.argtypes = [self.C_TYPE_PTR, VitalEigenArray.C_TYPE_PTR,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
-        p = VitalEigenNumpyArray(3)
+        f.restype = VitalEigenArray.C_TYPE_PTR
+        p = VitalEigenArray(3)
         p.T[:] = norm_hpt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return VitalEigenNumpyArray(2, 1, c_ptr=m_ptr)
+            return VitalEigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
 
     def unmap_2d(self, pt):
         """
@@ -215,14 +215,14 @@ class VitalCameraIntrinsics (VitalObject):
         """
         assert len(pt) == 2, "Input sequence was not of length 2"
         f = self.VITAL_LIB['vital_camera_intrinsics_unmap_2d']
-        f.argtypes = [self.C_TYPE_PTR, VitalEigenNumpyArray.C_TYPE_PTR,
+        f.argtypes = [self.C_TYPE_PTR, VitalEigenArray.C_TYPE_PTR,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
-        p = VitalEigenNumpyArray(2)
+        f.restype = VitalEigenArray.C_TYPE_PTR
+        p = VitalEigenArray(2)
         p.T[:] = pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return VitalEigenNumpyArray(2, 1, c_ptr=m_ptr)
+            return VitalEigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
 
     def distort_2d(self, norm_pt):
         """
@@ -235,14 +235,14 @@ class VitalCameraIntrinsics (VitalObject):
         """
         assert len(norm_pt) == 2, "Input sequence was not of length 2"
         f = self.VITAL_LIB['vital_camera_intrinsics_distort_2d']
-        f.argtypes = [self.C_TYPE_PTR, VitalEigenNumpyArray.C_TYPE_PTR,
+        f.argtypes = [self.C_TYPE_PTR, VitalEigenArray.C_TYPE_PTR,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
-        p = VitalEigenNumpyArray(2)
+        f.restype = VitalEigenArray.C_TYPE_PTR
+        p = VitalEigenArray(2)
         p.T[:] = norm_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return VitalEigenNumpyArray(2, 1, c_ptr=m_ptr)
+            return VitalEigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
 
     def undistort_2d(self, dist_pt):
         """
@@ -255,11 +255,11 @@ class VitalCameraIntrinsics (VitalObject):
         """
         assert len(dist_pt) == 2, "Input sequence was not of length 2"
         f = self.VITAL_LIB['vital_camera_intrinsics_undistort_2d']
-        f.argtypes = [self.C_TYPE_PTR, VitalEigenNumpyArray.C_TYPE_PTR,
+        f.argtypes = [self.C_TYPE_PTR, VitalEigenArray.C_TYPE_PTR,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = VitalEigenNumpyArray.C_TYPE_PTR
-        p = VitalEigenNumpyArray(2)
+        f.restype = VitalEigenArray.C_TYPE_PTR
+        p = VitalEigenArray(2)
         p.T[:] = dist_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return VitalEigenNumpyArray(2, 1, c_ptr=m_ptr)
+            return VitalEigenArray(2, 1, c_ptr=m_ptr, owns_data=True)

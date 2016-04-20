@@ -37,6 +37,7 @@ import ctypes
 
 import numpy
 
+from vital.exceptions.eigen import VitalInvalidStaticEigenShape
 from vital.util import (
     VitalErrorHandle,
     VitalObject,
@@ -55,13 +56,19 @@ else:
                        % ctypes.sizeof(ctypes.c_void_p))
 
 
-class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
+class VitalEigenArray (numpy.ndarray, VitalObject):
+    """
+    TODO: Figure out why ravel/flatten returns a VitalEigenArray-type object
+          with no bases
+    """
 
     # Valid dtype possibilities
     MAT_TYPE_KEYS = (numpy.double, numpy.float32)
 
     # C library function component template
     FUNC_SPEC = "{rows:s}x{cols:s}{type:s}"
+
+    __array_priority__ = -1.0
 
     # noinspection PyMethodOverriding
     @classmethod
@@ -90,9 +97,13 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
             given is coming from an existing python object.
         :type shallow_copy_of: VitalObject or None
 
+        :raises VitalInvalidStaticEigenShape: An invalid (row, column) was
+            specified without stating dynamic rows or columns. This is because
+            Vital and Eigen defines only so many shapes at compile time.
+
         """
-        m = VitalEigenNumpyArray(rows, cols, dynamic_rows, dynamic_cols,
-                                 dtype, ptr, owns_data)
+        m = VitalEigenArray(rows, cols, dynamic_rows, dynamic_cols,
+                            dtype, ptr, owns_data)
         m._parent = shallow_copy_of
         return m
 
@@ -186,6 +197,10 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
         :return: Interface to a new or existing Eigen matrix instance.
 
+        :raises VitalInvalidStaticEigenShape: An invalid (row, column) was
+            specified without stating dynamic rows or columns. This is because
+            Vital and Eigen defines only so many shapes at compile time.
+
         """
         func_map, c_type = cls._init_func_map(rows, cols,
                                               dynamic_rows, dynamic_cols,
@@ -193,7 +208,14 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
 
         # Create new Eigen matrix
         if c_ptr is None:
-            c_new = cls.VITAL_LIB[func_map['new_sized']]
+            try:
+                c_new = cls.VITAL_LIB[func_map['new_sized']]
+            except AttributeError:
+                raise VitalInvalidStaticEigenShape(
+                    "Array shape %s is not a valid compile-time specified "
+                    "shape given that dynamic rows/cols were specified as %s."
+                    % ((rows, cols), (dynamic_rows, dynamic_cols))
+                )
             c_new.argtypes = [c_ptrdiff_t, c_ptrdiff_t]
             c_new.restype = cls.C_TYPE_PTR
             inst_ptr = c_new(c_ptrdiff_t(rows), c_ptrdiff_t(cols))
@@ -213,21 +235,19 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         strides = (row_stride * dtype_bytes,
                    col_stride * dtype_bytes)
         if data:
+            # data has no __array_interface__ yet, thus...
             b = numpy.ctypeslib.as_array(data, (rows * cols,))
         else:
             b = buffer('')
 
         # args: (subclass, shape, dtype, buffer, offset, strides, order)
-        # TODO: Get offset from eigen matrix, too.
-        # print "Construction ({}, {}, {}, {}, {})".format(
-        #     (rows, cols), dtype, b, 0, strides
-        # )
         obj = numpy.ndarray.__new__(cls, (rows, cols), dtype, b, 0, strides)
 
         # local properties
         obj._dynamic_rows = dynamic_rows
         obj._dynamic_cols = dynamic_cols
         obj._func_map = func_map
+        obj._c_type = c_type
         obj._owns_data = owns_data
 
         VitalObject.__init__(obj)
@@ -242,6 +262,19 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         # initialization handled in __new__
         pass
 
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        s = str(self)
+        # prefix lines based on the length of the class name
+        l = s.splitlines()
+        l[0] = cls_name + '(' + l[0]
+        for i in range(1, len(l)):
+            if l[i]:
+                # +1 for the '('
+                l[i] = ' '*(len(cls_name)+1) + l[i]
+        l[-1] += ')'
+        return '\n'.join(l)
+
     def __array_finalize__(self, obj):
         """
         Where numpy finalizes instance properties of an array instance when
@@ -254,10 +287,11 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         # copy/move over attributes from parent as necessary
         #   self => New class of this type
         #   obj  => other class MAYBE this type
-        if isinstance(obj, VitalEigenNumpyArray):
+        if isinstance(obj, VitalEigenArray):
             self._dynamic_rows = obj._dynamic_rows
             self._dynamic_cols = obj._dynamic_cols
             self._func_map = obj._func_map
+            self._c_type = obj._c_type
             # Always false because we are view of obj. See parent switch below.
             self._owns_data = False
 
@@ -273,13 +307,13 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
                                "is not of the same type (%s). Cannot inherit "
                                "required information." % type(obj))
 
-    # def __array_prepare__(self, obj, context=None):
-    #     # Don't propagate this class and its stored references needlessly
-    #     return obj
-    #
-    # def __array_wrap__(self, out_arr, context=None):
-    #     # Don't propagate this class and its stored references needlessly
-    #     return out_arr
+    def __array_prepare__(self, obj, context=None):
+        # Don't propagate this class and its stored references needlessly
+        return obj
+
+    def __array_wrap__(self, out_arr, context=None):
+        # Don't propagate this class and its stored references needlessly
+        return out_arr
 
     def _destroy(self):
         # Not smart-pointer controlled in C++. We might not own the data we're
@@ -310,6 +344,6 @@ class VitalEigenNumpyArray (numpy.ndarray, VitalObject):
         f = self.VITAL_LIB[self._func_map['get']]
         f.argtypes = [self.C_TYPE_PTR, c_ptrdiff_t, c_ptrdiff_t,
                       VitalErrorHandle.C_TYPE_PTR]
-        f.restype = self.c_type
+        f.restype = self._c_type
         with VitalErrorHandle() as eh:
             return f(self, row, col, eh)

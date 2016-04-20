@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015-2016 by Kitware, Inc.
+Copyright 2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-vital.types module
+VITAL EigenArray related exceptions
 
 """
 
-# Common VITAL Components for easy access
-from .camera import Camera
-from .camera_intrinsics import VitalCameraIntrinsics
-from .camera_map import CameraMap
-from .eigen import VitalEigenArray
-from .image import Image
-from .image_container import ImageContainer
-from .track import Track
-from .track_set import TrackSet
+from .base import VitalBaseException
+
+
+class VitalEigenArrayException (VitalBaseException):
+    """ Base VitalEigenArray exception """
+
+
+class VitalInvalidStaticEigenShape (VitalEigenArrayException):
+    """
+    For when constructing an EigenArray of an invalid shape without stating
+    dynamic rows or columns.
+    """
+    pass
