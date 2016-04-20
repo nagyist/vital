@@ -36,11 +36,5 @@ vital module
 # -*- coding: utf-8 -*-
 __author__ = 'paul.tunison@kitware.com'
 
-# Common VITAL Components for easy access
-from .camera import Camera
-from .camera_map import CameraMap
 from .config_block import ConfigBlock
-from .image import Image
-from .image_container import ImageContainer
-from .track import Track
-from .track_set import TrackSet
+

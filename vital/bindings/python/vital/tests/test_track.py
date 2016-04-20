@@ -36,7 +36,7 @@ Tests for VitalTrack interface class
 # -*- coding: utf-8 -*-
 __author__ = 'paul.tunison@kitware.com'
 
-from vital import Track
+from vital.types import Track
 
 import nose.tools
 

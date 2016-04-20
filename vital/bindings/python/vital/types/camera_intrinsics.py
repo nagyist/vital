@@ -34,7 +34,8 @@ Interface to VITAL camera_intrinsics objects
 
 """
 import ctypes
-from vital.eigen import VitalEigenNumpyArray
+
+from vital.types.eigen import VitalEigenNumpyArray
 from vital.util import VitalErrorHandle, VitalObject
 
 

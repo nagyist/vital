@@ -38,7 +38,7 @@ __author__ = 'paul.tunison@kitware.com'
 
 import ctypes
 
-from vital import Camera
+from vital.types import Camera
 from vital.util import VitalObject, VitalErrorHandle
 
 
