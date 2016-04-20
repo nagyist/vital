@@ -1,0 +1,15 @@
+Vital AFRL Pending Release Notes (Since v0.1.0)
+===============================================
+
+Bindings
+--------
+
+ * Updated current C/Python bindings to function correctly in Vital.
+
+ * Updated IPython notebook (now for use with jupyter)
+
+ * Added minimal bindings for Eigen::Matrix class in C.
+
+ * Added Python wrapping of Eigen::Matrix data using Numpy ndarray type.
+
+ * Added full bindings for vital::camera_intrinsics class
