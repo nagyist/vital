@@ -38,7 +38,7 @@
 #include <vital/types/camera_map.h>
 #include <vital/vital_foreach.h>
 
-#include <vital/bindings/c/camera.h>
+#include <vital/bindings/c/types/camera.h>
 #include <vital/bindings/c/helpers/c_utils.h>
 #include <vital/bindings/c/helpers/camera.h>
 #include <vital/bindings/c/helpers/camera_map.h>

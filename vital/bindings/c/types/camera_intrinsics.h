@@ -41,7 +41,7 @@ extern "C"
 {
 #endif
 
-#include <vital/bindings/c/eigen.h>
+#include <vital/bindings/c/types/eigen.h>
 #include <vital/bindings/c/error_handle.h>
 #include <vital/bindings/c/vital_c_export.h>
 

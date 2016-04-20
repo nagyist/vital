@@ -43,7 +43,7 @@ extern "C"
 
 #include <vital/bindings/c/vital_c_export.h>
 #include <vital/bindings/c/error_handle.h>
-#include <vital/bindings/c/track.h>
+#include <vital/bindings/c/types/track.h>
 
 
 /// Opaque structure
