@@ -184,3 +184,48 @@ class VitalObject (object):
         """ Call C API destructor for derived class """
         raise NotImplementedError("Calling VitalObject class abstract _destroy "
                                   "function.")
+
+
+class OpaqueTypeCache (object):
+    """
+    Support structure for VitalObject sub-classes that represent multiple
+    C types akin to C++ templating.
+    """
+
+    def __init__(self):
+        # Store pairs of C opaque structure and its pointer type
+        #: :type: dict[str, (_ctypes.PyCStructType, _ctypes.PyCPointerType)]
+        self._c_type_cache = {}
+
+    def get_types(self, k):
+        """
+        Return or generate opaque type and pointer based on shape spec
+        """
+        if k not in self._c_type_cache:
+            # Based on VitalClassMetadata meta-cass
+            class OpaqueStruct (ctypes.Structure):
+                pass
+            OpaqueStruct.__name__ = "Cached_%s_OpaqueStructure" % k
+            self._c_type_cache[k] = \
+                (OpaqueStruct, ctypes.POINTER(OpaqueStruct))
+        return self._c_type_cache[k]
+
+    def new_type_getter(self):
+        """
+        Returns new simple object  with __getitem__ hook for C Type
+        """
+        class c_type_manager (object):
+            def __getitem__(s2, k):
+                return self.get_types(k)[0]
+            __contains__ = self._c_type_cache.__contains__
+        return c_type_manager()
+
+    def new_ptr_getter(self):
+        """
+        Returns new simple object with __getitem__ hook for C Type Pointer
+        """
+        class c_type_ptr_manager (object):
+            def __getitem__(s2, k):
+                return self.get_types(k)[1]
+            __contains__ = self._c_type_cache.__contains__
+        return c_type_ptr_manager()

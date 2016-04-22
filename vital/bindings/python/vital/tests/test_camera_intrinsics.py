@@ -39,60 +39,60 @@ import unittest
 import nose.tools as ntools
 import numpy
 
-from vital.types import VitalCameraIntrinsics
+from vital.types import CameraIntrinsics
 
 
 class TestVitalCameraIntrinsics (unittest.TestCase):
 
     def test_default_init(self):
-        VitalCameraIntrinsics()
+        CameraIntrinsics()
 
     def test_full_init(self):
-        VitalCameraIntrinsics(10, (5, 5), 1.2, 3.1, [4, 5, 6])
+        CameraIntrinsics(10, (5, 5), 1.2, 3.1, [4, 5, 6])
 
     def test_get_focal_length(self):
-        ntools.assert_equal(VitalCameraIntrinsics().focal_length, 1.)
-        ntools.assert_equal(VitalCameraIntrinsics(5.2).focal_length, 5.2)
+        ntools.assert_equal(CameraIntrinsics().focal_length, 1.)
+        ntools.assert_equal(CameraIntrinsics(5.2).focal_length, 5.2)
 
     def test_get_principle_point(self):
         numpy.testing.assert_array_equal(
-            VitalCameraIntrinsics().principle_point,
+            CameraIntrinsics().principle_point,
             [[0],
              [0]]
         )
         numpy.testing.assert_array_equal(
-            VitalCameraIntrinsics(principle_point=(10, 2.3)).principle_point,
+            CameraIntrinsics(principle_point=(10, 2.3)).principle_point,
             [[10],
              [2.3]]
         )
 
     def test_get_aspect_ratio(self):
         ntools.assert_equal(
-            VitalCameraIntrinsics().aspect_ratio,
+            CameraIntrinsics().aspect_ratio,
             1.
         )
         ntools.assert_equal(
-            VitalCameraIntrinsics(aspect_ratio=2.1).aspect_ratio,
+            CameraIntrinsics(aspect_ratio=2.1).aspect_ratio,
             2.1
         )
 
     def test_get_skew(self):
         ntools.assert_equal(
-            VitalCameraIntrinsics().skew,
+            CameraIntrinsics().skew,
             0.
         )
         ntools.assert_equal(
-            VitalCameraIntrinsics(skew=1.).skew,
+            CameraIntrinsics(skew=1.).skew,
             1.
         )
 
     def test_get_dist_coeffs(self):
         numpy.testing.assert_array_equal(
-            VitalCameraIntrinsics().dist_coeffs,
+            CameraIntrinsics().dist_coeffs,
             numpy.zeros((0, 1))
         )
         numpy.testing.assert_array_equal(
-            VitalCameraIntrinsics(dist_coeffs=(10, 4, 32, 1.1)).dist_coeffs,
+            CameraIntrinsics(dist_coeffs=(10, 4, 32, 1.1)).dist_coeffs,
             [[10],
              [4],
              [32],
@@ -101,11 +101,11 @@ class TestVitalCameraIntrinsics (unittest.TestCase):
 
     def test_as_matrix(self):
         numpy.testing.assert_equal(
-            VitalCameraIntrinsics().as_matrix(),
+            CameraIntrinsics().as_matrix(),
             numpy.eye(3)
         )
         numpy.testing.assert_equal(
-            VitalCameraIntrinsics(10, (2, 3), 2, 5).as_matrix(),
+            CameraIntrinsics(10, (2, 3), 2, 5).as_matrix(),
             [[10, 5, 2],
              [0,  5, 3],
              [0,  0, 1]]

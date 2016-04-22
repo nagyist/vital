@@ -40,7 +40,7 @@ import nose.tools as ntools
 import numpy
 
 from vital.exceptions.eigen import VitalInvalidStaticEigenShape
-from vital.types import VitalEigenArray
+from vital.types import EigenArray
 
 
 class TestVitalEigenMatrix (unittest.TestCase):
@@ -49,43 +49,43 @@ class TestVitalEigenMatrix (unittest.TestCase):
         """
         Test construction of some of the static sizes.
         """
-        a = VitalEigenArray() # default shape
+        a = EigenArray() # default shape
         ntools.assert_equal(a.shape, (2, 1))
 
-        a = VitalEigenArray(2, 1)
+        a = EigenArray(2, 1)
         ntools.assert_equal(a.shape, (2, 1))
 
-        a = VitalEigenArray(2, 2)
+        a = EigenArray(2, 2)
         ntools.assert_equal(a.shape, (2, 2))
 
-        a = VitalEigenArray(4, 4)
+        a = EigenArray(4, 4)
         ntools.assert_equal(a.shape, (4, 4))
 
     def test_dynamic_size_init(self):
-        a = VitalEigenArray(2, dynamic_rows=True)
+        a = EigenArray(2, dynamic_rows=True)
         ntools.assert_equal(a.shape, (2, 1))
 
-        a = VitalEigenArray(300, dynamic_rows=True)
+        a = EigenArray(300, dynamic_rows=True)
         ntools.assert_equal(a.shape, (300, 1))
 
-        a = VitalEigenArray(1234, 256, dynamic_rows=True, dynamic_cols=True)
+        a = EigenArray(1234, 256, dynamic_rows=True, dynamic_cols=True)
         ntools.assert_equal(a.shape, (1234, 256))
 
     def test_invalid_shape_init(self):
         ntools.assert_raises(
             VitalInvalidStaticEigenShape,
-            VitalEigenArray,
+            EigenArray,
             5,
         )
 
         ntools.assert_raises(
             VitalInvalidStaticEigenShape,
-            VitalEigenArray,
+            EigenArray,
             400, 500
         )
 
     def test_order_transform(self):
-        a = VitalEigenArray(2, 3)
+        a = EigenArray(2, 3)
         d = a.base.base  # The data pointer
         # column-major 2x3 matrix [[ 1 2 3 ]  (Eigen format)
         #                          [ 4 5 6 ]]
@@ -103,7 +103,7 @@ class TestVitalEigenMatrix (unittest.TestCase):
         ntools.assert_equal(a.at_eigen_base_index(1, 2), 6)
 
     def test_mutability(self):
-        a = VitalEigenArray(2, 3)
+        a = EigenArray(2, 3)
         d = a.base.base  # The data pointer
         for i in xrange(6):
             d[i] = 0

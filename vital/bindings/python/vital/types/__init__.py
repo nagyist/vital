@@ -36,9 +36,9 @@ vital.types module
 
 # Common VITAL Components for easy access
 from .camera import Camera
-from .camera_intrinsics import VitalCameraIntrinsics
+from .camera_intrinsics import CameraIntrinsics
 from .camera_map import CameraMap
-from .eigen import VitalEigenArray
+from .eigen import EigenArray
 from .image import Image
 from .image_container import ImageContainer
 from .track import Track
