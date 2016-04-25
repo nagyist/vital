@@ -33,12 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Base class for all VITAL Python interface classes
 
 """
-# -*- coding: utf-8 -*-
-__author__ = 'paul.tunison@kitware.com'
 
 import abc
 import ctypes
-import logging
 
 from vital.util.find_vital_library import find_vital_library
 from vital.util.string import vital_string_t
@@ -192,10 +189,11 @@ class OpaqueTypeCache (object):
     C types akin to C++ templating.
     """
 
-    def __init__(self):
+    def __init__(self, name_prefix=None):
         # Store pairs of C opaque structure and its pointer type
         #: :type: dict[str, (_ctypes.PyCStructType, _ctypes.PyCPointerType)]
         self._c_type_cache = {}
+        self._prefix = name_prefix or ''
 
     def get_types(self, k):
         """
@@ -205,7 +203,7 @@ class OpaqueTypeCache (object):
             # Based on VitalClassMetadata meta-cass
             class OpaqueStruct (ctypes.Structure):
                 pass
-            OpaqueStruct.__name__ = "Cached_%s_OpaqueStructure" % k
+            OpaqueStruct.__name__ = "%s%s_OpaqueStructure" % (self._prefix, k)
             self._c_type_cache[k] = \
                 (OpaqueStruct, ctypes.POINTER(OpaqueStruct))
         return self._c_type_cache[k]
@@ -218,6 +216,10 @@ class OpaqueTypeCache (object):
             def __getitem__(s2, k):
                 return self.get_types(k)[0]
             __contains__ = self._c_type_cache.__contains__
+            @property
+            def _as_parameter_(self):
+                raise RuntimeError("Cannot use type manager as ctypes "
+                                   "parameter")
         return c_type_manager()
 
     def new_ptr_getter(self):
@@ -228,4 +230,8 @@ class OpaqueTypeCache (object):
             def __getitem__(s2, k):
                 return self.get_types(k)[1]
             __contains__ = self._c_type_cache.__contains__
+            @property
+            def _as_parameter_(self):
+                raise RuntimeError("Cannot use type manager as ctypes "
+                                   "parameter")
         return c_type_ptr_manager()

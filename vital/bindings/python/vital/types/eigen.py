@@ -76,7 +76,7 @@ class EigenArray (numpy.ndarray, VitalObject):
 
     # Override C opaque pointer type to ones that are dependent on shape and
     # dynamics.
-    TYPE_CACHE = OpaqueTypeCache()
+    TYPE_CACHE = OpaqueTypeCache("EigenArray_")
     C_TYPE = TYPE_CACHE.new_type_getter()
     C_TYPE_PTR = TYPE_CACHE.new_ptr_getter()
 

@@ -36,5 +36,5 @@ vital.util module
 # -*- coding: utf-8 -*-
 __author__ = 'paul.tunison@kitware.com'
 
-from .VitalObject import VitalObject
+from .VitalObject import VitalObject, OpaqueTypeCache
 from .error_handle import VitalErrorHandle
