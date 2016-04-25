@@ -147,10 +147,6 @@ public:
     return data_[vector_index( i, j )];
   }
 
-
-  /// Compute the generalized variance (determinant of covariance)
-  T generalized_variance() const;
-
   /// Access the underlying data
   const T* data() const { return data_; }
 
@@ -159,11 +155,11 @@ protected:
   /// Convert from matrix to vector indices
   unsigned int vector_index( unsigned int i, unsigned int j ) const
   {
-    return ( j > i ) ? j * ( j + 1 ) / 2 + i : i*( i + 1 ) / 2 + j;
+    return ( j > i ) ? j * ( j + 1 ) / 2 + i
+                     : i * ( i + 1 ) / 2 + j;
   }
 
-
-  /// data of the sparse symmetric covarience matrix
+  /// data of the sparse symmetric covariance matrix; column-major format
   T data_[data_size];
 };
 
