@@ -114,8 +114,10 @@ class EigenArray (numpy.ndarray, VitalObject):
             Vital and Eigen defines only so many shapes at compile time.
 
         """
+        # only owns the data if we are told to and we're not a shallow copy of
+        # another python object.
         m = EigenArray(rows, cols, dynamic_rows, dynamic_cols,
-                       dtype, ptr, owns_data)
+                       dtype, ptr, (shallow_copy_of is None) and owns_data)
         m._parent = shallow_copy_of
         return m
 
@@ -242,7 +244,6 @@ class EigenArray (numpy.ndarray, VitalObject):
                 raise RuntimeError("Failed to construct new Eigen matrix")
             owns_data = True
         else:
-            # TODO: assert here that given pointer is of correct opaque type
             if not isinstance(c_ptr, op_c_type_ptr):
                 raise ValueError("Given C-Pointer is not correct for the "
                                  "shape-type '%s' (given: %s)"
@@ -278,9 +279,7 @@ class EigenArray (numpy.ndarray, VitalObject):
         obj._owns_data = owns_data
 
         VitalObject.__init__(obj)
-
         obj._inst_ptr = inst_ptr
-        obj._parent = None
 
         return obj
 
@@ -369,6 +368,7 @@ class EigenArray (numpy.ndarray, VitalObject):
         return out_arr
 
     def _destroy(self):
+        # We're only in this function because we don't have a parent.
         # Not smart-pointer controlled in C++. We might not own the data we're
         # viewing.
         if self.c_pointer and self._owns_data:
