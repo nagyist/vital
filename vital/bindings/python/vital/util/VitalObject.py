@@ -36,6 +36,7 @@ Base class for all VITAL Python interface classes
 
 import abc
 import ctypes
+import logging
 
 from vital.util.find_vital_library import find_vital_library
 from vital.util.string import vital_string_t
@@ -175,6 +176,11 @@ class VitalObject (object):
         :return: The ctypes opaque structure pointer
         """
         return self._inst_ptr
+
+    @property
+    def _log(self):
+        return logging.getLogger('.'.join([self.__module__,
+                                           self.__class__.__name__]))
 
     @abc.abstractmethod
     def _destroy(self):
