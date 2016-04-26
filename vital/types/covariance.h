@@ -53,8 +53,20 @@ public:
   /// Number of unique values in a NxN symmetric matrix
   static const unsigned int data_size = N * ( N + 1 ) / 2;
 
-  /// Default Constructor
-  covariance_< N, T > ( ) { }
+  /// Default Constructor - Initialize to identity
+  covariance_< N, T > ( )
+  {
+    // Setting identity matrix values
+    unsigned int n = 0;
+    for ( unsigned int j = 0; j < N; ++j )
+    {
+      for ( unsigned int i = 0; i < j; ++i )
+      {
+        data_[n++] = T( 0 );
+      }
+      data_[n++] = T( 1 );
+    }
+  }
 
   /// Copy constructor
   covariance_< N, T > ( const covariance_< N, T > &other )
