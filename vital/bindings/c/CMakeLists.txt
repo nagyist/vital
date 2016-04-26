@@ -14,6 +14,7 @@ set(vital_c_public_headers
   types/camera.h
   types/camera_intrinsics.h
   types/camera_map.h
+  types/covariance.h
   types/eigen.h
   types/image.h
   types/image_container.h
@@ -23,7 +24,7 @@ set(vital_c_public_headers
   )
 
 set(vital_c_private_headers
-  # Installed later manually, so we can ignore the files path prefix
+  # Created by CMake during configuration
   ${CMAKE_CURRENT_BINARY_DIR}/vital_c_export.h
 
   helpers/algorithm.h
@@ -53,6 +54,7 @@ set(vital_c_sources
   types/camera.cxx
   types/camera_intrinsics.cxx
   types/camera_map.cxx
+  types/covariance.cxx
   types/eigen.cxx
   types/image.cxx
   types/image_container.cxx

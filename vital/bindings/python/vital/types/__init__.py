@@ -38,6 +38,7 @@ vital.types module
 from .camera import Camera
 from .camera_intrinsics import CameraIntrinsics
 from .camera_map import CameraMap
+from .covariance import Covariance
 from .eigen import EigenArray
 from .image import Image
 from .image_container import ImageContainer
