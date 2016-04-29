@@ -130,6 +130,22 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
 #define MAYBE_EMPTY_STRING(s) (s?s:"")
 
 
+/// Convenience macro for reinterpret cast pointer to a different type
+/**
+ * Most commonly used for conveniently converting C opaque pointer types into
+ * their concrete C++ type.
+ */
+#define REINTERP_TYPE( new_type, ptr, var )           \
+  new_type *var = reinterpret_cast<new_type*>( ptr ); \
+  do                                                    \
+  {                                                     \
+    if( var == 0 )                                      \
+    {                                                   \
+      throw "Null pointer";                             \
+    }                                                   \
+  } while(0)
+
+
 namespace kwiver {
 namespace vital_c {
 

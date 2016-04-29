@@ -41,17 +41,6 @@
 #include <vital/types/covariance.h>
 
 
-#define REINTERP_TYPE( new_type, c_ptr, var )           \
-  new_type *var = reinterpret_cast<new_type*>( c_ptr ); \
-  do                                                    \
-  {                                                     \
-    if( var == 0 )                                      \
-    {                                                   \
-      throw "Null pointer";                             \
-    }                                                   \
-  } while(0)
-
-
 /// Define Vital Covariance type functions (templates class)
 /**
  * \tparam N Size of the covariance matrix
@@ -202,3 +191,6 @@ DEFINE_VITAL_COVARIANCE_FUNCTIONS( 2, double, d )
 DEFINE_VITAL_COVARIANCE_FUNCTIONS( 2, float,  f )
 DEFINE_VITAL_COVARIANCE_FUNCTIONS( 3, double, d )
 DEFINE_VITAL_COVARIANCE_FUNCTIONS( 3, float,  f )
+
+
+#undef DEFINE_VITAL_COVARIANCE_FUNCTIONS

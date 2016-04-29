@@ -42,17 +42,6 @@
 #include <vital/bindings/c/helpers/c_utils.h>
 
 
-#define REINTERP_TYPE( new_type, c_ptr, var )           \
-  new_type *var = reinterpret_cast<new_type*>( c_ptr ); \
-  do                                                    \
-  {                                                     \
-    if( var == 0 )                                      \
-    {                                                   \
-      throw "Null pointer";                             \
-    }                                                   \
-  } while(0)
-
-
 /// Define Eigen matrix interface functions for use with Vital
 /**
  * \param T The data storage type like double or float
