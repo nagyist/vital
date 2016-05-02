@@ -46,6 +46,19 @@
  */
 #define DEFINE_FUNCTIONS( T, S )\
 \
+/* Destroy rotation instance */ \
+void \
+vital_rotation_##S##_destroy( vital_rotation_##S##_t *rot, \
+                              vital_error_handle_t *eh ) \
+{ \
+  typedef kwiver::vital::rotation_< T > rotation_t; \
+  STANDARD_CATCH( \
+    "vital_rotation_" #S ".destroy", eh, \
+    REINTERP_TYPE( rotation_t, rot, rot_ptr ); \
+    delete rot_ptr; \
+  ); \
+} \
+\
 /* Create new default rotation */ \
 vital_rotation_##S##_t* \
 vital_rotation_##S##_new_default( vital_error_handle_t *eh ) \

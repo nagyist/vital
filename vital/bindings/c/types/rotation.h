@@ -58,9 +58,21 @@ extern "C"
 typedef struct vital_rotation_##S##_s vital_rotation_##S##_t; \
 \
 /**
+ * Destroy rotation instance
+ *
+ * \param[in] rot The rotation instance to destroy
+ * \param[in,out] eh Vital Error handle instance
+ */ \
+VITAL_C_EXPORT \
+void \
+vital_rotation_##S##_destroy( vital_rotation_##S##_t *rot, \
+                              vital_error_handle_t *eh ); \
+\
+/**
  * Create new default rotation
  *
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -71,6 +83,7 @@ vital_rotation_##S##_new_default( vital_error_handle_t *eh ); \
  *
  * \param[in] q 4x1 matrix (vector) that is the quaternion to initialize from.
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -82,6 +95,7 @@ vital_rotation_##S##_new_from_quaternion( vital_eigen_matrix4x1##S##_t *q, \
  *
  * \param r 3x1 matrix (vector) that is the Rodrigues vector to initialize from.
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -94,6 +108,7 @@ vital_rotation_##S##_new_from_rodrigues( vital_eigen_matrix3x1##S##_t *r, \
  * \param angle Initial angle value.
  * \param axis Initial 3x1 axis vector
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -108,6 +123,7 @@ vital_rotation_##S##_new_from_axis_angle( T angle, \
  * \param pitch Initial pitch value
  * \param roll Initial roll value
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -121,6 +137,7 @@ vital_rotation_##S##_new_from_ypr( T yaw, T pitch, T roll, \
  *
  * \param m Orthonormal matrix to initialize to.
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -132,6 +149,7 @@ vital_rotation_##S##_new_from_matrix( vital_eigen_matrix3x3##S##_t *m, \
  *
  * \param rot Rotation instance pointer
  * \param[in,out] eh Vital Error handle instance
+ * \return new Eigen::Matrix opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix3x3##S##_t* \
@@ -143,6 +161,7 @@ vital_rotation_##S##_to_matrix( vital_rotation_##S##_t *rot, \
  *
  * \param rot Rotation instance pointer
  * \param[in,out] eh Vital Error handle instance
+ * \return new Eigen::Matrix opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix3x1##S##_t* \
@@ -154,6 +173,7 @@ vital_rotation_##S##_axis( vital_rotation_##S##_t *rot, \
  *
  * \param rot Rotation instance pointer
  * \param[in,out] eh Vital Error handle instance
+ * \return Angle value
  */ \
 VITAL_C_EXPORT \
 T \
@@ -165,6 +185,7 @@ vital_rotation_##S##_angle( vital_rotation_##S##_t *rot, \
  *
  * \param rot Rotation instance pointer
  * \param[in,out] eh Vital Error handle instance
+ * \return new Eigen::Matrix opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix4x1##S##_t* \
@@ -176,6 +197,7 @@ vital_rotation_##S##_quaternion( vital_rotation_##S##_t *rot, \
  *
  * \param rot Rotation instance pointer
  * \param[in,out] eh Vital Error handle instance
+ * \return new Eigen::Matrix opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix3x1d_t* \
@@ -214,6 +236,7 @@ vital_rotation_##S##_inverse( vital_rotation_##S##_t *rot, \
  * \param lhs Left-hand rotation instance for composition
  * \param rhs Right-hand rotation instance for composition
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
@@ -227,6 +250,7 @@ vital_rotation_##S##_compose( vital_rotation_##S##_t *lhs, \
  * \param rot Rotation instance pointer
  * \param v 3x1 vector to rotate.
  * \param[in,out] eh Vital Error handle instance
+ * \return new Eigen::Matrix opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_eigen_matrix3x1##S##_t* \
@@ -254,6 +278,7 @@ vital_rotation_##S##_are_equal( vital_rotation_##S##_t *A, \
  * \param B rotation we are interpolating towards
  * \param f Fractional value describing the
  * \param[in,out] eh Vital Error handle instance
+ * \return new vital::rotation_<T> opaque instance pointer
  */ \
 VITAL_C_EXPORT \
 vital_rotation_##S##_t* \
