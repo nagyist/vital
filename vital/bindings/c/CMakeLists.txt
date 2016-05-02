@@ -19,6 +19,7 @@ set(vital_c_public_headers
   types/image.h
   types/image_container.h
   types/image_container.hxx
+  types/rotation.h
   types/track.h
   types/track_set.h
   )
@@ -58,6 +59,7 @@ set(vital_c_sources
   types/eigen.cxx
   types/image.cxx
   types/image_container.cxx
+  types/rotation.cxx
   types/track.cxx
   types/track_set.cxx
   )

@@ -133,16 +133,23 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
 /// Convenience macro for reinterpret cast pointer to a different type
 /**
  * Most commonly used for conveniently converting C opaque pointer types into
- * their concrete C++ type.
+ * their concrete C++ type. We check that the reinterpret cast yielded a
+ * non-null pointer.
+ *
+ * \param new_type The new type to reinterp cast \c ptr to. This should not
+ *                 include the "*" as that is added in the macro.
+ * \param ptr The pointer to convert.
+ * \param var The variable to define in this macro. This should also be devoid
+ *            of and "*" (controlled by macro).
  */
 #define REINTERP_TYPE( new_type, ptr, var )           \
   new_type *var = reinterpret_cast<new_type*>( ptr ); \
-  do                                                    \
-  {                                                     \
-    if( var == 0 )                                      \
-    {                                                   \
-      throw "Null pointer";                             \
-    }                                                   \
+  do                                                  \
+  {                                                   \
+    if( var == 0 )                                    \
+    {                                                 \
+      throw "Null pointer";                           \
+    }                                                 \
   } while(0)
 
 
