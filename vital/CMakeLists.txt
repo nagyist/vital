@@ -103,6 +103,7 @@ set( vital_public_headers
   algo/convert_image.h
   algo/detect_features.h
   algo/draw_tracks.h
+  algo/estimate_canonical_transform.h
   algo/estimate_essential_matrix.h
   algo/estimate_fundamental_matrix.h
   algo/estimate_homography.h
@@ -185,6 +186,7 @@ set( vital_sources
   algo/convert_image.cxx
   algo/detect_features.cxx
   algo/draw_tracks.cxx
+  algo/estimate_canonical_transform.cxx
   algo/estimate_essential_matrix.cxx
   algo/estimate_fundamental_matrix.cxx
   algo/estimate_homography.cxx
