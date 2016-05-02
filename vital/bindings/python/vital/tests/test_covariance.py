@@ -187,10 +187,12 @@ class TestVitalCovariance (unittest.TestCase):
     def test_from_cptr(self):
         # Create a new covariance from C function and create new python instance
         # from that pointer
-        c_new_func = VitalObject.VITAL_LIB['vital_covariance_2d_new']
+        c_new_func = VitalObject.VITAL_LIB['vital_covariance_3d_new']
         c_new_func.argtypes = [VitalErrorHandle.C_TYPE_PTR]
-        c_new_func.restype = Covariance.C_TYPE_PTR['2d']
+        c_new_func.restype = Covariance.C_TYPE_PTR['3d']
         with VitalErrorHandle() as eh:
             c_ptr = c_new_func(eh)
 
-        c = Covariance(N=2, c_type=ctypes.c_double, from_cptr=c_ptr)
+        c = Covariance(N=3, c_type=ctypes.c_double, from_cptr=c_ptr)
+        nose.tools.assert_is(c.C_TYPE_PTR, Covariance.C_TYPE_PTR['3d'])
+        numpy.testing.assert_array_equal(c.to_matrix(), numpy.eye(3))

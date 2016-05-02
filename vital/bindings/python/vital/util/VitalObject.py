@@ -117,7 +117,7 @@ class VitalObject (object):
             elif not isinstance(from_cptr, self.C_TYPE_PTR):
                 raise RuntimeError("Given C Opaque Pointer is not of the "
                                    "correct type. Given '%s' but expected '%s'."
-                                   % type(from_cptr, self.C_TYPE_PTR))
+                                   % (type(from_cptr), self.C_TYPE_PTR))
             self._inst_ptr = from_cptr
         else:
             self._inst_ptr = self._new(*args, **kwds)

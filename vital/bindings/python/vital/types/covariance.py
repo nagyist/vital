@@ -69,37 +69,6 @@ class Covariance (VitalObject):
                 ij[:, i] = [[r], [c]]
         scipy.sparse.csc_matrix([a, ij], shape=(n, n))
 
-    def __new__(cls, N=2, c_type=ctypes.c_double, *args, **kwds):
-        # noinspection PyProtectedMember
-        c_type_char = c_type._type_
-        obj = super(Covariance, cls).__new__(cls)
-        # Set shape/type specific opaque pointer
-        obj.C_TYPE = cls.C_TYPE[str(N) + c_type_char]
-        obj.C_TYPE_PTR = cls.C_TYPE_PTR[str(N) + c_type_char]
-
-        # Initialize function map based on shape
-        ss = cls.SHAPE_SPEC.format(size=N, type=c_type_char)
-        obj._func_map = {
-            'new_identity':
-                cls.VITAL_LIB['vital_covariance_{}_new'.format(ss)],
-            'new_scalar':
-                cls.VITAL_LIB['vital_covariance_{}_new_from_scalar'.format(ss)],
-            'new_matrix':
-                cls.VITAL_LIB['vital_covariance_{}_new_from_matrix'.format(ss)],
-            'destroy':
-                cls.VITAL_LIB['vital_covariance_{}_destroy'.format(ss)],
-            'to_matrix':
-                cls.VITAL_LIB['vital_covariance_{}_to_matrix'.format(ss)],
-            'get':
-                cls.VITAL_LIB['vital_covariance_{}_get'.format(ss)],
-            'set':
-                cls.VITAL_LIB['vital_covariance_{}_set'.format(ss)],
-        }
-        obj._N = 2
-        obj._ctype = c_type
-
-        return obj
-
     def __init__(self, N=2, c_type=ctypes.c_double, init_scalar_or_matrix=None,
                  from_cptr=None):
         """
