@@ -1,0 +1,19 @@
+Vital 0.2.0 Release Notes
+=========================
+
+This is a minor release of Vital that provides both new functionality and
+fixes over the previous v0.1.0 release.  However, Vital is still considered
+pre-release software and subject to significant API changes.
+
+
+Updates since v0.1.0
+---------------------------------
+
+Absract Algorithms
+
+ * Added an abstract algorithm for computing canonical transforms from maps
+   of cameras and points
+
+
+Fixes since v0.1.0
+-------------------------------
