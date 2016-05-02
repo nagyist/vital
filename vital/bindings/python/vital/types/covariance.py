@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Description here.
+Interface to vital::covariance class
 
 """
 import ctypes
@@ -69,12 +69,6 @@ class Covariance (VitalObject):
                 ij[:, i] = [[r], [c]]
         scipy.sparse.csc_matrix([a, ij], shape=(n, n))
 
-    # # noinspection PyMethodOverriding
-    # @classmethod
-    # def from_c_pointer(cls, ptr, size=2, c_type=ctypes.c_double,
-    #                    shallow_copy_of=None):
-    #     obj = Covariance(size, c_type, ptr)
-
     def __new__(cls, N=2, c_type=ctypes.c_double, *args, **kwds):
         # noinspection PyProtectedMember
         c_type_char = c_type._type_
@@ -101,10 +95,13 @@ class Covariance (VitalObject):
             'set':
                 cls.VITAL_LIB['vital_covariance_{}_set'.format(ss)],
         }
+        obj._N = 2
+        obj._ctype = c_type
 
         return obj
 
-    def __init__(self, N=2, c_type=ctypes.c_double, init_scalar_or_matrix=None):
+    def __init__(self, N=2, c_type=ctypes.c_double, init_scalar_or_matrix=None,
+                 from_cptr=None):
         """
         Create a new Covariance symmetric matrix instance.
 
@@ -123,13 +120,61 @@ class Covariance (VitalObject):
             of size N, we initialize the covariance matrix based on this matrix
             (averages off diagonal elements to enforce symmetry). Input matrix
             data is copied, not shared.
+        :param from_cptr: Existing C opaque instance pointer to use, preventing new
+            instance construction. This should of course be a valid pointer to
+            an instance.
 
         """
-        super(Covariance, self).__init__()
+        # Initialize C type and pointer + function map
+        # noinspection PyProtectedMember
+        c_type_char = c_type._type_
+        ss = self.SHAPE_SPEC.format(size=N, type=c_type_char)
 
+        # Set concrete shape/type specific opaque pointer for this instance
+        self.C_TYPE = self.__class__.C_TYPE[ss]
+        self.C_TYPE_PTR = self.__class__.C_TYPE_PTR[ss]
+
+        # Initialize function map based on shape
+        self._func_map = {
+            'new_identity':
+                self.VITAL_LIB['vital_covariance_{}_new'.format(ss)],
+            'new_scalar':
+                self.VITAL_LIB['vital_covariance_{}_new_from_scalar'.format(ss)],
+            'new_matrix':
+                self.VITAL_LIB['vital_covariance_{}_new_from_matrix'.format(ss)],
+            'destroy':
+                self.VITAL_LIB['vital_covariance_{}_destroy'.format(ss)],
+            'to_matrix':
+                self.VITAL_LIB['vital_covariance_{}_to_matrix'.format(ss)],
+            'get':
+                self.VITAL_LIB['vital_covariance_{}_get'.format(ss)],
+            'set':
+                self.VITAL_LIB['vital_covariance_{}_set'.format(ss)],
+        }
         self._N = N
         self._ctype = c_type
+        # temporarily store init value
+        self._tmp_init_value = init_scalar_or_matrix
 
+        # Now that we have a concrete opaque struct types...
+        super(Covariance, self).__init__(from_cptr)
+
+        # we can let go of the init value now that we've used it
+        del self._tmp_init_value
+
+    def _new(self):
+        """
+        Construct a new instance, returning new instance opaque C pointer and
+        initializing any other necessary object properties
+
+        :returns: New C opaque structure pointer.
+
+        """
+        N = self._N
+        c_type = self._ctype
+        init_scalar_or_matrix = getattr(self, '_tmp_init_value', None)
+
+        # Choose relevant constructor
         if init_scalar_or_matrix is None:
             self._log.debug("Initializing identity")
             c_new = self._func_map['new_identity']
@@ -166,9 +211,10 @@ class Covariance (VitalObject):
         with VitalErrorHandle() as eh:
             c_args = args + (eh,)
             # self._log.debug("Construction args: %s", c_args)
-            self._inst_ptr = c_new(*c_args)
-        if not bool(self._inst_ptr):
+            c_ptr = c_new(*c_args)
+        if not bool(c_ptr):
             raise RuntimeError("C++ Construction failed (null pointer)")
+        return c_ptr
 
     def _destroy(self):
         c_del = self._func_map['destroy']
@@ -187,7 +233,7 @@ class Covariance (VitalObject):
         with VitalErrorHandle() as eh:
             m_ptr = c_to_mat(self, eh)
             return EigenArray(self._N, self._N, dtype=numpy.dtype(self._ctype),
-                              c_ptr=m_ptr, owns_data=True)
+                              from_cptr=m_ptr, owns_data=True)
 
     def __getitem__(self, p):
         """

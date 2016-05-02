@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Interface to VITAL camera_intrinsics objects
 
 """
+import collections
 import ctypes
 
 from vital.types.eigen import EigenArray
@@ -42,7 +43,7 @@ from vital.util import VitalErrorHandle, VitalObject
 class CameraIntrinsics (VitalObject):
 
     def __init__(self, focal_length=1., principle_point=(0, 0),
-                 aspect_ratio=1., skew=0., dist_coeffs=()):
+                 aspect_ratio=1., skew=0., dist_coeffs=(), from_cptr=None):
         """
         :param focal_length: Focal length (default=1.0)
         :type focal_length: float
@@ -61,8 +62,20 @@ class CameraIntrinsics (VitalObject):
             Values are copied into this structure.
         :type dist_coeffs: collections.Sequence[float]
         """
-        super(CameraIntrinsics, self).__init__()
+        super(CameraIntrinsics, self).__init__(from_cptr, focal_length,
+                                               principle_point, aspect_ratio,
+                                               skew, dist_coeffs)
 
+    def _new(self, focal_length, principle_point, aspect_ratio, skew,
+             dist_coeffs):
+        """
+        Construct a new vital::camera_intrinsics instance
+        :type focal_length: float
+        :type principle_point: collections.Sequence[float]
+        :type aspect_ratio: float
+        :type skew: float
+        :type dist_coeffs: collections.Sequence[float]
+        """
         ci_new = self.VITAL_LIB['vital_camera_intrinsics_new']
         ci_new.argtypes = [
             ctypes.c_double,
@@ -81,11 +94,8 @@ class CameraIntrinsics (VitalObject):
             dc.T[:] = dist_coeffs
 
         with VitalErrorHandle() as eh:
-            self._inst_ptr = ci_new(focal_length, pp, aspect_ratio, skew, dc,
+            return ci_new(focal_length, pp, aspect_ratio, skew, dc,
                                     eh)
-        if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct new camera intrinsics "
-                               "object")
 
     def _destroy(self):
         ci_dtor = self.VITAL_LIB['vital_camera_intrinsics_destroy']
@@ -108,7 +118,7 @@ class CameraIntrinsics (VitalObject):
         f.restype = EigenArray.C_TYPE_PTR['2x1d']
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return EigenArray(2, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, from_cptr=m_ptr, owns_data=True)
 
     @property
     def aspect_ratio(self):
@@ -133,7 +143,7 @@ class CameraIntrinsics (VitalObject):
         f.restype = EigenArray.C_TYPE_PTR['Xx1d']
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return EigenArray(dynamic_rows=1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(dynamic_rows=1, from_cptr=m_ptr, owns_data=True)
 
     def as_matrix(self):
         """
@@ -150,7 +160,7 @@ class CameraIntrinsics (VitalObject):
         f.restype = EigenArray.C_TYPE_PTR['3x3d']
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
-            return EigenArray(3, 3, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(3, 3, from_cptr=m_ptr, owns_data=True)
 
     def map_2d(self, norm_pt):
         """
@@ -176,7 +186,7 @@ class CameraIntrinsics (VitalObject):
         p.T[:] = norm_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return EigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, 1, from_cptr=m_ptr, owns_data=True)
 
     def map_3d(self, norm_hpt):
         """
@@ -199,7 +209,7 @@ class CameraIntrinsics (VitalObject):
         p.T[:] = norm_hpt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return EigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, 1, from_cptr=m_ptr, owns_data=True)
 
     def unmap_2d(self, pt):
         """
@@ -222,7 +232,7 @@ class CameraIntrinsics (VitalObject):
         p.T[:] = pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return EigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, 1, from_cptr=m_ptr, owns_data=True)
 
     def distort_2d(self, norm_pt):
         """
@@ -242,7 +252,7 @@ class CameraIntrinsics (VitalObject):
         p.T[:] = norm_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return EigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, 1, from_cptr=m_ptr, owns_data=True)
 
     def undistort_2d(self, dist_pt):
         """
@@ -262,4 +272,4 @@ class CameraIntrinsics (VitalObject):
         p.T[:] = dist_pt
         with VitalErrorHandle() as eh:
             m_ptr = f(self, p, eh)
-            return EigenArray(2, 1, c_ptr=m_ptr, owns_data=True)
+            return EigenArray(2, 1, from_cptr=m_ptr, owns_data=True)

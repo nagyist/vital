@@ -84,73 +84,51 @@ class VitalObject (object):
     MST_FREE = VITAL_LIB['vital_string_free']
     MST_FREE.argtypes = [vital_string_t.PTR_t]
 
-    @classmethod
-    def from_c_pointer(cls, ptr, shallow_copy_of=None):
+    def __init__(self, from_cptr=None, *args, **kwds):
         """
-        Default implementation of how to create an instance of the derived class
-        from a C API opaque pointer.
+        Create a new instance of the Python vital type wrapper.
 
-        If this the C pointer given to ptr is taken from an existing Python
-        object instance, that object instance should be given to the
-        shallow_copy_of argument. This ensures that the underlying C reference
-        is not destroyed prematurely.
+        This initializer should only be called after C_TYPE/C_TYPE_PTR are
+        concrete types.
 
-        :param ptr: C API opaque structure pointer type instance
-        :type ptr: VitalAlgorithm.C_TYPE_PTR
+        :param from_cptr: Existing C opaque instance pointer to use, preventing new
+            instance construction. This should of course be a valid pointer to
+            an instance.
 
-        :param shallow_copy_of: Optional parent object instance when the ptr
-            given is coming from an existing python object.
-        :type shallow_copy_of: VitalObject or None
+        Optional keyword arguments:
 
-        :return: New Python object using the given underlying C object pointer.
-        :rtype: VitalObject
+        :param allow_null_pointer: Allow a null pointer to be returned from the
+            _new method instead of raising an exceptiong
 
         """
-        # As this is a generalized method, make sure that the derived class
-        # has a C opaque structure pointer type defined.
-        if cls.C_TYPE_PTR is None:
-            raise RuntimeError("Derived class '%s' did not define C_TYPE_PTR"
-                               % cls.__name__)
-
-        assert isinstance(ptr, cls.C_TYPE_PTR), \
-            "Required a C_TYPE_PTR instance of this class (%s)" \
-            % cls.__name__
-
-        # Custom child class of calling type in order to bypass constructor of
-        # calling type. Since we already have the underlying instance, we
-        # fundamentally don't want to "construct" again.
-        # noinspection PyPep8Naming,PyMissingConstructor,PyAbstractClass
-        class _from_c_pointer (cls):
-            # Need to set from parent class in order to prevent the metaclass
-            # from creating a different opaque structure, which messes with
-            # type-checking when calling C API functions.
-            C_TYPE = cls.C_TYPE
-            C_TYPE_PTR = cls.C_TYPE_PTR
-
-            def __init__(self, _ptr, _is_copy_of):
-                self._inst_ptr = _ptr
-                self._parent = _is_copy_of
-
-        # TODO: Can we just make this the same name as the parent class?
-        #       Or would that cause issues.
-        _from_c_pointer.__name__ = "%s_from_c_pointer" % cls.__name__
-
-        # construct local class that contains our opaque pointer
-        return _from_c_pointer(ptr, shallow_copy_of)
-
-    def __init__(self):
         if None in (self.C_TYPE, self.C_TYPE_PTR):
             raise RuntimeError("Derived class did not define opaque handle "
                                "structure types.")
-        self._inst_ptr = None
 
-        # When this instance is copied in python, carry a copy of the instance
-        # it was copied from to leverage Python's internal GC ref counting
-        self._parent = None
+        allow_null_pointer = kwds.get('allow_null_pointer', None)
+        if allow_null_pointer is not None:
+            del kwds['allow_null_pointer']
+
+        if from_cptr is not None:
+            # if null pointer and we're not allowing them
+            if not (allow_null_pointer or bool(from_cptr)):
+                raise RuntimeError("Cannot initialize to a null pointer")
+            # if not a valid opaque pointer type
+            elif not isinstance(from_cptr, self.C_TYPE_PTR):
+                raise RuntimeError("Given C Opaque Pointer is not of the "
+                                   "correct type. Given '%s' but expected '%s'."
+                                   % type(from_cptr, self.C_TYPE_PTR))
+            self._inst_ptr = from_cptr
+        else:
+            self._inst_ptr = self._new(*args, **kwds)
+            # raise if we have a null pointer and we don't allow nulls
+            if not (allow_null_pointer or bool(self._inst_ptr)):
+                raise RuntimeError("Failed to construct new %s instance: Null "
+                                   "pointer returned from construction."
+                                   % self.__class__.__name__)
 
     def __del__(self):
-        if self._parent is None:
-            self._destroy()
+        self._destroy()
 
     def __nonzero__(self):
         """ bool() operator for 2.x """
@@ -171,22 +149,36 @@ class VitalObject (object):
         return self.c_pointer
 
     @property
+    def _log(self):
+        return logging.getLogger('.'.join([self.__module__,
+                                           self.__class__.__name__]))
+
+    @property
     def c_pointer(self):
         """
         :return: The ctypes opaque structure pointer
         """
         return self._inst_ptr
 
-    @property
-    def _log(self):
-        return logging.getLogger('.'.join([self.__module__,
-                                           self.__class__.__name__]))
+    @abc.abstractmethod
+    def _new(self, *args, **kwds):
+        """
+        Construct a new instance, returning new instance opaque C pointer and
+        initializing any other necessary object properties
+
+        :returns: New C opaque structure pointer.
+
+        """
 
     @abc.abstractmethod
     def _destroy(self):
-        """ Call C API destructor for derived class """
+        """
+        Call C API destructor for derived class
+        """
         raise NotImplementedError("Calling VitalObject class abstract _destroy "
                                   "function.")
+
+    # TODO: Serialization hooks?
 
 
 class OpaqueTypeCache (object):

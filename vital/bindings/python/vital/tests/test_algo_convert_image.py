@@ -63,24 +63,18 @@ class TestVitalAlgoConvertImage (object):
         apm.register_plugins()
 
     def test_from_c_ptr_null(self):
-        ci = ConvertImage.from_c_pointer(
-            ConvertImage.C_TYPE_PTR(),
-            name='ci'
+        ci = ConvertImage(
+            name='ci',
+            from_cptr=ConvertImage.C_TYPE_PTR(),
         )
         nt.assert_false(ci.c_pointer)
 
     def test_from_c_ptr_no_name(self):
         nt.assert_raises(
-            ValueError,
-            ConvertImage.from_c_pointer,
-            ConvertImage.C_TYPE_PTR(),
+            TypeError,
+            ConvertImage,
+            from_cptr=ConvertImage.C_TYPE_PTR(),
         )
-
-    def test_from_c_ptr_copy(self):
-        ci = ConvertImage('ci')
-        ci_new = ConvertImage.from_c_pointer(ci.c_pointer, ci)
-        nt.assert_is(ci.c_pointer, ci_new.c_pointer)
-        nt.assert_equal(ci_new.name, ci.name)
 
     def test_create_invalid(self):
         nt.assert_raises(

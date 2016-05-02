@@ -89,11 +89,9 @@ class ConfigBlock (VitalObject):
                 3: VitalConfigBlockIoFileNotParsed
             })
 
-            return cls.from_c_pointer(
-                cb_read(filepath, eh)
-            )
+            return cls(cb_read(filepath, eh))
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, from_cptr=None):
         """
         Create a new, empty configuration instance.
 
@@ -101,17 +99,18 @@ class ConfigBlock (VitalObject):
         :type name: str
 
         """
-        super(ConfigBlock, self).__init__()
+        super(ConfigBlock, self).__init__(from_cptr, name)
 
+    def _new(self, name):
         if name:
             cb_new = self.VITAL_LIB.vital_config_block_new_named
             cb_new.argtypes = [ctypes.c_char_p]
             cb_new.restype = self.C_TYPE_PTR
-            self._inst_ptr = cb_new(str(name))
+            return cb_new(str(name))
         else:
             cb_new = self.VITAL_LIB.vital_config_block_new
             cb_new.restype = self.C_TYPE_PTR
-            self._inst_ptr = cb_new()
+            return cb_new()
 
     def _destroy(self):
         # print "Destroying CB: \"%s\" %d" % (self.name, self._inst_ptr)
@@ -146,9 +145,7 @@ class ConfigBlock (VitalObject):
         cb_subblock = self.VITAL_LIB.vital_config_block_subblock
         cb_subblock.argtypes = [self.C_TYPE_PTR]
         cb_subblock.restype = self.C_TYPE_PTR
-        return ConfigBlock.from_c_pointer(
-            cb_subblock(self, key)
-        )
+        return ConfigBlock(from_cptr=cb_subblock(self, key))
 
     def subblock_view(self, key):
         """
@@ -165,9 +162,7 @@ class ConfigBlock (VitalObject):
         cb_subblock_view = self.VITAL_LIB.vital_config_block_subblock_view
         cb_subblock_view.argtypes = [self.C_TYPE_PTR]
         cb_subblock_view.restype = self.C_TYPE_PTR
-        return ConfigBlock.from_c_pointer(
-            cb_subblock_view(self, key)
-        )
+        return ConfigBlock(from_cptr=cb_subblock_view(self, key))
 
     def get_value(self, key, default=None):
         """ Get the string value for a key.

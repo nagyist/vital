@@ -60,11 +60,10 @@ class Image (VitalObject):
         img_new = cls.VITAL_LIB.vital_image_new_from_image
         img_new.argtypes = [cls.C_TYPE_PTR]
         img_new.restype = cls.C_TYPE_PTR
-        return Image.from_c_pointer(img_new(other_image._inst_ptr))
-
+        return Image(from_cptr=img_new(other_image._inst_ptr))
 
     @classmethod
-    def from_pil( cls, pil_image):
+    def from_pil(cls, pil_image):
         """
         Construct Image from supplied PIL image object
         """
@@ -91,35 +90,34 @@ class Image (VitalObject):
                             ctypes.c_int32, ctypes.c_int32, ctypes.c_int32]
         img_new.restype = cls.C_TYPE_PTR
 
-        return Image.from_c_pointer( img_new(pil_image.tostring(),
-                                             img_width, img_height, img_depth,
-                                             img_w_step, img_h_step, img_d_step ) )
-    """
-    Need to add classmethod from_numpy( cls, numpy_arry )
-    """
+        return Image(from_cptr=img_new(pil_image.tostring(),
+                                       img_width, img_height, img_depth,
+                                       img_w_step, img_h_step, img_d_step))
 
-    def __init__(self, width=None, height=None, depth=1, interleave=False):
-        """ Construct an empty image of no, or defined, dimensions.
+    # TODO: Need to add class-method from_numpy( cls, numpy_arry )
+
+    def __init__(self, width=None, height=None, depth=1, interleave=False,
+                 from_cptr=None):
+        """
+        Construct an empty image of no, or defined, dimensions.
 
         If width or height are None, we construct and return an empty image of
         uninitialized size.
 
         """
-        super(Image, self).__init__()
+        super(Image, self).__init__(from_cptr, width, height, depth, interleave)
 
+    def _new(self, width, height, depth, interleave):
         if width is None or height is None:
             img_new = self.VITAL_LIB.vital_image_new
             img_new.restype = self.C_TYPE_PTR
-            self._inst_ptr = img_new()
+            return img_new()
         else:
             img_new = self.VITAL_LIB.vital_image_new_with_dim
             img_new.argtypes = [ctypes.c_size_t, ctypes.c_size_t,
                                 ctypes.c_size_t, ctypes.c_bool]
             img_new.restype = self.C_TYPE_PTR
-            self._inst_ptr = img_new(width, height, depth, interleave)
-
-        if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct Image instance")
+            return img_new(width, height, depth, interleave)
 
     def _destroy(self):
         img_destroy = self.VITAL_LIB.vital_image_destroy

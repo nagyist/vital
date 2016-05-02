@@ -82,45 +82,6 @@ class EigenArray (numpy.ndarray, VitalObject):
 
     __array_priority__ = -1.0
 
-    # noinspection PyMethodOverriding
-    @classmethod
-    def from_c_pointer(cls, ptr, rows=2, cols=1,
-                       dynamic_rows=False, dynamic_cols=False,
-                       dtype=numpy.double, owns_data=True,
-                       shallow_copy_of=None):
-        """
-        Special implementation from C pointer due to both needing more
-        information and because we are sub-classing numpy.ndarray.
-
-        :param ptr: C API opaque structure pointer type instance
-        :type ptr: VitalAlgorithm.C_TYPE_PTR
-
-        :param rows: Number of rows in the matrix
-        :param cols: Number of columns in the matrix
-        :param dynamic_rows: If we should not use compile-time generated types
-            in regards to the row specification.
-        :param dynamic_cols: If we should not use compile-time generated types
-            in regards to the column specification.
-        :param dtype: numpy dtype to use
-        :param owns_data: When given a c-pointer, if we should take ownership of
-            the underlying data.
-
-        :param shallow_copy_of: Optional parent object instance when the ptr
-            given is coming from an existing python object.
-        :type shallow_copy_of: VitalObject or None
-
-        :raises VitalInvalidStaticEigenShape: An invalid (row, column) was
-            specified without stating dynamic rows or columns. This is because
-            Vital and Eigen defines only so many shapes at compile time.
-
-        """
-        # only owns the data if we are told to and we're not a shallow copy of
-        # another python object.
-        m = EigenArray(rows, cols, dynamic_rows, dynamic_cols,
-                       dtype, ptr, (shallow_copy_of is None) and owns_data)
-        m._parent = shallow_copy_of
-        return m
-
     @classmethod
     def _init_func_map(cls, rows, cols, d_rows, d_cols, dtype):
         """
@@ -194,7 +155,7 @@ class EigenArray (numpy.ndarray, VitalObject):
         return rows, cols, row_stride, col_stride, data
 
     def __new__(cls, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
-                dtype=numpy.double, c_ptr=None, owns_data=True):
+                dtype=numpy.double, from_cptr=None, owns_data=True):
         """
         Create a new Vital Eigen matrix and interface
 
@@ -205,8 +166,8 @@ class EigenArray (numpy.ndarray, VitalObject):
         :param dynamic_cols: If we should not use compile-time generated types
             in regards to the column specification.
         :param dtype: numpy dtype to use
-        :param c_ptr: Optional existing C Eigen matrix instance pointer to use
-            instead of constructing a new one.
+        :param from_cptr: Optional existing C Eigen matrix instance pointer to
+            use instead of constructing a new one.
         :param owns_data: When given a c-pointer, if we should take ownership of
             the underlying data.
 
@@ -235,7 +196,7 @@ class EigenArray (numpy.ndarray, VitalObject):
                 "shape given that dynamic rows/cols were specified as %s."
                 % ((rows, cols), (bool(dynamic_rows), bool(dynamic_cols)))
             )
-        if c_ptr is None:
+        if from_cptr is None:
             c_new = cls.VITAL_LIB[func_map['new_sized']]
             c_new.argtypes = [c_ptrdiff_t, c_ptrdiff_t]
             c_new.restype = op_c_type_ptr
@@ -244,11 +205,11 @@ class EigenArray (numpy.ndarray, VitalObject):
                 raise RuntimeError("Failed to construct new Eigen matrix")
             owns_data = True
         else:
-            if not isinstance(c_ptr, op_c_type_ptr):
+            if not isinstance(from_cptr, op_c_type_ptr):
                 raise ValueError("Given C-Pointer is not correct for the "
                                  "shape-type '%s' (given: %s)"
-                                 % (func_spec, type(c_ptr)))
-            inst_ptr = c_ptr
+                                 % (func_spec, type(from_cptr)))
+            inst_ptr = from_cptr
 
         # Get information, data pointer and base transformed array
         rows, cols, row_stride, col_stride, data = \
@@ -278,14 +239,15 @@ class EigenArray (numpy.ndarray, VitalObject):
         obj._c_type = c_type
         obj._owns_data = owns_data
 
-        VitalObject.__init__(obj)
+        VitalObject.__init__(obj, from_cptr=from_cptr)
+        # obj._inst_ptr at this point is None due to empty _new method
         obj._inst_ptr = inst_ptr
 
         return obj
 
     # noinspection PyMissingConstructor
     def __init__(self, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
-                 dtype=numpy.double, c_ptr=None, owns_data=True):
+                 dtype=numpy.double, from_cptr=None, owns_data=True):
         """
         Create a new Vital Eigen matrix instance.
 
@@ -296,7 +258,7 @@ class EigenArray (numpy.ndarray, VitalObject):
         :param dynamic_cols: If we should not use compile-time generated types
             in regards to the column specification.
         :param dtype: numpy dtype to use
-        :param c_ptr: Optional existing C Eigen matrix instance pointer to use
+        :param from_cptr: Optional existing C Eigen matrix instance pointer to use
             instead of constructing a new one.
         :param owns_data: When given a c-pointer, if we should take ownership of
             the underlying data.
@@ -348,12 +310,6 @@ class EigenArray (numpy.ndarray, VitalObject):
             self._owns_data = False
 
             self._inst_ptr = obj._inst_ptr
-            if obj._parent is None:
-                # obj is the root parent object
-                self._parent = obj
-            else:
-                # transfer parent reference
-                self._parent = obj._parent
         else:
             raise RuntimeError("Finalizing VitalEigenNumpyArray whose parent "
                                "is not of the same type (%s). Cannot inherit "
@@ -366,6 +322,16 @@ class EigenArray (numpy.ndarray, VitalObject):
     def __array_wrap__(self, out_arr, context=None):
         # Don't propagate this class and its stored references needlessly
         return out_arr
+
+    def _new(self):
+        """
+        Spoof method because we're descending from numpy.ndarray, which changes
+        how construction occurs.
+        """
+        # Return a true-evaluating value so as to pass base-class constructor
+        # check so that we can manually assign opaque pointer after construction
+        # in __new__.
+        return 1
 
     def _destroy(self):
         # We're only in this function because we don't have a parent.

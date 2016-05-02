@@ -55,7 +55,11 @@ class Camera (VitalObject):
         cam_read_krtd.restype = cls.C_TYPE_PTR
 
         with VitalErrorHandle() as eh:
-            return cls.from_c_pointer( cam_read_krtd(filepath, eh) )
+            return Camera(from_cptr=cam_read_krtd(filepath, eh))
+
+    def _new(self):
+        # No Python construction support yet
+        raise NotImplementedError("No Python construction support yet")
 
     def _destroy(self):
         """ Delete instance through C API """

@@ -40,6 +40,7 @@ import nose.tools
 import numpy
 
 from vital.types import Covariance, EigenArray
+from vital.util import VitalObject, VitalErrorHandle
 
 
 class TestVitalCovariance (unittest.TestCase):
@@ -136,7 +137,7 @@ class TestVitalCovariance (unittest.TestCase):
     def test_get_oob(self):
         # 2x2 covariance mat
         c = Covariance()
-        c[0, 0]  # Valid acesss
+        _ = c[0, 0]  # Valid access
         nose.tools.assert_raises(
             IndexError,
             c.__getitem__,
@@ -145,9 +146,9 @@ class TestVitalCovariance (unittest.TestCase):
 
     def test_set(self):
         m = numpy.ndarray((3, 3))
-        # [[ 0 1 2 ]               [[ 0 2 4 ]
-        #  [ 3 4 5 ]  -> should ->  [ 2 4 6 ]
-        #  [ 6 7 8 ]]               [ 4 6 8 ]]
+        # [[ 0 1 2 ]                      [[ 0 2 4 ]
+        #  [ 3 4 5 ]  -> should become ->  [ 2 4 6 ]
+        #  [ 6 7 8 ]]                      [ 4 6 8 ]]
         m.reshape((9,))[:] = range(9)
         c = Covariance(3, init_scalar_or_matrix=m)
 
@@ -182,3 +183,14 @@ class TestVitalCovariance (unittest.TestCase):
             c.__setitem__,
             (0, 2), 1
         )
+
+    def test_from_cptr(self):
+        # Create a new covariance from C function and create new python instance
+        # from that pointer
+        c_new_func = VitalObject.VITAL_LIB['vital_covariance_2d_new']
+        c_new_func.argtypes = [VitalErrorHandle.C_TYPE_PTR]
+        c_new_func.restype = Covariance.C_TYPE_PTR['2d']
+        with VitalErrorHandle() as eh:
+            c_ptr = c_new_func(eh)
+
+        c = Covariance(N=2, c_type=ctypes.c_double, from_cptr=c_ptr)
