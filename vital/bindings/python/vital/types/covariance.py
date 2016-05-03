@@ -122,16 +122,11 @@ class Covariance (VitalObject):
         }
         self._N = N
         self._ctype = c_type
-        # temporarily store init value
-        self._tmp_init_value = init_scalar_or_matrix
 
         # Now that we have a concrete opaque struct types...
-        super(Covariance, self).__init__(from_cptr)
+        super(Covariance, self).__init__(from_cptr, init_scalar_or_matrix)
 
-        # we can let go of the init value now that we've used it
-        del self._tmp_init_value
-
-    def _new(self):
+    def _new(self, init_scalar_or_matrix):
         """
         Construct a new instance, returning new instance opaque C pointer and
         initializing any other necessary object properties
@@ -141,7 +136,6 @@ class Covariance (VitalObject):
         """
         N = self._N
         c_type = self._ctype
-        init_scalar_or_matrix = getattr(self, '_tmp_init_value', None)
 
         # Choose relevant constructor
         if init_scalar_or_matrix is None:
