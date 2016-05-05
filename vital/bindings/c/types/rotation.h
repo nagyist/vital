@@ -276,7 +276,7 @@ vital_rotation_##S##_are_equal( vital_rotation_##S##_t *A, \
  *
  * \param A Rotation we are interpolating from
  * \param B rotation we are interpolating towards
- * \param f Fractional value describing the
+ * \param f Fractional value describing the interpolation point between A and B.
  * \param[in,out] eh Vital Error handle instance
  * \return new vital::rotation_<T> opaque instance pointer
  */ \

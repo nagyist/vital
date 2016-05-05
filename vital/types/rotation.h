@@ -183,7 +183,7 @@ VITAL_EXPORT std::istream&  operator>>( std::istream& s, rotation_< T >& r );
  *
  * \param A Rotation we are interpolating from.
  * \param B Rotation we are interpolating towards.
- * \param f Fractional value describing the
+ * \param f Fractional value describing the interpolation point between A and B.
  * \returns A rotation in between A and B to a degree proportional to the given
  *          fraction.
  */
