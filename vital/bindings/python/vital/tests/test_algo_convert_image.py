@@ -131,6 +131,7 @@ class TestVitalAlgoConvertImage (object):
         ci = ConvertImage('ci')
         c = ci.get_config()
         nt.assert_list_equal(c.available_keys(), ['ci:type'])
+        nt.assert_true(c.has_value('ci:type'))
         nt.assert_equal(c.get_value('ci:type'), '')
 
     def test_set_conf(self):

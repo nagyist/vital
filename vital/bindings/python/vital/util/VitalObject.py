@@ -39,7 +39,6 @@ import ctypes
 import logging
 
 from vital.util.find_vital_library import find_vital_library
-from vital.util.string import vital_string_t
 
 
 class VitalClassMeta (abc.ABCMeta):
@@ -74,15 +73,6 @@ class VitalObject (object):
     # C API opaque structure + pointer
     C_TYPE = None
     C_TYPE_PTR = None
-
-    # Common string structure stuff
-    ST_TYPE = vital_string_t
-    ST_TYPE_PTR = vital_string_t.PTR_t
-    ST_NEW = VITAL_LIB['vital_string_new']
-    ST_NEW.argtypes = [ctypes.c_size_t, ctypes.c_char_p]
-    ST_NEW.restype = vital_string_t.PTR_t
-    ST_FREE = VITAL_LIB['vital_string_free']
-    ST_FREE.argtypes = [vital_string_t.PTR_t]
 
     def __init__(self, from_cptr=None, *args, **kwds):
         """

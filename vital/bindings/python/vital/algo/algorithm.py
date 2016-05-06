@@ -199,15 +199,12 @@ class VitalAlgorithm (VitalObject):
         :rtype: str
         """
         if self._inst_ptr:
-            algo_impl_name = self.VITAL_LIB.vital_algorithm_impl_name
+            algo_impl_name = self.VITAL_LIB.vital_algorithm_impl_name_cstr
             algo_impl_name.argtypes = [self.C_TYPE_PTR,
                                        VitalErrorHandle.C_TYPE_PTR]
-            algo_impl_name.restype = self.ST_TYPE_PTR
+            algo_impl_name.restype = ctypes.c_char_p
             with VitalErrorHandle() as eh:
-                s_ptr = algo_impl_name(self, eh)
-                s = s_ptr.contents.str
-                self.ST_FREE(s_ptr)
-                return s
+                return algo_impl_name(self, eh)
         else:
             return None
 

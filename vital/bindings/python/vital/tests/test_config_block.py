@@ -149,7 +149,10 @@ class TestVitalConfigBlock (object):
         k2 = 'b'
         v2 = '2'
 
-        nose.tools.assert_is_none(cb.get_value(k1))
+        nose.tools.assert_raises(
+            VitalConfigBlockNoSuchValueException,
+            cb.get_value, k1
+        )
         nose.tools.assert_equal(cb.get_value(k2, v2), v2)
 
     def test_unset_value(self):
@@ -161,7 +164,10 @@ class TestVitalConfigBlock (object):
         cb.unset_value('a')
 
         nose.tools.assert_false(cb.has_value('a'))
-        nose.tools.assert_is_none(cb.get_value('a'))
+        nose.tools.assert_raises(
+            VitalConfigBlockNoSuchValueException,
+            cb.get_value, 'a'
+        )
 
         nose.tools.assert_equal(cb.get_value('b'), '2')
         nose.tools.assert_true(cb.has_value('b'))

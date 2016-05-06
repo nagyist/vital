@@ -61,27 +61,29 @@ SharedPointerCache< kwiver::vital::algorithm,
 // Functions on general algorithm pointer
 // ---------------------------------------------------------------------------
 
-vital_string_t* vital_algorithm_type_name( vital_algorithm_t *algo,
-                                           vital_error_handle_t *eh )
+char const*
+vital_algorithm_type_name( vital_algorithm_t *algo,
+                           vital_error_handle_t *eh )
 {
   STANDARD_CATCH(
     "C::algorithm::type_name", eh,
     std::string s( kwiver::vital_c::ALGORITHM_SPTR_CACHE.get( algo )->type_name() );
-    return vital_string_new( s.length(), s.c_str() );
+    return s.c_str();
   );
   return 0;
 }
 
 
-vital_string_t* vital_algorithm_impl_name( vital_algorithm_t *algo,
-                                           vital_error_handle_t *eh )
+char const*
+vital_algorithm_impl_name( vital_algorithm_t const *algo,
+                           vital_error_handle_t *eh )
 {
   STANDARD_CATCH(
     "C::algorithm::impl_name", eh,
     std::string s( kwiver::vital_c::ALGORITHM_SPTR_CACHE.get( algo )->impl_name() );
-    return vital_string_new( s.length(), s.c_str() );
+    return s.c_str();
   );
-  return 0;
+  return "";
 }
 
 

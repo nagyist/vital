@@ -41,7 +41,6 @@ import numpy
 from vital.types.eigen import EigenArray
 from vital.util import (
     free_void_ptr,
-    free_void_dbl_ptr,
     OpaqueTypeCache,
     VitalErrorHandle,
     VitalObject,
