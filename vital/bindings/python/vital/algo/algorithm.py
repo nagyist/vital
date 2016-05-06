@@ -202,11 +202,11 @@ class VitalAlgorithm (VitalObject):
             algo_impl_name = self.VITAL_LIB.vital_algorithm_impl_name
             algo_impl_name.argtypes = [self.C_TYPE_PTR,
                                        VitalErrorHandle.C_TYPE_PTR]
-            algo_impl_name.restype = self.MST_TYPE_PTR
+            algo_impl_name.restype = self.ST_TYPE_PTR
             with VitalErrorHandle() as eh:
                 s_ptr = algo_impl_name(self, eh)
                 s = s_ptr.contents.str
-                self.MST_FREE(s_ptr)
+                self.ST_FREE(s_ptr)
                 return s
         else:
             return None

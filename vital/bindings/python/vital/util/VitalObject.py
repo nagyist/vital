@@ -76,13 +76,13 @@ class VitalObject (object):
     C_TYPE_PTR = None
 
     # Common string structure stuff
-    MST_TYPE = vital_string_t
-    MST_TYPE_PTR = vital_string_t.PTR_t
-    MST_NEW = VITAL_LIB['vital_string_new']
-    MST_NEW.argtypes = [ctypes.c_size_t, ctypes.c_char_p]
-    MST_NEW.restype = vital_string_t.PTR_t
-    MST_FREE = VITAL_LIB['vital_string_free']
-    MST_FREE.argtypes = [vital_string_t.PTR_t]
+    ST_TYPE = vital_string_t
+    ST_TYPE_PTR = vital_string_t.PTR_t
+    ST_NEW = VITAL_LIB['vital_string_new']
+    ST_NEW.argtypes = [ctypes.c_size_t, ctypes.c_char_p]
+    ST_NEW.restype = vital_string_t.PTR_t
+    ST_FREE = VITAL_LIB['vital_string_free']
+    ST_FREE.argtypes = [vital_string_t.PTR_t]
 
     def __init__(self, from_cptr=None, *args, **kwds):
         """
@@ -148,10 +148,13 @@ class VitalObject (object):
         """
         return self.c_pointer
 
+    @classmethod
+    def logger(cls):
+        return logging.getLogger('.'.join([cls.__module__, cls.__name__]))
+
     @property
     def _log(self):
-        return logging.getLogger('.'.join([self.__module__,
-                                           self.__class__.__name__]))
+        return self.logger()
 
     @property
     def c_pointer(self):

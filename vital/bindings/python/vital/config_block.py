@@ -125,11 +125,11 @@ class ConfigBlock (VitalObject):
         """
         cb_get_name = self.VITAL_LIB.vital_config_block_get_name
         cb_get_name.argtypes = [self.C_TYPE_PTR]
-        cb_get_name.restype = self.MST_TYPE_PTR
+        cb_get_name.restype = self.ST_TYPE_PTR
 
-        mst = cb_get_name(self)
-        s = mst.contents.str
-        self.MST_FREE(mst)
+        st = cb_get_name(self)
+        s = st.contents.str
+        self.ST_FREE(st)
 
         return s
 
@@ -187,13 +187,13 @@ class ConfigBlock (VitalObject):
         # code path than calling the C API default func.
         cb_get_value = self.VITAL_LIB.vital_config_block_get_value
         cb_get_value.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_get_value.restype = self.MST_TYPE_PTR
+        cb_get_value.restype = self.ST_TYPE_PTR
 
-        mst_ptr = cb_get_value(self, key)
-        if not bool(mst_ptr):
+        st_ptr = cb_get_value(self, key)
+        if not bool(st_ptr):
             return default
-        s = mst_ptr.contents.str
-        self.MST_FREE(mst_ptr)
+        s = st_ptr.contents.str
+        self.ST_FREE(st_ptr)
         return s
 
     def get_value_bool(self, key, default=None):
@@ -251,12 +251,12 @@ class ConfigBlock (VitalObject):
         """
         cb_get_descr = self.VITAL_LIB.vital_config_block_get_description
         cb_get_descr.argtypes = [self.C_TYPE_PTR, ctypes.c_char_p]
-        cb_get_descr.restype = self.MST_TYPE_PTR
+        cb_get_descr.restype = self.ST_TYPE_PTR
 
-        mst_ptr = cb_get_descr(self, key)
-        if mst_ptr is not None:
-            s = mst_ptr.contents.str
-            self.MST_FREE(mst_ptr)
+        st_ptr = cb_get_descr(self, key)
+        if st_ptr is not None:
+            s = st_ptr.contents.str
+            self.ST_FREE(st_ptr)
             return s
         return None
 
@@ -472,4 +472,7 @@ def _initialize_cb_statics():
     ConfigBlock.GLOBAL_VALUE = \
         VitalObject.VITAL_LIB.vital_config_block_global_value().contents.str
 
-_initialize_cb_statics()
+
+# Only call if ConfigBlock globals are not initialized yet
+if ConfigBlock.BLOCK_SEP is None:
+    _initialize_cb_statics()
