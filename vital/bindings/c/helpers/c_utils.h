@@ -164,8 +164,8 @@ class SharedPointerCache
 {
 public:
   typedef std::shared_ptr< vital_t > sptr_t;
-  typedef std::map< vital_t*, sptr_t > cache_t;
-  typedef std::map< vital_t*, size_t > ref_count_cache_t;
+  typedef std::map< vital_t const *, sptr_t > cache_t;
+  typedef std::map< vital_t const *, size_t > ref_count_cache_t;
 
   /// Exception for when a given entry doesn't exist in this cache
   class NoEntryException
@@ -223,7 +223,7 @@ public:
   }
 
   /// Access a stored shared pointer based on a supplied pointer
-  sptr_t get( vital_t *ptr ) const
+  sptr_t get( vital_t const *ptr ) const
   {
     if( ptr == NULL )
     {
@@ -247,13 +247,13 @@ public:
   }
 
   /// Access a stored shared pointer based on the C interface opaque type
-  sptr_t get( C_t *ptr ) const
+  sptr_t get( C_t const *ptr ) const
   {
-    return this->get( reinterpret_cast< vital_t* >( ptr ) );
+    return this->get( reinterpret_cast< vital_t const * >( ptr ) );
   }
 
   /// Erase an entry in the cache by vital-type pointer
-  void erase( vital_t *ptr )
+  void erase( vital_t const *ptr )
   {
     if( ptr == NULL )
     {
@@ -276,9 +276,9 @@ public:
   }
 
   /// Erase an entry in the cache by C Interface opaque type pointer
-  void erase( C_t *ptr )
+  void erase( C_t const *ptr )
   {
-    return this->erase( reinterpret_cast< vital_t* >( ptr ) );
+    return this->erase( reinterpret_cast< vital_t const * >( ptr ) );
   }
 
 private:
@@ -295,7 +295,7 @@ private:
   std::string name_;
 
   /// Helper method to generate logging prefix string
-  std::string get_log_prefix( vital_t *ptr ) const
+  std::string get_log_prefix( vital_t const *ptr ) const
   {
     std::ostringstream ss;
     ss << "SharedPointerCache::" << this->name_ << "::" << ptr;
