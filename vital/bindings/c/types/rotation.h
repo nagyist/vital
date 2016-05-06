@@ -305,7 +305,6 @@ vital_rotation_##S##_interpolated_rotations( vital_rotation_##S##_t *A, \
                                              vital_error_handle_t *eh );
 
 
-
 DECLARE_FUNCTIONS( double, d )
 DECLARE_FUNCTIONS( float,  f )
 

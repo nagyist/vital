@@ -42,5 +42,6 @@ from .covariance import Covariance
 from .eigen import EigenArray
 from .image import Image
 from .image_container import ImageContainer
+from .rotation import Rotation
 from .track import Track
 from .track_set import TrackSet

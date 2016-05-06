@@ -181,6 +181,7 @@ class EigenArray (numpy.ndarray, VitalObject):
             Vital and Eigen defines only so many shapes at compile time.
 
         """
+        dtype = numpy.dtype(dtype)
         func_spec, func_map, c_type = \
             cls._init_func_map(rows, cols, dynamic_rows, dynamic_cols, dtype)
         op_c_type, op_c_type_ptr = cls.TYPE_CACHE.get_types(func_spec)
@@ -317,6 +318,8 @@ class EigenArray (numpy.ndarray, VitalObject):
 
     def __array_prepare__(self, obj, context=None):
         # Don't propagate this class and its stored references needlessly
+        # NOTE: could make a new EigenArray of the same shape here and return
+        #       that.
         return obj
 
     def __array_wrap__(self, out_arr, context=None):
