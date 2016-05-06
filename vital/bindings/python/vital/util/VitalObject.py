@@ -88,9 +88,11 @@ class VitalObject (object):
         Optional keyword arguments:
 
         :param allow_null_pointer: Allow a null pointer to be returned from the
-            _new method instead of raising an exceptiong
+            _new method instead of raising an exception.
 
         """
+        self._inst_ptr = None
+
         if None in (self.C_TYPE, self.C_TYPE_PTR):
             raise RuntimeError("Derived class did not define opaque handle "
                                "structure types.")
@@ -118,7 +120,8 @@ class VitalObject (object):
                                    % self.__class__.__name__)
 
     def __del__(self):
-        self._destroy()
+        if hasattr(self, '_inst_ptr'):
+            self._destroy()
 
     def __nonzero__(self):
         """ bool() operator for 2.x """

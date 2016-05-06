@@ -76,6 +76,12 @@ class TestVitalAlgoConvertImage (object):
             from_cptr=ConvertImage.C_TYPE_PTR(),
         )
 
+        nt.assert_raises(
+            ValueError,
+            ConvertImage,
+            None
+        )
+
     def test_create_invalid(self):
         nt.assert_raises(
             VitalNullPointerException,

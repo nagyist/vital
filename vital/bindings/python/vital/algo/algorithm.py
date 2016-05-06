@@ -145,17 +145,17 @@ class VitalAlgorithm (VitalObject):
             class
 
         """
+        super(VitalAlgorithm, self).__init__(from_cptr, allow_null_pointer=True)
+
         if not name:
             raise ValueError("Empty name given.")
         self._name = name
-
-        super(VitalAlgorithm, self).__init__(from_cptr, allow_null_pointer=True)
 
         # Checking that derived class has a valid typename
         self.type_name()
 
     def _new(self):
-        # Initialize to NULL pointer
+        # Initialize to NULL pointer to start
         return self.C_TYPE_PTR()
 
     @property
