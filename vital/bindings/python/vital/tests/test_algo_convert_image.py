@@ -41,8 +41,6 @@ import ctypes
 from vital import (
     apm,
     ConfigBlock,
-    Image,
-    ImageContainer,
 )
 from vital.algo import ConvertImage
 from vital.exceptions.base import VitalNullPointerException

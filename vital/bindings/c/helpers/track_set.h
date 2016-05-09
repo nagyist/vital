@@ -38,7 +38,7 @@
 
 #include <vital/types/track_set.h>
 
-#include <vital/bindings/c/track_set.h>
+#include <vital/bindings/c/types/track_set.h>
 #include <vital/bindings/c/helpers/c_utils.h>
 
 namespace kwiver {

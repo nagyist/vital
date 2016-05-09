@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015-2016 by Kitware, Inc.
+Copyright 2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Tests for Python interface to vital::track_set
+VITAL EigenArray related exceptions
 
 """
-# -*- coding: utf-8 -*-
-__author__ = 'paul.tunison@kitware.com'
 
-from vital.types import Track
-from vital.types import TrackSet
-
-import nose.tools as nt
+from .base import VitalBaseException
 
 
-class TestVitalTrackSet (object):
+class VitalEigenArrayException (VitalBaseException):
+    """ Base VitalEigenArray exception """
 
-    def test_new(self):
-        ts = TrackSet()
-        nt.assert_true(ts, "Invalid track set instance constructed")
 
-    def test_empty_len_size(self):
-        ts = TrackSet()
-        nt.assert_true(ts, "Invalid track set instance constructed")
-        l = len(ts)
-        s = ts.size()
-        nt.assert_equal(l, 0)
-        nt.assert_equal(l, s)
-
-    def test_new_nonempty(self):
-        n = 10
-        tracks = [Track() for _ in xrange(n)]
-        ts = TrackSet(tracks)
-        nt.assert_true(ts, "Invalid track set instance constructed")
-        nt.assert_equal(len(ts), n)
-        nt.assert_equal(ts.size(), n)
+class VitalInvalidStaticEigenShape (VitalEigenArrayException):
+    """
+    For when constructing an EigenArray of an invalid shape without stating
+    dynamic rows or columns.
+    """
+    pass

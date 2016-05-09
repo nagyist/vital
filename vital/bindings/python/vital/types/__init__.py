@@ -30,36 +30,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-Tests for Python interface to vital::track_set
+vital.types module
 
 """
-# -*- coding: utf-8 -*-
-__author__ = 'paul.tunison@kitware.com'
 
-from vital.types import Track
-from vital.types import TrackSet
-
-import nose.tools as nt
-
-
-class TestVitalTrackSet (object):
-
-    def test_new(self):
-        ts = TrackSet()
-        nt.assert_true(ts, "Invalid track set instance constructed")
-
-    def test_empty_len_size(self):
-        ts = TrackSet()
-        nt.assert_true(ts, "Invalid track set instance constructed")
-        l = len(ts)
-        s = ts.size()
-        nt.assert_equal(l, 0)
-        nt.assert_equal(l, s)
-
-    def test_new_nonempty(self):
-        n = 10
-        tracks = [Track() for _ in xrange(n)]
-        ts = TrackSet(tracks)
-        nt.assert_true(ts, "Invalid track set instance constructed")
-        nt.assert_equal(len(ts), n)
-        nt.assert_equal(ts.size(), n)
+# Common VITAL Components for easy access
+from .camera import Camera
+from .camera_intrinsics import CameraIntrinsics
+from .camera_map import CameraMap
+from .eigen import EigenArray
+from .image import Image
+from .image_container import ImageContainer
+from .track import Track
+from .track_set import TrackSet

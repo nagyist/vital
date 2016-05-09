@@ -36,7 +36,7 @@ Test Python interface to vital::image
 # -*- coding: utf-8 -*-
 import nose.tools
 
-from vital import Image
+from vital.types import Image
 
 
 __author__ = 'paul.tunison@kitware.com'

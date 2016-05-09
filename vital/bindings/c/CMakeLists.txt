@@ -3,22 +3,23 @@
 set(vital_c_public_headers
   algorithm.h
   algorithm_plugin_manager.h
-  camera.h
-  camera_intrinsics.h
-  camera_map.h
   common.h
   config_block.h
   error_handle.h
-  image.h
-  image_container.h
-  image_container.hxx
-  track.h
-  track_set.h
-  eigen.h
 
   algo_def/convert_image.h
   algo_def/image_io.h
   algo_def/track_features.h
+
+  types/camera.h
+  types/camera_intrinsics.h
+  types/camera_map.h
+  types/eigen.h
+  types/image.h
+  types/image_container.h
+  types/image_container.hxx
+  types/track.h
+  types/track_set.h
   )
 
 set(vital_c_private_headers
@@ -39,23 +40,24 @@ set(vital_c_private_headers
 set(vital_c_sources
   algorithm.cxx
   algorithm_plugin_manager.cxx
-  camera.cxx
-  camera_intrinsics.cxx
-  camera_map.cxx
   common.cxx
   config_block.cxx
   error_handle.cxx
-  image.cxx
-  image_container.cxx
-  track.cxx
-  track_set.cxx
-  eigen.cxx
-
-  helpers/c_utils.cxx
 
   algo_def/convert_image.cxx
   algo_def/image_io.cxx
   algo_def/track_features.cxx
+
+  helpers/c_utils.cxx
+
+  types/camera.cxx
+  types/camera_intrinsics.cxx
+  types/camera_map.cxx
+  types/eigen.cxx
+  types/image.cxx
+  types/image_container.cxx
+  types/track.cxx
+  types/track_set.cxx
   )
 
 kwiver_install_headers(

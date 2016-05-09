@@ -38,7 +38,7 @@ __author__ = 'paul.tunison@kitware.com'
 
 import ctypes
 
-from vital import Track
+from vital.types import Track
 from vital.util import VitalObject, VitalErrorHandle
 
 

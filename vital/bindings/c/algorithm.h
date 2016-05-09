@@ -47,7 +47,7 @@ extern "C"
 #include <vital/bindings/c/vital_c_export.h>
 #include <vital/bindings/c/config_block.h>
 #include <vital/bindings/c/error_handle.h>
-#include <vital/bindings/c/image_container.h>
+#include <vital/bindings/c/types/image_container.h>
 
 
 /// Opaque pointer to a VITAL Algorithm instance
