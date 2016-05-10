@@ -74,6 +74,16 @@ class VitalObject (object):
     C_TYPE = None
     C_TYPE_PTR = None
 
+    @classmethod
+    def c_type(cls, *args):
+        """ Get the C opaque type """
+        return cls.C_TYPE
+
+    @classmethod
+    def c_ptr_type(cls, *args):
+        """ Get the C opaque pointer type """
+        return cls.C_TYPE_PTR
+
     def __init__(self, from_cptr=None, *args, **kwds):
         """
         Create a new instance of the Python vital type wrapper.
@@ -81,9 +91,11 @@ class VitalObject (object):
         This initializer should only be called after C_TYPE/C_TYPE_PTR are
         concrete types.
 
-        :param from_cptr: Existing C opaque instance pointer to use, preventing new
-            instance construction. This should of course be a valid pointer to
-            an instance.
+        :param from_cptr: Existing C opaque instance pointer to use, preventing
+            new instance construction. This should of course be a valid pointer
+            to an instance. Only a new instance pointer or a new shared pointer
+            reference should be passed here, otherwise memory issue will ensue.
+            Thus this should only be used if you know what you're doing.
 
         Optional keyword arguments:
 
@@ -204,28 +216,36 @@ class OpaqueTypeCache (object):
 
     def new_type_getter(self):
         """
-        Returns new simple object  with __getitem__ hook for C Type
+        Returns new simple object with a __getitem__ hook for getting a specific
+        C opaque type.
         """
         class c_type_manager (object):
             def __getitem__(s2, k):
                 return self.get_types(k)[0]
+
             __contains__ = self._c_type_cache.__contains__
+
             @property
             def _as_parameter_(self):
                 raise RuntimeError("Cannot use type manager as ctypes "
                                    "parameter")
+
         return c_type_manager()
 
     def new_ptr_getter(self):
         """
-        Returns new simple object with __getitem__ hook for C Type Pointer
+        Returns new simple object with a __getitem__ hook for getting a specific
+        C opaque pointer type.
         """
         class c_type_ptr_manager (object):
             def __getitem__(s2, k):
                 return self.get_types(k)[1]
+
             __contains__ = self._c_type_cache.__contains__
+
             @property
             def _as_parameter_(self):
                 raise RuntimeError("Cannot use type manager as ctypes "
                                    "parameter")
+
         return c_type_ptr_manager()

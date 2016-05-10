@@ -58,6 +58,16 @@ class Rotation (VitalObject):
     TYPE_SPEC = "{type:s}"
 
     @classmethod
+    def c_type(cls, ctype):
+        """ Get the C opaque type """
+        return cls.C_TYPE[cls._gen_spec(ctype)]
+
+    @classmethod
+    def c_ptr_type(cls, ctype):
+        """ Get the C opaque pointer type """
+        return cls.C_TYPE_PTR[cls._gen_spec(ctype)]
+
+    @classmethod
     def _gen_spec(cls, ctype):
         """ get function type specific name component """
         # noinspection PyProtectedMember
@@ -131,7 +141,7 @@ class Rotation (VitalObject):
         q_vec = cls._norm_vec_type(q_vec, ctype, (4, 1))
         s = cls._gen_spec(ctype)
         r_from_q = cls._get_c_function(s, 'new_from_quaternion')
-        r_from_q.argtypes = [EigenArray.C_TYPE_PTR['4x1{}'.format(s)],
+        r_from_q.argtypes = [EigenArray.c_ptr_type(4, 1, ctype),
                              VitalErrorHandle.C_TYPE_PTR]
         r_from_q.restype = cls.C_TYPE_PTR[cls.TYPE_SPEC.format(type=s)]
         with VitalErrorHandle() as eh:
@@ -160,7 +170,7 @@ class Rotation (VitalObject):
         r_vec = cls._norm_vec_type(r_vec, ctype, (3, 1))
         s = cls._gen_spec(ctype)
         r_from_rod = cls._get_c_function(s, 'new_from_rodrigues')
-        r_from_rod.argtypes = [EigenArray.C_TYPE_PTR['3x1{}'.format(s)],
+        r_from_rod.argtypes = [EigenArray.c_ptr_type(3, 1, ctype),
                                VitalErrorHandle.C_TYPE_PTR]
         r_from_rod.restype = cls.C_TYPE_PTR[s]
         with VitalErrorHandle() as eh:
@@ -193,7 +203,7 @@ class Rotation (VitalObject):
         s = cls._gen_spec(ctype)
         r_from_aa = cls._get_c_function(s, 'new_from_axis_angle')
         r_from_aa.argtypes = [ctype,
-                              EigenArray.C_TYPE_PTR['3x1{}'.format(s)],
+                              EigenArray.c_ptr_type(3, 1, ctype),
                               VitalErrorHandle.C_TYPE_PTR]
         r_from_aa.restype = Rotation.C_TYPE_PTR[s]
         with VitalErrorHandle() as eh:
@@ -250,7 +260,7 @@ class Rotation (VitalObject):
         mat = cls._norm_vec_type(mat, ctype, (3, 3))
         s = cls._gen_spec(ctype)
         r_from_mat = cls._get_c_function(s, 'new_from_matrix')
-        r_from_mat.argtypes = [EigenArray.C_TYPE_PTR['3x3{}'.format(s)],
+        r_from_mat.argtypes = [EigenArray.c_ptr_type(3, 3, ctype),
                                VitalErrorHandle.C_TYPE_PTR]
         r_from_mat.restype = cls.C_TYPE_PTR[s]
         with VitalErrorHandle() as eh:
@@ -439,7 +449,7 @@ class Rotation (VitalObject):
         """
         r_to_mat = self._get_c_function(self._spec, "to_matrix")
         r_to_mat.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        r_to_mat.restype = EigenArray.C_TYPE_PTR['3x3{}'.format(self._spec)]
+        r_to_mat.restype = EigenArray.c_ptr_type(3, 3, self._ctype)
         with VitalErrorHandle() as eh:
             mat_ptr = r_to_mat(self, eh)
             return EigenArray(3, 3, dtype=numpy.dtype(self._ctype),
@@ -452,7 +462,7 @@ class Rotation (VitalObject):
         """
         r_to_q = self._get_c_function(self._spec, 'quaternion')
         r_to_q.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        r_to_q.restype = EigenArray.C_TYPE_PTR['4x1{}'.format(self._spec)]
+        r_to_q.restype = EigenArray.c_ptr_type(4, 1, self._ctype)
         with VitalErrorHandle() as eh:
             mat_ptr = r_to_q(self, eh)
             return EigenArray(4, dtype=numpy.dtype(self._ctype),
@@ -465,7 +475,7 @@ class Rotation (VitalObject):
         """
         r2axis = self._get_c_function(self._spec, 'axis')
         r2axis.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        r2axis.restype = EigenArray.C_TYPE_PTR['3x1{}'.format(self._spec)]
+        r2axis.restype = EigenArray.c_ptr_type(3, 1, self._ctype)
         with VitalErrorHandle() as eh:
             mat_ptr = r2axis(self, eh)
         return EigenArray(3, dtype=numpy.dtype(self._ctype),
@@ -485,7 +495,7 @@ class Rotation (VitalObject):
         """
         r2rod = self._get_c_function(self._spec, "rodrigues")
         r2rod.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        r2rod.restype = EigenArray.C_TYPE_PTR['3x1{}'.format(self._spec)]
+        r2rod.restype = EigenArray.c_ptr_type(3, 1, self._ctype)
         with VitalErrorHandle() as eh:
             rod_ptr = r2rod(self, eh)
             return EigenArray(3, dtype=numpy.dtype(self._ctype),
@@ -580,7 +590,7 @@ class Rotation (VitalObject):
         r_rv = self._get_c_function(self._spec, "rotate_vector")
         r_rv.argtypes = [self.C_TYPE_PTR, vec.C_TYPE_PTR,
                          VitalErrorHandle.C_TYPE_PTR]
-        r_rv.restype = EigenArray.C_TYPE_PTR['3x1{}'.format(self._spec)]
+        r_rv.restype = EigenArray.c_ptr_type(3, 1, self._ctype)
         with VitalErrorHandle() as eh:
             m_ptr = r_rv(self, vec, eh)
         return EigenArray(3, dtype=numpy.dtype(self._ctype), from_cptr=m_ptr,

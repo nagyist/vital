@@ -36,7 +36,6 @@ Interface to vital::covariance class
 import ctypes
 
 import numpy
-import scipy.sparse
 
 from vital.types.eigen import EigenArray
 from vital.util import OpaqueTypeCache, VitalObject, VitalErrorHandle
@@ -51,23 +50,18 @@ class Covariance (VitalObject):
 
     SHAPE_SPEC = "{size:d}{type:s}"
 
-    @staticmethod
-    def _vector_index(r, c):
-        if c > r:
-            return c * (c + 1) / 2 + r
-        else:
-            return r * (r + 1) / 2 + c
+    @classmethod
+    def c_type(cls, size, ctype):
+        """ Get the C opaque type """
+        # noinspection PyProtectedMember
+        return cls.C_TYPE[cls.SHAPE_SPEC.format(size=size, type=ctype._type_)]
 
-    @staticmethod
-    def _make_csc_mat(c_ptr, n):
-        size = n * (n + 1) / 2
-        a = numpy.ctypeslib.as_array(c_ptr, (size,))
-        ij = numpy.ndarray((2, size), int)
-        for r in xrange(n):
-            for c in xrange(r, n):
-                i = Covariance._vector_index(r, c)
-                ij[:, i] = [[r], [c]]
-        scipy.sparse.csc_matrix([a, ij], shape=(n, n))
+    @classmethod
+    def c_ptr_type(cls, size, ctype):
+        """ Get the C opaque pointer type """
+        # noinspection PyProtectedMember
+        return cls.C_TYPE_PTR[cls.SHAPE_SPEC.format(size=size,
+                                                    type=ctype._type_)]
 
     def __init__(self, N=2, c_type=ctypes.c_double, init_scalar_or_matrix=None,
                  from_cptr=None):
@@ -189,9 +183,7 @@ class Covariance (VitalObject):
     def to_matrix(self):
         c_to_mat = self._func_map['to_matrix']
         c_to_mat.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
-        mat_spec = '{n:d}x{n:d}{t:s}'.format(n=self._N, t=self._ctype._type_)
-        # self._log.debug('mat spec: %s', mat_spec)
-        c_to_mat.restype = EigenArray.C_TYPE_PTR[mat_spec]
+        c_to_mat.restype = EigenArray.c_ptr_type(self._N, self._N, self._ctype)
 
         with VitalErrorHandle() as eh:
             m_ptr = c_to_mat(self, eh)

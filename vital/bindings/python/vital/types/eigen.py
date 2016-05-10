@@ -83,6 +83,40 @@ class EigenArray (numpy.ndarray, VitalObject):
     __array_priority__ = -1.0
 
     @classmethod
+    def c_type(cls, rows, cols, ctype):
+        """
+        Helper class function to get the correct C opaque pointer type for a
+        given shape and data type.
+
+        :param rows: Number of static rows in matrix. 'X' for dynamic.
+        :param cols: Number of static columns in matrix. 'X' for dynamic.
+        :param ctype: The C data type the data is stored in (use ctypes)
+        :return: C opaque structure type
+
+        """
+        # noinspection PyProtectedMember
+        return cls.C_TYPE[cls.FUNC_SPEC.format(rows=str(rows),
+                                               cols=str(cols),
+                                               type=ctype._type_)]
+
+    @classmethod
+    def c_ptr_type(cls, rows, cols, ctype):
+        """
+        Helper class function to get the correct C opaque pointer type for a
+        given shape and data type.
+
+        :param rows: Number of static rows in matrix. 'X' for dynamic.
+        :param cols: Number of static columns in matrix. 'X' for dynamic.
+        :param ctype: The C data type the data is stored in (use ctypes)
+        :return: C opaque structure pointer type
+
+        """
+        # noinspection PyProtectedMember
+        return cls.C_TYPE_PTR[cls.FUNC_SPEC.format(rows=str(rows),
+                                                   cols=str(cols),
+                                                   type=ctype._type_)]
+
+    @classmethod
     def _init_func_map(cls, rows, cols, d_rows, d_cols, dtype):
         """
         Initialize C function naming map for the given shape and type
