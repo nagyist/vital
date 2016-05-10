@@ -79,44 +79,6 @@ class Rotation (VitalObject):
         return cls.VITAL_LIB['vital_rotation_{}_{}'.format(s, suffix)]
 
     @classmethod
-    def _norm_vec_type(cls, vec, target_ctype, target_shape):
-        """
-        Normalize vector representation type into that of an EigenArray with
-        the given data type. This is a no-op when given an EigenArray instance
-        with the given type.
-
-        :param vec: Source array data
-        :type vec: collections.Iterable
-
-        :param target_ctype: Target result EigenArray data type
-        :type target_ctype: _ctypes._SimpleCData
-
-        :param target_shape: The intended result array shape.
-        :type target_shape: (int, int)
-
-        :return: New or existing EigenArray instance with the given data
-        :rtype: vital.types.EigenArray
-
-        :raises ValueError: The input array-like data did not conform to the
-            specified target shape.
-
-        """
-        # Make input iterable into an actual numpy.ndarray if it wasn't already
-        vec = numpy.array(vec, copy=False, subok=True)
-
-        # Transform q_mat to an EigenArray if needed
-        if not isinstance(vec, EigenArray) or vec._c_type != target_ctype:
-            tmp = EigenArray(*vec.shape, dtype=target_ctype)
-            tmp[:] = vec
-            vec = tmp
-
-        if vec.shape != target_shape:
-            raise ValueError("Incorrect shape %s. Expecting %s."
-                             % (str(vec.shape), str(target_shape)))
-
-        return vec
-
-    @classmethod
     def from_quaternion(cls, q_vec, ctype=ctypes.c_double):
         """
         Create rotation based on the given 4x1 (column-vector) quaternion
@@ -138,7 +100,7 @@ class Rotation (VitalObject):
             specified target shape.
 
         """
-        q_vec = cls._norm_vec_type(q_vec, ctype, (4, 1))
+        q_vec = EigenArray.from_iterable(q_vec, ctype, (4, 1))
         s = cls._gen_spec(ctype)
         r_from_q = cls._get_c_function(s, 'new_from_quaternion')
         r_from_q.argtypes = [EigenArray.c_ptr_type(4, 1, ctype),
@@ -167,7 +129,7 @@ class Rotation (VitalObject):
             specified target shape.
 
         """
-        r_vec = cls._norm_vec_type(r_vec, ctype, (3, 1))
+        r_vec = EigenArray.from_iterable(r_vec, ctype, (3, 1))
         s = cls._gen_spec(ctype)
         r_from_rod = cls._get_c_function(s, 'new_from_rodrigues')
         r_from_rod.argtypes = [EigenArray.c_ptr_type(3, 1, ctype),
@@ -199,7 +161,7 @@ class Rotation (VitalObject):
             specified target shape.
 
         """
-        axis = cls._norm_vec_type(axis, ctype, (3, 1))
+        axis = EigenArray.from_iterable(axis, ctype, (3, 1))
         s = cls._gen_spec(ctype)
         r_from_aa = cls._get_c_function(s, 'new_from_axis_angle')
         r_from_aa.argtypes = [ctype,
@@ -257,7 +219,7 @@ class Rotation (VitalObject):
             specified target shape.
 
         """
-        mat = cls._norm_vec_type(mat, ctype, (3, 3))
+        mat = EigenArray.from_iterable(mat, ctype, (3, 3))
         s = cls._gen_spec(ctype)
         r_from_mat = cls._get_c_function(s, 'new_from_matrix')
         r_from_mat.argtypes = [EigenArray.c_ptr_type(3, 3, ctype),
@@ -584,7 +546,7 @@ class Rotation (VitalObject):
             expected 3x1 shape (column vector).
 
         """
-        vec = self._norm_vec_type(vec, self._ctype, (3, 1))
+        vec = EigenArray.from_iterable(vec, self._ctype, (3, 1))
 
         # make EigenArray out of input array if its not already
         r_rv = self._get_c_function(self._spec, "rotate_vector")

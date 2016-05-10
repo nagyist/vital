@@ -100,7 +100,7 @@ class EigenArray (numpy.ndarray, VitalObject):
                                                type=ctype._type_)]
 
     @classmethod
-    def c_ptr_type(cls, rows, cols, ctype):
+    def c_ptr_type(cls, rows, cols=1, ctype=ctypes.c_double):
         """
         Helper class function to get the correct C opaque pointer type for a
         given shape and data type.
@@ -187,6 +187,48 @@ class EigenArray (numpy.ndarray, VitalObject):
             data = v_data(ptr, eh)
 
         return rows, cols, row_stride, col_stride, data
+
+    @classmethod
+    def from_iterable(cls, i, target_ctype=ctypes.c_double, target_shape=None):
+        """
+        Try to create an EigenArray given an iterable of values.
+
+        This function is limited to Eigen statically defined matrix shapes
+        (dynamic rows / cols not used).
+
+        If the input ``i`` is already an EigenArray, this function does nothing
+        and the input array is returned.
+
+        :param i: Source array-like data
+        :type i: collections.Iterable | numpy.ndarray | EigenArray
+
+        :param target_shape: The intended result array shape for error checking.
+            If None, we will not assert a shape.
+        :type target_shape: None | (int, int)
+
+        :param target_ctype: Target result EigenArray data type
+        :type target_ctype: _ctypes._SimpleCData
+
+        :return: New EigenArray instance that is the same shape as the input
+            data.
+        :rtype: EigenArray
+
+        """
+        # Make input iterable into an actual numpy.ndarray if it wasn't already
+        #: :type: numpy.ndarray | EigenArray
+        vec = numpy.array(i, copy=False, subok=True)
+
+        # Transform into EigenArray if not already
+        if not isinstance(vec, EigenArray) or vec._c_type != target_ctype:
+            tmp = EigenArray(*vec.shape, dtype=target_ctype)
+            tmp[:] = vec
+            vec = tmp
+
+        if target_shape and vec.shape != target_shape:
+            raise ValueError("Incorrect shape %s. Expecting %s."
+                             % (str(vec.shape), str(target_shape)))
+
+        return vec
 
     def __new__(cls, rows=2, cols=1, dynamic_rows=False, dynamic_cols=False,
                 dtype=numpy.double, from_cptr=None, owns_data=True):
