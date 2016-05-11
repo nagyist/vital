@@ -65,7 +65,7 @@ typedef struct vital_algorithm_s vital_algorithm_t;
  */
 VITAL_C_EXPORT
 char const* vital_algorithm_type_name( vital_algorithm_t *algo,
-                                           vital_error_handle_t *eh );
+                                       vital_error_handle_t *eh );
 
 
 // Return the name of this implementation

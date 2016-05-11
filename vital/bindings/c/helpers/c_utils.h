@@ -100,20 +100,17 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
       {                                                         \
         std::ostringstream ss;                                  \
         ss << "Caught exception in C interface: " << e.what();  \
-        /*LOG_DEBUG( m_logger,  log_prefix << ss.str() );*/     \
         POPULATE_EH( eh_ptr, -1, ss.str().c_str() );            \
       }                                                         \
       catch( char const* e )                                    \
       {                                                         \
         std::ostringstream ss;                                  \
         ss << "Caught error message: " << e;                    \
-        /*LOG_DEBUG( m_logger, log_prefix << ss.str() );*/      \
         POPULATE_EH( eh_ptr, -1, ss.str().c_str() );            \
       }                                                         \
       catch(...)                                                \
       {                                                         \
         std::string msg("Caught other exception");              \
-        /*LOG_DEBUG( m_logger, log_prefix << msg );*/           \
         POPULATE_EH( eh_ptr, -1, msg.c_str() );                 \
       }                                                         \
     } while( 0 )
