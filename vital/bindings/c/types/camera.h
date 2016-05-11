@@ -87,16 +87,16 @@ vital_camera_t*
 vital_camera_new_default( vital_error_handle_t *eh );
 
 
-///// Create a new simple camera from a string
-///**
-// * String input is expected to be of the format that would be produced by the
-// * `vital_camera_to_string` function.
-// *
-// * \return New reference to the created instance.
-// */
-//VITAL_C_EXPORT
-//vital_camera_t*
-//vital_camera_new_from_string( char const *s, vital_error_handle_t *eh );
+/// Create a new simple camera from a string
+/**
+ * String input is expected to be of the format that would be produced by the
+ * `vital_camera_to_string` function.
+ *
+ * \return New reference to the created instance.
+ */
+VITAL_C_EXPORT
+vital_camera_t*
+vital_camera_new_from_string( char const *s, vital_error_handle_t *eh );
 
 
 /// Clone the given camera instance, returning a new camera instance
@@ -173,9 +173,14 @@ vital_camera_depth( vital_camera_t const *cam,
                     vital_error_handle_t *eh );
 
 
-/// Convert the camera into a string representation
+/// Convert the camera into a new string representation
+/**
+ * \param cam Camera instance
+ * \param eh Vital error handle instance
+ * \returns New character string
+ */
 VITAL_C_EXPORT
-char const*
+char*
 vital_camera_to_string( vital_camera_t const *cam, vital_error_handle_t *eh );
 
 

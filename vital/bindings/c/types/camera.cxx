@@ -35,8 +35,8 @@
 
 #include "camera.h"
 
-#include <vital/types/camera.h>
 #include <vital/io/camera_io.h>
+#include <vital/types/camera.h>
 
 #include <vital/bindings/c/helpers/c_utils.h>
 #include <vital/bindings/c/helpers/camera.h>
@@ -104,23 +104,24 @@ vital_camera_new_default( vital_error_handle_t *eh )
 }
 
 
-///// Create a new simple camera from a string
-//vital_camera_t*
-//vital_camera_new_from_string( char const *s, vital_error_handle_t *eh )
-//{
-////  STANDARD_CATCH(
-////    "vital_camera_new_from_string", eh,
-////
-////  );
-//  vital::camera_sptr c_sptr = std::make_shared<vital::simple_camera>();
-//  vital::simple_camera *sc = dynamic_cast<vital::simple_camera*>(c_sptr.get())
-//
-//  std::stringstream ss( std::string( s ) );
-//  ss >> *sc;
-//  vital_c::CAMERA_SPTR_CACHE.store(c_sptr);
-//  return reinterpret_cast< vital_camera_t* >( c_sptr.get() );
-////  return 0;
-//}
+/// Create a new simple camera from a string
+vital_camera_t*
+vital_camera_new_from_string( char const *s, vital_error_handle_t *eh )
+{
+  STANDARD_CATCH(
+    "vital_camera_new_from_string", eh,
+    vital::camera_sptr c_sptr = std::make_shared<vital::simple_camera>();
+      vital::simple_camera *sc = dynamic_cast<vital::simple_camera*>(c_sptr.get());
+
+      std::string input_s( s );
+      std::istringstream ss( input_s );
+      ss >> *sc;
+      vital_c::CAMERA_SPTR_CACHE.store(c_sptr);
+      return reinterpret_cast< vital_camera_t* >( c_sptr.get() );
+  );
+  return 0;
+
+}
 
 
 /// Clone the given camera instance, returning a new camera instance
@@ -263,15 +264,19 @@ vital_camera_depth( vital_camera_t const *cam,
 
 
 /// Convert the camera into a string representation
-char const*
+char*
 vital_camera_to_string( vital_camera_t const *cam, vital_error_handle_t *eh )
 {
   STANDARD_CATCH(
     "vital_camera_to_string", eh,
     auto cam_sptr = vital_c::CAMERA_SPTR_CACHE.get( cam );
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << *cam_sptr;
-    return ss.str().c_str();
+    std::string ss_str( ss.str() );
+
+    char *output = (char*)malloc( sizeof(char) * ss_str.length() );
+    strcpy( output, ss_str.c_str() );
+    return output;
   );
   return 0;
 }
