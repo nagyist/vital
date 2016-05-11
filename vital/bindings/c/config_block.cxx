@@ -416,21 +416,15 @@ read_config_file_helper( vital_error_handle_t* eh, Args... args )
   }
   catch ( kwiver::vital::config_file_not_found_exception const& e )
   {
-    eh->error_code = 1;
-    eh->message = (char*)malloc( sizeof( char ) * strlen( e.what() ) );
-    strcpy( eh->message, e.what() );
+    POPULATE_EH( eh, 1, e.what() );
   }
   catch ( kwiver::vital::config_file_not_read_exception const& e )
   {
-    eh->error_code = 2;
-    eh->message = (char*)malloc( sizeof( char ) * strlen( e.what() ) );
-    strcpy( eh->message, e.what() );
+    POPULATE_EH( eh, 2, e.what() );
   }
   catch ( kwiver::vital::config_file_not_parsed_exception const& e )
   {
-    eh->error_code = 3;
-    eh->message = (char*)malloc( sizeof( char ) * strlen( e.what() ) );
-    strcpy( eh->message, e.what() );
+    POPULATE_EH( eh, 3, e.what() );
   }
 
   return 0;

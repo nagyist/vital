@@ -57,7 +57,7 @@ class Covariance (VitalObject):
         return cls.C_TYPE[cls.SHAPE_SPEC.format(size=size, type=ctype._type_)]
 
     @classmethod
-    def c_ptr_type(cls, size, ctype):
+    def c_ptr_type(cls, size, ctype=ctypes.c_double):
         """ Get the C opaque pointer type """
         # noinspection PyProtectedMember
         return cls.C_TYPE_PTR[cls.SHAPE_SPEC.format(size=size,
@@ -189,6 +189,20 @@ class Covariance (VitalObject):
             m_ptr = c_to_mat(self, eh)
             return EigenArray(self._N, self._N, dtype=numpy.dtype(self._ctype),
                               from_cptr=m_ptr, owns_data=True)
+
+    def __repr__(self):
+        print "%s{\n%s}" % (self.__class__.__name__, self.to_matrix())
+
+    def __str__(self):
+        return str(self.to_matrix())
+
+    def __eq__(self, other):
+        if isinstance(other, Covariance):
+            return numpy.allclose(self.to_matrix(), other.to_matrix())
+        return False
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def __getitem__(self, p):
         """

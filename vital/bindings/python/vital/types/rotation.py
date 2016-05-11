@@ -63,7 +63,7 @@ class Rotation (VitalObject):
         return cls.C_TYPE[cls._gen_spec(ctype)]
 
     @classmethod
-    def c_ptr_type(cls, ctype):
+    def c_ptr_type(cls, ctype=ctypes.c_double):
         """ Get the C opaque pointer type """
         return cls.C_TYPE_PTR[cls._gen_spec(ctype)]
 

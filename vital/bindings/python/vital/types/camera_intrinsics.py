@@ -36,6 +36,8 @@ Interface to VITAL camera_intrinsics objects
 import collections
 import ctypes
 
+import numpy
+
 from vital.types.eigen import EigenArray
 from vital.util import VitalErrorHandle, VitalObject
 
@@ -138,12 +140,27 @@ class CameraIntrinsics (VitalObject):
 
     @property
     def dist_coeffs(self):
+        """ Get the distortion coefficients array """
         f = self.VITAL_LIB['vital_camera_intrinsics_get_dist_coeffs']
         f.argtypes = [self.C_TYPE_PTR, VitalErrorHandle.C_TYPE_PTR]
         f.restype = EigenArray.c_ptr_type('X', 1, ctypes.c_double)
         with VitalErrorHandle() as eh:
             m_ptr = f(self, eh)
             return EigenArray(dynamic_rows=1, from_cptr=m_ptr, owns_data=True)
+
+    def __eq__(self, other):
+        if isinstance(other, CameraIntrinsics):
+            return (
+                self.focal_length == other.focal_length and
+                numpy.allclose(self.principle_point, other.principle_point) and
+                self.aspect_ratio == other.aspect_ratio and
+                self.skew == other.skew and
+                numpy.allclose(self.dist_coeffs, other.dist_coeffs)
+            )
+        return False
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def as_matrix(self):
         """
