@@ -97,7 +97,11 @@ class TestVitalConfigBlock (object):
         cb = ConfigBlock()
 
         cb.set_value('a', 'b')
+        cb.set_value('longer_value:foo', "BarBazThing")
+
         nose.tools.assert_equal(cb.get_value('a'), 'b')
+        nose.tools.assert_equal(cb.get_value('longer_value:foo'),
+                                'BarBazThing')
 
     def test_get_value_bool(self):
         cb = ConfigBlock()
