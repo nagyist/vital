@@ -42,6 +42,7 @@ extern "C"
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <vital/bindings/c/types/camera.h>
 #include <vital/bindings/c/error_handle.h>
@@ -58,11 +59,23 @@ typedef struct vital_camera_map_s vital_camera_map_t;
  *
  * If either array is NULL or if length is zero, the returned camera_map will
  * be empty.
+ *
+ * \param length The size of the parallel pointer arrays given that constitute
+ *               the map.
+ * \param frame_numbers[in] Pointer array of frame numbers of size \c length.
+ *                          This should be parallel in association with the
+ *                          \c cameras array.
+ * \param cameras[in] Pointer array of camera instances. This should be parallel
+ *                    in association with the \c frame_numbers array.
+ * \param eh[in] Vital error handle instance.
+ * \returns New instance of a camera map, storing the input relationship between
+ *          frame numbers and cameras.
  */
 VITAL_C_EXPORT
 vital_camera_map_t* vital_camera_map_new( size_t length,
-                                          unsigned int *frame_numbers,
-                                          vital_camera_t **cameras );
+                                          int64_t *frame_numbers,
+                                          vital_camera_t **cameras,
+                                          vital_error_handle_t *eh );
 
 
 /// Destroy the given camera_map
@@ -77,19 +90,13 @@ size_t vital_camera_map_size( vital_camera_map_t *cam_map,
                               vital_error_handle_t *eh );
 
 
-/// Set pointers to parallel arrays of frame numers and camera instances
+/// Set pointers to parallel arrays of frame numbers and camera instances
 VITAL_C_EXPORT
 void vital_camera_map_get_map( vital_camera_map_t *cam_map,
                                size_t *length,
-                               unsigned int **frame_numbers,
+                               int64_t **frame_numbers,
                                vital_camera_t ***cameras,
                                vital_error_handle_t *eh );
-
-// TODO Free method for allocated frame/camera parallel arrays
-/// Free paired frame-to-camera mapping arrays
-//void vital_camera_map_free_mapping_array( size_t length,
-//                                          unsigned int *frame_numbers,
-//                                          vital_camera_t **cameras );
 
 
 #ifdef __cplusplus

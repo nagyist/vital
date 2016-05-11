@@ -239,10 +239,6 @@ class Camera (VitalObject):
         cam_tostr = self.VITAL_LIB['vital_camera_to_string']
         cam_tostr.argtypes = [self.c_ptr_type(), VitalErrorHandle.c_ptr_type()]
 
-        # cam_tostr.restype = ctypes.c_char_p
-        # with VitalErrorHandle() as eh:
-        #     return cam_tostr(self, eh)
-
         cam_tostr.restype = ctypes.c_void_p
         with VitalErrorHandle() as eh:
             v_ptr = cam_tostr(self, eh)
