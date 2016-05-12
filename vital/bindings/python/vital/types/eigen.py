@@ -193,6 +193,9 @@ class EigenArray (numpy.ndarray, VitalObject):
         """
         Try to create an EigenArray given an iterable of values.
 
+        1-dimensional iterables are interpreted as column-vectors, unless `i` is
+        an EigenArray, in which case it is returned as is.
+
         This function is limited to Eigen statically defined matrix shapes
         (dynamic rows / cols not used).
 
@@ -217,6 +220,8 @@ class EigenArray (numpy.ndarray, VitalObject):
         # Make input iterable into an actual numpy.ndarray if it wasn't already
         #: :type: numpy.ndarray | EigenArray
         vec = numpy.array(i, copy=False, subok=True)
+        if vec.ndim == 1:
+            vec = vec[:, numpy.newaxis]
 
         # Transform into EigenArray if not already
         if not isinstance(vec, EigenArray) or vec._c_type != target_ctype:

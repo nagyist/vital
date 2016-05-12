@@ -152,3 +152,17 @@ class TestVitalEigenMatrix (unittest.TestCase):
         numpy.testing.assert_array_equal(ea2, ea)
         ntools.assert_is(ea, ea2)
         ntools.assert_true(ea is ea2)
+
+    def test_from_iterable_1D(self):
+        # 1-dim iterables/vectors are treated as column vectors
+        input = [1, 2, 3, 4]
+        expected = [[1],
+                    [2],
+                    [3],
+                    [4]]
+
+        e = EigenArray.from_iterable(input)
+        numpy.testing.assert_equal(e, expected)
+
+        e2 = EigenArray.from_iterable(e)
+        numpy.testing.assert_equal(e, e2)
