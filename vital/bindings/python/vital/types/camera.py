@@ -247,7 +247,11 @@ class Camera (VitalObject):
         with VitalErrorHandle() as eh:
             v_ptr = cam_tostr(self, eh)
         s = ctypes.c_char_p(v_ptr).value
-        self.VITAL_LIB['vital_free_pointer'](v_ptr)
+
+        ptr_free = self.VITAL_LIB['vital_free_pointer']
+        ptr_free.argtypes = [ctypes.c_void_p]
+        ptr_free(v_ptr)
+
         return s
 
     def write_krtd_file(self, filepath):
