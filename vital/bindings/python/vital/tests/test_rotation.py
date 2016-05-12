@@ -384,20 +384,20 @@ class TestVitalRotation (unittest.TestCase):
 
         z_d = Rotation.interpolate(x_d, y_d, 0.5)
         z_f = Rotation.interpolate(x_f, y_f, 0.5)
-        nose.tools.assert_equal(z_d, r_d)
-        nose.tools.assert_equal(z_f, r_f)
+        nose.tools.assert_almost_equal((z_d.inverse() * r_d).angle(), 0, 14)
+        nose.tools.assert_almost_equal((z_f.inverse() * r_f).angle(), 0, 6)
 
         # Should auto-convert different y-type into x's type for computation.
         # Return should be of x's type.
         z_d = Rotation.interpolate(x_d, y_f, 0.5)
         nose.tools.assert_is(z_d._ctype, x_d._ctype)
         nose.tools.assert_is_not(z_d._ctype, y_f._ctype)
-        nose.tools.assert_equal(z_d, r_d)
+        nose.tools.assert_almost_equal((z_d.inverse() * r_d).angle(), 0, 14)
 
         z_f = Rotation.interpolate(x_f, y_d, 0.5)
         nose.tools.assert_is(z_f._ctype, x_f._ctype)
         nose.tools.assert_is_not(z_f._ctype, y_d._ctype)
-        nose.tools.assert_equal(z_f, r_f)
+        nose.tools.assert_almost_equal((z_f.inverse() * r_f).angle(), 0, 6)
 
     def test_interpolated_rotations(self):
         x = Rotation.from_axis_angle([[1], [0], [0]], 0)
