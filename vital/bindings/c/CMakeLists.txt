@@ -18,6 +18,7 @@ set(vital_c_public_headers
   types/covariance.h
   types/descriptor.h
   types/eigen.h
+  types/feature.h
   types/image.h
   types/image_container.h
   types/image_container.hxx
@@ -62,6 +63,7 @@ set(vital_c_sources
   types/covariance.cxx
   types/descriptor.cxx
   types/eigen.cxx
+  types/feature.cxx
   types/image.cxx
   types/image_container.cxx
   types/rotation.cxx
