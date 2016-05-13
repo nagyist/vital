@@ -132,7 +132,7 @@ class VitalObject (object):
                                    % self.__class__.__name__)
 
     def __del__(self):
-        if hasattr(self, '_inst_ptr'):
+        if hasattr(self, '_inst_ptr') and self._inst_ptr is not None:
             self._destroy()
 
     def __nonzero__(self):
@@ -165,6 +165,7 @@ class VitalObject (object):
     def c_pointer(self):
         """
         :return: The ctypes opaque structure pointer
+        :rtype: _ctypes._Pointer
         """
         return self._inst_ptr
 
@@ -175,8 +176,11 @@ class VitalObject (object):
         initializing any other necessary object properties
 
         :returns: New C opaque structure pointer.
+        :rtype: _ctypes._Pointer
 
         """
+        raise NotImplementedError("Calling VitalObject class abstract _new "
+                                  "method.")
 
     @abc.abstractmethod
     def _destroy(self):
@@ -184,7 +188,7 @@ class VitalObject (object):
         Call C API destructor for derived class
         """
         raise NotImplementedError("Calling VitalObject class abstract _destroy "
-                                  "function.")
+                                  "method.")
 
     # TODO: Serialization hooks?
 

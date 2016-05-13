@@ -37,6 +37,7 @@ vital.types module
 # Common VITAL Components for easy access
 from .camera_intrinsics import CameraIntrinsics
 from .covariance import Covariance
+from .descriptor import Descriptor
 from .eigen import EigenArray
 from .image import Image
 from .image_container import ImageContainer

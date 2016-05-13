@@ -15,6 +15,7 @@ set(vital_c_public_headers
   types/camera_intrinsics.h
   types/camera_map.h
   types/covariance.h
+  types/descriptor.h
   types/eigen.h
   types/image.h
   types/image_container.h
@@ -34,6 +35,7 @@ set(vital_c_private_headers
   helpers/camera_intrinsics.h
   helpers/camera_map.h
   helpers/config_block.h
+  helpers/descriptor.h
   helpers/image_container.h
   helpers/track.h
   helpers/track_set.h
@@ -56,6 +58,7 @@ set(vital_c_sources
   types/camera_intrinsics.cxx
   types/camera_map.cxx
   types/covariance.cxx
+  types/descriptor.cxx
   types/eigen.cxx
   types/image.cxx
   types/image_container.cxx
