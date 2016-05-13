@@ -84,6 +84,29 @@ class VitalObject (object):
         """ Get the C opaque pointer type """
         return cls.C_TYPE_PTR
 
+    @classmethod
+    def _call_cfunc(cls, func_name, argtypes, restype, *args):
+        """
+        Extract function from vital library and call it with a VitalErrorHandle.
+
+        This assumes that the function takes an additional parameter than what
+        is given to this function that is the error handle.
+
+        :param func_name: C function name to pull from library
+        :param args: iterable of positional arguments to the C function
+        :param argtypes: Ctypes argument type array
+        :param restype: Ctypes return type
+        :return: Result of the c function call
+        """
+        # local import to prevent circular import
+        from vital.util import VitalErrorHandle
+        f = cls.VITAL_LIB[func_name]
+        if argtypes:
+            f.argtypes = list(argtypes) + [VitalErrorHandle.c_ptr_type()]
+        f.restype = restype
+        with VitalErrorHandle() as eh:
+            return f(*(args + (eh,)))
+
     def __init__(self, from_cptr=None, *args, **kwds):
         """
         Create a new instance of the Python vital type wrapper.

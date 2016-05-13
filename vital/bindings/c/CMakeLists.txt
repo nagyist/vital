@@ -14,6 +14,7 @@ set(vital_c_public_headers
   types/camera.h
   types/camera_intrinsics.h
   types/camera_map.h
+  types/color.h
   types/covariance.h
   types/descriptor.h
   types/eigen.h
@@ -57,6 +58,7 @@ set(vital_c_sources
   types/camera.cxx
   types/camera_intrinsics.cxx
   types/camera_map.cxx
+  types/color.cxx
   types/covariance.cxx
   types/descriptor.cxx
   types/eigen.cxx
