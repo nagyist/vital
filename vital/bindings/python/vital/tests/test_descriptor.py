@@ -90,3 +90,12 @@ class TestDescriptor (unittest.TestCase):
 
         d2[:] = 2
         numpy.testing.assert_almost_equal(d, d2)
+
+    def test_tobytearray(self):
+        # Expect 0-values descriptor to have 0-valued byte array of the
+        # appropriate size
+        d = Descriptor(64)
+        d[:] = 0
+        b = d.tobytearray()
+        nose.tools.assert_equal(b.size, d.nbytes)
+        nose.tools.assert_equal(b.sum(), 0)
