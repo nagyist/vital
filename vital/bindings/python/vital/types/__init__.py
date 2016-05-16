@@ -46,6 +46,9 @@ from .rotation import Rotation
 from .track import Track
 from .track_set import TrackSet
 
+# Required EigenArray and RGBColor
+from .feature import Feature
+
 # Requires CameraIntrinsics, Covariance, EigenArray, Rotation
 from .camera import Camera
 
