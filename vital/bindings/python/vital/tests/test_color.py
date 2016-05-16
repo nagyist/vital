@@ -106,4 +106,9 @@ class TestRGBColor (unittest.TestCase):
     def test_equality(self):
         c1 = RGBColor()
         c2 = RGBColor()
-        nose.tools.assert_equal(c1, c2)
+        nose.tools.assert_true(c1 == c2)
+        nose.tools.assert_false(c1 != c2)
+
+    def test_repr(self):
+        c = RGBColor()
+        nose.tools.assert_equal(repr(c), "RGBColor{255, 255, 255}")
