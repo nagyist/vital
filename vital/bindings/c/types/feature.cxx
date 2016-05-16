@@ -38,6 +38,8 @@
 #include <vital/bindings/c/helpers/feature.h>
 #include <vital/types/feature.h>
 
+#include <vital/types/color.h>
+
 
 namespace kwiver {
 namespace vital_c {
@@ -156,9 +158,14 @@ vital_feature_##S##_new( vital_eigen_matrix2x1##S##_t *loc, T mag, T scale, \
                          T angle, vital_rgb_color_t *color, \
                          vital_error_handle_t *eh ) \
 { \
+  typedef Eigen::Matrix< T, 2, 1 > cpp_matrix_t; \
   STANDARD_CATCH( \
     "vital_feature_" #S "_new", eh, \
-    auto f_sptr = std::make_shared< vital::feature_<T> >(  ); \
+    REINTERP_TYPE( cpp_matrix_t, loc, loc_ptr ); \
+    REINTERP_TYPE( vital::rgb_color, color, color_ptr ); \
+    auto f_sptr = std::make_shared< vital::feature_<T> >( \
+      *loc_ptr, mag, scale, angle, *color_ptr \
+    ); \
     vital_c::FEATURE_SPTR_CACHE.store( f_sptr ); \
     return reinterpret_cast< vital_feature_t* >( f_sptr.get() ); \
   ); \
@@ -262,6 +269,7 @@ vital_feature_##S##_set_covar( vital_feature_t *f, \
                                vital_covariance_2##S##_t *covar, \
                                vital_error_handle_t *eh ) \
 { \
+  typedef vital::covariance_< 2, T > cpp_covar_t; \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_covar", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
@@ -271,7 +279,7 @@ vital_feature_##S##_set_covar( vital_feature_t *f, \
                           "access." ); \
       return; \
     } \
-    REINTERP_TYPE( vital::covariance_2##S, covar, covar_ptr ); \
+    REINTERP_TYPE( cpp_covar_t, covar, covar_ptr ); \
     f_ptr->set_covar( *covar_ptr ); \
   ); \
 } \
@@ -294,6 +302,25 @@ vital_feature_##S##_set_color( vital_feature_t *f, \
     REINTERP_TYPE( vital::rgb_color, c, c_ptr ); \
     f_ptr->set_color( *c_ptr ); \
   ); \
+} \
+\
+/** Get the name of the instance's data type */ \
+char const* \
+vital_feature_##S##_type_name( vital_feature_t *f, \
+                               vital_error_handle_t *eh ) \
+{ \
+  STANDARD_CATCH( \
+    "vital_featur_" #S "_type_name", eh, \
+    auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return 0; \
+    } \
+    return f_ptr->data_type().name(); \
+  ); \
+  return 0; \
 }
 
 

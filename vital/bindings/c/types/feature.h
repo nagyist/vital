@@ -263,6 +263,18 @@ VITAL_C_EXPORT \
 void \
 vital_feature_##S##_set_color( vital_feature_t *f, \
                                vital_rgb_color_t *c, \
+                               vital_error_handle_t *eh ); \
+\
+/**
+ * Get the name of the instance's data type
+ *
+ * \param f Feature instance
+ * \param eh Vital error handle instance
+ * \return String name of the instance's data type
+ */ \
+VITAL_C_EXPORT \
+char const* \
+vital_feature_##S##_type_name( vital_feature_t *f, \
                                vital_error_handle_t *eh );
 
 
