@@ -22,6 +22,8 @@ Bindings
 
  * Added full C/Python bindings for vital::descriptor class
 
+ * Added full C/Python bindings for vital::feature class
+
 Vital Types
 -----------
 
