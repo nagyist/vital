@@ -121,8 +121,20 @@ class TestVitalCovariance (unittest.TestCase):
         #  [ 3 4 5 ]  -> should ->  [ 2 4 6 ]
         #  [ 6 7 8 ]]               [ 4 6 8 ]]
         m.reshape((9,))[:] = range(9)
-        c = Covariance(3, init_scalar_or_matrix=m)
 
+        c = Covariance(3, c_type=ctypes.c_double, init_scalar_or_matrix=m)
+        # Test matrix upper triangle locations
+        nose.tools.assert_equal(c[0,0], 0)
+        nose.tools.assert_equal(c[0,1], 2)
+        nose.tools.assert_equal(c[0,2], 4)
+        nose.tools.assert_equal(c[1,1], 4)
+        nose.tools.assert_equal(c[1,2], 6)
+        nose.tools.assert_equal(c[2,2], 8)
+        nose.tools.assert_equal(c[0,1], c[1,0])
+        nose.tools.assert_equal(c[0,2], c[2,0])
+        nose.tools.assert_equal(c[1,2], c[2,1])
+
+        c = Covariance(3, c_type=ctypes.c_float, init_scalar_or_matrix=m)
         # Test matrix upper triangle locations
         nose.tools.assert_equal(c[0,0], 0)
         nose.tools.assert_equal(c[0,1], 2)
@@ -136,7 +148,15 @@ class TestVitalCovariance (unittest.TestCase):
 
     def test_get_oob(self):
         # 2x2 covariance mat
-        c = Covariance()
+        c = Covariance(c_type=ctypes.c_double)
+        _ = c[0, 0]  # Valid access
+        nose.tools.assert_raises(
+            IndexError,
+            c.__getitem__,
+            (0, 2)
+        )
+
+        c = Covariance(c_type=ctypes.c_float)
         _ = c[0, 0]  # Valid access
         nose.tools.assert_raises(
             IndexError,
@@ -150,7 +170,7 @@ class TestVitalCovariance (unittest.TestCase):
         #  [ 3 4 5 ]  -> should become ->  [ 2 4 6 ]
         #  [ 6 7 8 ]]                      [ 4 6 8 ]]
         m.reshape((9,))[:] = range(9)
-        c = Covariance(3, init_scalar_or_matrix=m)
+        c = Covariance(3, c_type=ctypes.c_double, init_scalar_or_matrix=m)
 
         # modify some locations
         c[0,1] = 1
@@ -174,9 +194,42 @@ class TestVitalCovariance (unittest.TestCase):
         c[2, 1] = 20.2
         nose.tools.assert_equal(c[1, 2], 20.2)
 
+        # FLOAT
+        c = Covariance(3, c_type=ctypes.c_float, init_scalar_or_matrix=m)
+
+        # modify some locations
+        c[0,1] = 1
+        c[2,2] = 3
+
+        nose.tools.assert_equal(c[0,0], 0)
+        nose.tools.assert_equal(c[0,1], 1)
+        nose.tools.assert_equal(c[0,2], 4)
+        nose.tools.assert_equal(c[1,1], 4)
+        nose.tools.assert_equal(c[1,2], 6)
+        nose.tools.assert_equal(c[2,2], 3)
+        nose.tools.assert_equal(c[0,1], c[1,0])
+        nose.tools.assert_equal(c[0,2], c[2,0])
+        nose.tools.assert_equal(c[1,2], c[2,1])
+
+        # Set in upper triangle and see it reflect in lower
+        c[0, 2] = 10.1
+        nose.tools.assert_almost_equal(c[2, 0], 10.1, 6)
+
+        # Change something in lower triangle and see it reflected in upper
+        c[2, 1] = 20.2
+        nose.tools.assert_almost_equal(c[1, 2], 20.2, 5)
+
     def test_set_oob(self):
         # 2x2 covariance mat
-        c = Covariance()
+        c = Covariance(c_type=ctypes.c_float)
+        c[0, 0] = 1  # Valid set
+        nose.tools.assert_raises(
+            IndexError,
+            c.__setitem__,
+            (0, 2), 1
+        )
+
+        c = Covariance(c_type=ctypes.c_double)
         c[0, 0] = 1  # Valid set
         nose.tools.assert_raises(
             IndexError,
@@ -189,10 +242,21 @@ class TestVitalCovariance (unittest.TestCase):
         # from that pointer
         c_new_func = VitalObject.VITAL_LIB['vital_covariance_3d_new']
         c_new_func.argtypes = [VitalErrorHandle.C_TYPE_PTR]
-        c_new_func.restype = Covariance.C_TYPE_PTR['3d']
+        c_new_func.restype = Covariance.c_ptr_type(3, ctypes.c_double)
         with VitalErrorHandle() as eh:
             c_ptr = c_new_func(eh)
 
         c = Covariance(N=3, c_type=ctypes.c_double, from_cptr=c_ptr)
-        nose.tools.assert_is(c.C_TYPE_PTR, Covariance.C_TYPE_PTR['3d'])
+        nose.tools.assert_is(c.C_TYPE_PTR, Covariance.c_ptr_type(3, ctypes.c_double))
+        numpy.testing.assert_array_equal(c.to_matrix(), numpy.eye(3))
+
+
+        c_new_func = VitalObject.VITAL_LIB['vital_covariance_3f_new']
+        c_new_func.argtypes = [VitalErrorHandle.C_TYPE_PTR]
+        c_new_func.restype = Covariance.c_ptr_type(3, ctypes.c_float)
+        with VitalErrorHandle() as eh:
+            c_ptr = c_new_func(eh)
+
+        c = Covariance(N=3, c_type=ctypes.c_float, from_cptr=c_ptr)
+        nose.tools.assert_is(c.C_TYPE_PTR,Covariance.c_ptr_type(3, ctypes.c_float))
         numpy.testing.assert_array_equal(c.to_matrix(), numpy.eye(3))
