@@ -83,6 +83,8 @@ class Descriptor (numpy.ndarray, VitalObject):
                                    .format(type_char)]
         d_raw_data.argtypes = [cls.c_ptr_type(), VitalErrorHandle.c_ptr_type()]
         d_raw_data.restype = ctypes.POINTER(ctype)
+        # TODO: We could recover from an exception here by parsing the type
+        #       expected in the error message and changing the construction type
         with VitalErrorHandle() as eh:
             eh.set_exception_map({1: VitalDynamicCastException})
             data_ptr = d_raw_data(inst_ptr, eh)
