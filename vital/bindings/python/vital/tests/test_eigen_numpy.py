@@ -131,3 +131,24 @@ class TestVitalEigenMatrix (unittest.TestCase):
                                              [3, 2, 4]])
         numpy.testing.assert_array_equal(b, [[0, 0, 0],
                                              [0, 0, 0]])
+
+    def test_from_iterable(self):
+        # from list
+        expected_list = [[0.4, 0],
+                         [1, 1.123],
+                         [2.253, 4.768124]]
+        ea = EigenArray.from_iterable(expected_list, target_shape=(3, 2))
+        numpy.testing.assert_array_equal(ea, expected_list)
+
+        # from ndarray
+        expected_ndar = numpy.array(expected_list)
+        ea = EigenArray.from_iterable(expected_ndar, target_shape=(3, 2))
+        numpy.testing.assert_array_equal(ea, expected_ndar)
+
+        # from EigenArray, which should return the input object
+        ea = EigenArray(3, 2)
+        ea[:] = expected_list
+        ea2 = EigenArray.from_iterable(ea, target_shape=(3, 2))
+        numpy.testing.assert_array_equal(ea2, ea)
+        ntools.assert_is(ea, ea2)
+        ntools.assert_true(ea is ea2)

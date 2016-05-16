@@ -64,9 +64,9 @@ class TrackSet (VitalObject):
         ts_new_from_file.restype = cls.C_TYPE_PTR
 
         with VitalErrorHandle() as eh:
-            return TrackSet.from_c_pointer(ts_new_from_file(filepath, eh))
+            return TrackSet(from_cptr=ts_new_from_file(filepath, eh))
 
-    def __init__(self, track_list=None):
+    def __init__(self, track_list=None, from_cptr=None):
         """
         Create a new track set from a list of tracks.
 
@@ -76,8 +76,9 @@ class TrackSet (VitalObject):
         :type track_list: list of Track or None
 
         """
-        super(TrackSet, self).__init__()
+        super(TrackSet, self).__init__(from_cptr, track_list)
 
+    def _new(self, track_list):
         ts_new = self.VITAL_LIB['vital_trackset_new']
         ts_new.argtypes = [ctypes.c_size_t,
                            ctypes.POINTER(Track.C_TYPE_PTR)]
@@ -89,10 +90,7 @@ class TrackSet (VitalObject):
         c_track_array = (Track.C_TYPE_PTR * len(track_list))(
             *(t.c_pointer for t in track_list)
         )
-        self._inst_ptr = ts_new(len(track_list), c_track_array)
-        if not self._inst_ptr:
-            raise RuntimeError("Failed to construct a new track set instance "
-                               "(NULL pointer returned)")
+        return ts_new(len(track_list), c_track_array)
 
     def _destroy(self):
         ts_del = self.VITAL_LIB['vital_trackset_destroy']

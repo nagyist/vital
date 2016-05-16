@@ -59,18 +59,19 @@ class VitalErrorHandle (VitalObject):
     C_TYPE_PTR = ctypes.POINTER(C_TYPE)
 
     def __init__(self):
-        """
-        Create a new error handle instance
-        """
         super(VitalErrorHandle, self).__init__()
+        self._ec_exception_map = {}
 
+    def _new(self):
+        """
+        Create a new error handle instance.
+        """
         eh_new = self.VITAL_LIB['vital_eh_new']
         eh_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = eh_new()
-        if not self._inst_ptr:
+        c_ptr = eh_new()
+        if not c_ptr:
             raise RuntimeError("Failed construct new error handle instance")
-
-        self._ec_exception_map = {}
+        return c_ptr
 
     def _destroy(self):
         eh_del = self.VITAL_LIB['vital_eh_destroy']
@@ -102,7 +103,7 @@ class VitalErrorHandle (VitalObject):
         :param ec_exception_map: Dictionary mapping integer return code to an
             exception, or function returning an exception instance, that should
             be raised.
-        :type ec_exception_map: dict of (int, BaseException or types.FunctionType)
+        :type ec_exception_map: dict[int, BaseException | types.FunctionType]
 
         """
         self._ec_exception_map.update(ec_exception_map)

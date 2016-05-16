@@ -12,4 +12,16 @@ Bindings
 
  * Added Python wrapping of Eigen::Matrix data using Numpy ndarray type.
 
- * Added full bindings for vital::camera_intrinsics class
+ * Added full C/Python bindings for vital::camera_intrinsics class
+
+ * Added full C/Python bindings for vital::covariance_<N, T> class
+
+ * Added full C/Python bindings for vital::rotation_<T> class
+
+ * Added full C/Python bindings for vital::camera class
+
+Vital Types
+-----------
+
+ * Fixed vital::covariance_ default constructor to initialize identity
+   matrix values instead of not initializing anything.

@@ -67,7 +67,7 @@ class ImageIo (VitalAlgorithm):
         iio_load.restype = ImageContainer.C_TYPE_PTR
         with VitalErrorHandle() as eh:
             ic_ptr = iio_load(self, filepath, eh)
-        return ImageContainer.from_c_pointer(ic_ptr)
+        return ImageContainer(from_cptr=ic_ptr)
 
     def save(self, image_container, filepath):
         """

@@ -33,8 +33,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 vital.util module
 
 """
-# -*- coding: utf-8 -*-
-__author__ = 'paul.tunison@kitware.com'
+import ctypes
 
-from .VitalObject import VitalObject
+from .VitalObject import VitalObject, OpaqueTypeCache
 from .error_handle import VitalErrorHandle
+
+
+def free_void_ptr( ptr ):
+    """
+    Free a C pointer as a void pointer.
+
+    :param ptr: Ctypes pointer instance
+
+    """
+    c_free_ptr = VitalObject.VITAL_LIB['vital_free_pointer']
+    c_free_ptr.argtypes = [ctypes.c_void_p]
+    c_free_ptr(ptr)

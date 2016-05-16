@@ -47,15 +47,15 @@ class Track (VitalObject):
     """
 
     def __init__(self):
+        """
+        Initialize a new, empty track.
+        """
         super(Track, self).__init__()
 
+    def _new(self):
         t_new = self.VITAL_LIB['vital_track_new']
         t_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = t_new()
-
-        if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct a new track instance (NULL "
-                               "pointer returned)")
+        return t_new()
 
     def _destroy(self):
         t_del = self.VITAL_LIB['vital_track_destroy']

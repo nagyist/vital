@@ -100,20 +100,17 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
       {                                                         \
         std::ostringstream ss;                                  \
         ss << "Caught exception in C interface: " << e.what();  \
-        LOG_DEBUG( m_logger,  log_prefix << ss.str() );         \
         POPULATE_EH( eh_ptr, -1, ss.str().c_str() );            \
       }                                                         \
       catch( char const* e )                                    \
       {                                                         \
         std::ostringstream ss;                                  \
         ss << "Caught error message: " << e;                    \
-        LOG_DEBUG( m_logger, log_prefix << ss.str() );          \
         POPULATE_EH( eh_ptr, -1, ss.str().c_str() );            \
       }                                                         \
       catch(...)                                                \
       {                                                         \
         std::string msg("Caught other exception");              \
-        LOG_DEBUG( m_logger, log_prefix << msg );               \
         POPULATE_EH( eh_ptr, -1, msg.c_str() );                 \
       }                                                         \
     } while( 0 )
@@ -130,6 +127,29 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
 #define MAYBE_EMPTY_STRING(s) (s?s:"")
 
 
+/// Convenience macro for reinterpret cast pointer to a different type
+/**
+ * Most commonly used for conveniently converting C opaque pointer types into
+ * their concrete C++ type. We check that the reinterpret cast yielded a
+ * non-null pointer.
+ *
+ * \param new_type The new type to reinterp cast \c ptr to. This should not
+ *                 include the "*" as that is added in the macro.
+ * \param ptr The pointer to convert.
+ * \param var The variable to define in this macro. This should also be devoid
+ *            of and "*" (controlled by macro).
+ */
+#define REINTERP_TYPE( new_type, ptr, var )           \
+  new_type *var = reinterpret_cast<new_type*>( ptr ); \
+  do                                                  \
+  {                                                   \
+    if( var == 0 )                                    \
+    {                                                 \
+      throw "Null pointer";                           \
+    }                                                 \
+  } while(0)
+
+
 namespace kwiver {
 namespace vital_c {
 
@@ -141,8 +161,8 @@ class SharedPointerCache
 {
 public:
   typedef std::shared_ptr< vital_t > sptr_t;
-  typedef std::map< vital_t*, sptr_t > cache_t;
-  typedef std::map< vital_t*, size_t > ref_count_cache_t;
+  typedef std::map< vital_t const *, sptr_t > cache_t;
+  typedef std::map< vital_t const *, size_t > ref_count_cache_t;
 
   /// Exception for when a given entry doesn't exist in this cache
   class NoEntryException
@@ -200,7 +220,7 @@ public:
   }
 
   /// Access a stored shared pointer based on a supplied pointer
-  sptr_t get( vital_t *ptr ) const
+  sptr_t get( vital_t const *ptr ) const
   {
     if( ptr == NULL )
     {
@@ -224,13 +244,13 @@ public:
   }
 
   /// Access a stored shared pointer based on the C interface opaque type
-  sptr_t get( C_t *ptr ) const
+  sptr_t get( C_t const *ptr ) const
   {
-    return this->get( reinterpret_cast< vital_t* >( ptr ) );
+    return this->get( reinterpret_cast< vital_t const * >( ptr ) );
   }
 
   /// Erase an entry in the cache by vital-type pointer
-  void erase( vital_t *ptr )
+  void erase( vital_t const *ptr )
   {
     if( ptr == NULL )
     {
@@ -253,9 +273,9 @@ public:
   }
 
   /// Erase an entry in the cache by C Interface opaque type pointer
-  void erase( C_t *ptr )
+  void erase( C_t const *ptr )
   {
-    return this->erase( reinterpret_cast< vital_t* >( ptr ) );
+    return this->erase( reinterpret_cast< vital_t const * >( ptr ) );
   }
 
 private:
@@ -272,7 +292,7 @@ private:
   std::string name_;
 
   /// Helper method to generate logging prefix string
-  std::string get_log_prefix( vital_t *ptr ) const
+  std::string get_log_prefix( vital_t const *ptr ) const
   {
     std::ostringstream ss;
     ss << "SharedPointerCache::" << this->name_ << "::" << ptr;

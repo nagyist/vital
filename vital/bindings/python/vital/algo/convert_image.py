@@ -59,6 +59,6 @@ class ConvertImage (VitalAlgorithm):
                                VitalErrorHandle.C_TYPE_PTR]
         ci_convert.restype = ImageContainer.C_TYPE_PTR
         with VitalErrorHandle() as eh:
-            return ImageContainer.from_c_pointer(
-                ci_convert(self, image_container, eh)
+            return ImageContainer(
+                from_cptr=ci_convert(self, image_container, eh)
             )

@@ -45,14 +45,18 @@ from vital.util import VitalObject, VitalErrorHandle
 class CameraMap (VitalObject):
     """ vital::camera_map interface class """
 
-    def __init__(self, frame2cam_map):
+    def __init__(self, frame2cam_map, from_cptr=None):
         """
         :param frame2cam_map: Association of frame number to camera instance
-        :type frame2cam_map: dict of (int, vital.Camera)
+        :type frame2cam_map: dict of (int, vital.types.Camera)
 
         """
-        super(CameraMap, self).__init__()
+        super(CameraMap, self).__init__(from_cptr, frame2cam_map)
 
+    def _new(self, frame2cam_map):
+        """
+        :type frame2cam_map: dict[int, vital.types.Camera]
+        """
         cm_new = self.VITAL_LIB.vital_camera_map_new
         cm_new.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint),
                            ctypes.POINTER(Camera.C_TYPE_PTR)]
@@ -71,12 +75,7 @@ class CameraMap (VitalObject):
         # noinspection PyCallingNonCallable,PyProtectedMember
         c_cam_array = cam_array_t(*(c.c_pointer for c in cam_list))
 
-        self._inst_ptr = cm_new(len(frame2cam_map),
-                                c_fn_array, c_cam_array)
-
-        if not self._inst_ptr:
-            raise RuntimeError("Failed to construct a valid CameraMap "
-                               "instance")
+        return cm_new(len(frame2cam_map), c_fn_array, c_cam_array)
 
     def _destroy(self):
         cm_del = self.VITAL_LIB.vital_camera_map_destroy

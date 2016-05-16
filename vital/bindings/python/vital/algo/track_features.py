@@ -85,6 +85,4 @@ class TrackFeatures (VitalAlgorithm):
 
         with VitalErrorHandle() as eh:
             tf_track_args.append(eh)
-            return TrackSet.from_c_pointer(
-                tf_track(*tf_track_args)
-            )
+            return TrackSet(from_cptr=tf_track(*tf_track_args))

@@ -48,24 +48,28 @@ class ImageContainer (VitalObject):
     vital::image_container interface class
     """
 
-    def __init__(self, image):
+    def __init__(self, image=None, from_cptr=None):
         """
         Create a simple image container from a Image instance
 
         :param image: Image to contain
-        :type image: Image
+        :type image: vital.types.Image
 
         """
-        super(ImageContainer, self).__init__()
+        super(ImageContainer, self).__init__(from_cptr, image)
+
+    def _new(self, image):
+        """
+        :param image: Image to contain
+        :type image: vital.types.Image
+        """
+        if image is None:
+            raise ValueError("No vital.types.Image given to contain.")
 
         imgc_new = self.VITAL_LIB.vital_image_container_new_simple
         imgc_new.argtypes = [Image.C_TYPE_PTR]
         imgc_new.restype = self.C_TYPE_PTR
-        self._inst_ptr = imgc_new(image.c_pointer)
-
-        if not bool(self._inst_ptr):
-            raise RuntimeError("Failed to construct new ImageContainer "
-                               "instance.")
+        return imgc_new(image.c_pointer)
 
     def _destroy(self):
         imgc_del = self.VITAL_LIB.vital_image_container_destroy
@@ -131,4 +135,4 @@ class ImageContainer (VitalObject):
         ic_getimg = self.VITAL_LIB['vital_image_container_get_image']
         ic_getimg.argtypes = [self.C_TYPE_PTR]
         ic_getimg.restype = Image.C_TYPE_PTR
-        return Image.from_c_pointer(ic_getimg(self))
+        return Image(from_cptr=ic_getimg(self))

@@ -110,3 +110,14 @@ class TestVitalCameraIntrinsics (unittest.TestCase):
              [0,  5, 3],
              [0,  0, 1]]
         )
+
+    def test_equal(self):
+        ci1 = CameraIntrinsics()
+        ci2 = CameraIntrinsics()
+        ntools.assert_true(ci1 == ci2)
+        ntools.assert_false(ci1 != ci2)
+
+        ci1 = CameraIntrinsics(2, (10, 10), 3, 1)
+        ci2 = CameraIntrinsics(2, (11, 10), 3, 0.1)
+        ntools.assert_false(ci1 == ci2)
+        ntools.assert_true(ci1 != ci2)
