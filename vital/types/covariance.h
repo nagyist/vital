@@ -80,7 +80,7 @@ public:
   {
     const U* in = other.data();
     T* out = this->data_;
-    for ( unsigned i = 0; i < N; ++i, ++in, ++out )
+    for ( unsigned i = 0; i < data_size; ++i, ++in, ++out )
     {
       *out = static_cast< T > ( *in );
     }
