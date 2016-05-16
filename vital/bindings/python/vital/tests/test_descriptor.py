@@ -40,6 +40,7 @@ import unittest
 import nose.tools
 import numpy
 
+from vital.exceptions.base import VitalDynamicCastException
 from vital.types import Descriptor
 
 
@@ -99,3 +100,22 @@ class TestDescriptor (unittest.TestCase):
         b = d.tobytearray()
         nose.tools.assert_equal(b.size, d.nbytes)
         nose.tools.assert_equal(b.sum(), 0)
+
+    def test_data_type_failure(self):
+        d_d = Descriptor(128, ctypes.c_double)
+        d_d[:] = 1
+        nose.tools.assert_equal(d_d.sum(), 128)
+        nose.tools.assert_raises(
+            VitalDynamicCastException,
+            Descriptor,
+            from_cptr=d_d.c_pointer, ctype=ctypes.c_float
+        )
+
+        d_f = Descriptor(128, ctypes.c_float)
+        d_f[:] = 1
+        nose.tools.assert_equal(d_f.sum(), 128)
+        nose.tools.assert_raises(
+            VitalDynamicCastException,
+            Descriptor,
+            from_cptr=d_f.c_pointer, ctype=ctypes.c_double
+        )

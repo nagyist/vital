@@ -37,6 +37,7 @@ import ctypes
 
 import numpy
 
+from vital.exceptions.base import VitalDynamicCastException
 from vital.util import (
     free_void_ptr,
     VitalErrorHandle,
@@ -53,7 +54,15 @@ class Descriptor (numpy.ndarray, VitalObject):
     # retains knowing what type initialized with for accessing type-specific
     # functions.
 
-    def __new__(cls, size, ctype=ctypes.c_double, from_cptr=None):
+    def __new__(cls, size=128, ctype=ctypes.c_double, from_cptr=None):
+        """
+        Create a descriptor instance
+
+        :param size: Size of the descriptor (number of elements). Default of 128
+            (arbitrary).
+        :param ctype: Data type that this data is represented as under the hood.
+        :param from_cptr: Existing Descriptor instance to wrap.
+        """
         # noinspection PyProtectedMember
         type_char = ctype._type_
 
@@ -64,7 +73,7 @@ class Descriptor (numpy.ndarray, VitalObject):
             with VitalErrorHandle() as eh:
                 inst_ptr = d_new(size, eh)
         else:
-            if not isinstance(from_cptr, cls):
+            if not isinstance(from_cptr, cls.c_ptr_type()):
                 raise ValueError("Invalid ``from_cptr`` value (given %s"
                                  % type(from_cptr))
             inst_ptr = from_cptr
@@ -75,6 +84,7 @@ class Descriptor (numpy.ndarray, VitalObject):
         d_raw_data.argtypes = [cls.c_ptr_type(), VitalErrorHandle.c_ptr_type()]
         d_raw_data.restype = ctypes.POINTER(ctype)
         with VitalErrorHandle() as eh:
+            eh.set_exception_map({1: VitalDynamicCastException})
             data_ptr = d_raw_data(inst_ptr, eh)
         b = numpy.ctypeslib.as_array(data_ptr, (size,))
 
@@ -84,10 +94,12 @@ class Descriptor (numpy.ndarray, VitalObject):
         obj._owns_data = True  # This is the owning instance
         return obj
 
-    def __init__(self, size, ctype=ctypes.c_double, from_cptr=None):
+    def __init__(self, size=128, ctype=ctypes.c_double, from_cptr=None):
         # __new__ creates or sets _inst_ptr, so always supply that to super's
         # `from_cptr`'
         VitalObject.__init__(self, self._inst_ptr)
+
+    __init__.__doc__ = __new__.__doc__
 
     def __array_finalize__(self, obj):
         if obj is None:  # When being constructed
