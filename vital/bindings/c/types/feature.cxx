@@ -188,7 +188,12 @@ vital_feature_##S##_set_loc( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_loc", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     REINTERP_TYPE( cpp_matrix_t, l, l_ptr ); \
     f_ptr->set_loc( *l_ptr ); \
   ); \
@@ -203,7 +208,12 @@ vital_feature_##S##_set_magnitude( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_magnitude", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     f_ptr->set_magnitude( mag ); \
   ); \
 } \
@@ -217,7 +227,12 @@ vital_feature_##S##_set_scale( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_scale", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     f_ptr->set_scale( scale ); \
   ); \
 } \
@@ -231,7 +246,12 @@ vital_feature_##S##_set_angle( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_angle", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     f_ptr->set_angle( angle ); \
   ); \
 } \
@@ -245,7 +265,12 @@ vital_feature_##S##_set_covar( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_covar", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     REINTERP_TYPE( vital::covariance_2##S, covar, covar_ptr ); \
     f_ptr->set_covar( *covar_ptr ); \
   ); \
@@ -260,7 +285,12 @@ vital_feature_##S##_set_color( vital_feature_t *f, \
   STANDARD_CATCH( \
     "vital_feature_" #S "_set_color", eh, \
     auto f_sptr = vital_c::FEATURE_SPTR_CACHE.get( f ); \
-    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ); \
+    TRY_DYNAMIC_CAST( vital::feature_<T>, f_sptr.get(), f_ptr ) \
+    { \
+      POPULATE_EH( eh, 1, "Failed dynamic cast to '" #S "' type for data " \
+                          "access." ); \
+      return; \
+    } \
     REINTERP_TYPE( vital::rgb_color, c, c_ptr ); \
     f_ptr->set_color( *c_ptr ); \
   ); \

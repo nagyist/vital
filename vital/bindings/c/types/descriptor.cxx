@@ -157,9 +157,7 @@ vital_descriptor_get_##S##_raw_data( vital_descriptor_t *d, \
   STANDARD_CATCH( \
     "vital_descriptor_" #S "_raw_data", eh, \
     auto d_sptr = vital_c::DESCRIPTOR_SPTR_CACHE.get( d ); \
-    vital::descriptor_dynamic<T> *d_dyn = \
-        dynamic_cast< vital::descriptor_dynamic<T>* >( d_sptr.get() ); \
-    if( d_dyn == NULL ) \
+    TRY_DYNAMIC_CAST( vital::descriptor_dynamic<T>, d_sptr.get(), d_dyn ) \
     { \
       POPULATE_EH( eh, 1, "Failed to dynamic cast descriptor to " #S " type " \
                           "for data access" ); \

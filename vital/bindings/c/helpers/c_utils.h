@@ -152,7 +152,8 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
 
 /**
  * Convenience macro for dynamic casting a pointer to a different type with
- * error checking
+ * error checking. This macro expects a {} block after its invocations that is
+ * executed if the dynamic cast resulted in a NULL pointer (cast failure)
  *
  * \param new_type The new type to dynamic cast \c ptr to. This should not
  *                 include the "*" as that is controlled by the macro.
@@ -162,13 +163,7 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
  */
 #define TRY_DYNAMIC_CAST( new_type, ptr, var )      \
   new_type *var = dynamic_cast< new_type* >( ptr ); \
-  do                                                \
-  {                                                 \
-    if( var == NULL )                               \
-    {                                               \
-      throw "Failed dynamic cast";                  \
-    }                                               \
-  } while(0)
+  if( var == NULL )                                 \
 
 
 namespace kwiver {
