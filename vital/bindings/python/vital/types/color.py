@@ -76,12 +76,28 @@ class RGBColor (VitalObject):
         )
 
     def __getitem__(self, idx):
+        # Using array for out-of-bounds error handling and other conveniences
         return self.__array__()[idx]
 
     def __array__(self, dtype=None):
         if dtype is None:
             dtype = numpy.ubyte
         return numpy.array([self.r, self.g, self.b], dtype=dtype)
+
+    def __eq__(self, other):
+        if isinstance(other, RGBColor):
+            return (
+                self.r == other.r and
+                self.g == other.g and
+                self.b == other.b
+            )
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __repr__(self):
+        return "%s{%d, %d, %d}" % (self.__class__.__name__,
+                                   self.r, self.g, self.b)
 
     @property
     def r(self):
