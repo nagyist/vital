@@ -132,7 +132,7 @@ vital_eigen_matrix##R##x##C##S##_cols( vital_eigen_matrix##R##x##C##S##_t *m, \
                                        vital_error_handle_t *eh ); \
 \
 /**
- * Get the pointer increment betweentwo consecutive rows.
+ * Get the pointer increment between two consecutive rows.
  */ \
 VITAL_C_EXPORT \
 ptrdiff_t \
@@ -140,7 +140,7 @@ vital_eigen_matrix##R##x##C##S##_row_stride( vital_eigen_matrix##R##x##C##S##_t 
                                              vital_error_handle_t *eh ); \
 \
 /**
- * Get the pointer increment betweentwo consecutive columns.
+ * Get the pointer increment between two consecutive columns.
  */ \
 VITAL_C_EXPORT \
 ptrdiff_t \
@@ -156,9 +156,14 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
                                        vital_error_handle_t *eh );
 
 
+/// Declare operations for both combinations of X and Y
+#define DECLARE_EIGEN_RECTANGLES( T, S, X, Y ) \
+DECLARE_EIGEN_OPERATIONS( T, S, X, Y ) \
+DECLARE_EIGEN_OPERATIONS( T, S, Y, X ) \
+
 /// Declare operations for all shapes
 /**
- * The use of `X` in the below macros referrs to matrices that are "dynamic" in
+ * The use of `X` in the below macros refers to matrices that are "dynamic" in
  * size (Eigen's definition). This basically means that the matrix size is
  * determined at run-time instead of compile time. With types that include `X`
  * size dimensions, the "...new_sized" constructor function must be used in
@@ -168,20 +173,20 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
  * \param S Type suffix
  */
 #define DECLARE_EIGEN_ALL_SHAPES( T, S ) \
-/* "Vector" types */                     \
-DECLARE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, X, 1 )   \
-/* Other matrix shapes */                \
+/* Vector shapes */                      \
+DECLARE_EIGEN_RECTANGLES( T, S, 2, 1 )   \
+DECLARE_EIGEN_RECTANGLES( T, S, 3, 1 )   \
+DECLARE_EIGEN_RECTANGLES( T, S, 4, 1 )   \
+DECLARE_EIGEN_RECTANGLES( T, S, X, 1 )   \
+/* Square shapes */                      \
 DECLARE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
 DECLARE_EIGEN_OPERATIONS( T, S, 4, 4 )   \
-DECLARE_EIGEN_OPERATIONS( T, S, X, X )
+DECLARE_EIGEN_OPERATIONS( T, S, X, X )   \
+/* Other Rectangular shapes */           \
+DECLARE_EIGEN_RECTANGLES( T, S, 3, 2 )   \
+DECLARE_EIGEN_RECTANGLES( T, S, 4, 2 )   \
+DECLARE_EIGEN_RECTANGLES( T, S, 4, 3 )
 
 
 DECLARE_EIGEN_ALL_SHAPES( double, d )
@@ -189,6 +194,7 @@ DECLARE_EIGEN_ALL_SHAPES( float,  f )
 
 
 #undef DECLARE_EIGEN_OPERATIONS
+#undef DECLARE_EIGEN_RECTANGLES
 #undef DECLARE_EIGEN_ALL_SHAPES
 
 

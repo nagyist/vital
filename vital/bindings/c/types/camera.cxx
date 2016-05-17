@@ -304,7 +304,6 @@ void vital_camera_write_krtd_file( vital_camera_t const *cam,
   STANDARD_CATCH(
     "C::camera::write_krtd_file", eh,
     kwiver::vital::camera *m_cam = kwiver::vital_c::CAMERA_SPTR_CACHE.get( cam ).get();
-    kwiver::vital::write_krtd_file( *m_cam,
-                            filepath );
+    kwiver::vital::write_krtd_file( *m_cam, filepath );
   );
 }

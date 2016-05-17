@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Interface to vital::covariance class
 
 """
+import collections
 import ctypes
 
 import numpy
@@ -57,10 +58,10 @@ class Covariance (VitalObject):
         return cls.C_TYPE[cls.SHAPE_SPEC.format(size=size, type=ctype._type_)]
 
     @classmethod
-    def c_ptr_type(cls, size, ctype=ctypes.c_double):
+    def c_ptr_type(cls, N=2, ctype=ctypes.c_double):
         """ Get the C opaque pointer type """
         # noinspection PyProtectedMember
-        return cls.C_TYPE_PTR[cls.SHAPE_SPEC.format(size=size,
+        return cls.C_TYPE_PTR[cls.SHAPE_SPEC.format(size=N,
                                                     type=ctype._type_)]
 
     def __init__(self, N=2, c_type=ctypes.c_double, init_scalar_or_matrix=None,
@@ -138,22 +139,12 @@ class Covariance (VitalObject):
             c_new.argtypes = [VitalErrorHandle.C_TYPE_PTR]
             c_new.restype = self.C_TYPE_PTR
             args = ()
-        elif isinstance(init_scalar_or_matrix, numpy.ndarray):
+        elif isinstance(init_scalar_or_matrix, (collections.Iterable,
+                                                numpy.ndarray)):
             self._log.debug("Initializing with matrix")
-            dtype = numpy.dtype(c_type)
-            in_mat = init_scalar_or_matrix
-            # Checking matrix shape/type properties
-            if in_mat.shape != (N, N):
-                raise ValueError("Input matrix of non-congruent shape: %s (our "
-                                 "shape: %s)" % (in_mat.shape, (N, N)))
-            if not isinstance(in_mat, EigenArray) or in_mat.dtype != dtype:
-                # create specific shape/type required for construction, and copy
-                # in matrix data. This handles type casting required.
-                self._log.debug("Creating new EigenArray for type casting")
-                mat = EigenArray(N, N, dtype=numpy.dtype(c_type))
-                mat[:] = in_mat
-            else:
-                mat = in_mat
+            # Should be a NxN square matrix
+            mat = EigenArray.from_iterable(init_scalar_or_matrix, c_type,
+                                           (N, N))
             c_new = self._func_map['new_matrix']
             c_new.argtypes = [mat.C_TYPE_PTR,
                               VitalErrorHandle.C_TYPE_PTR]
@@ -191,7 +182,7 @@ class Covariance (VitalObject):
                               from_cptr=m_ptr, owns_data=True)
 
     def __repr__(self):
-        print "%s{\n%s}" % (self.__class__.__name__, self.to_matrix())
+        return "%s{\n%s}" % (self.__class__.__name__, self.to_matrix())
 
     def __str__(self):
         return str(self.to_matrix())

@@ -121,7 +121,7 @@ vital_covariance_##N##S##_destroy( vital_covariance_##N##S##_t *cov,            
   STANDARD_CATCH(                                                                    \
     "vital_covariance_" #N #S ".destroy", eh,                                        \
     REINTERP_TYPE( cov_t, cov, cov_ptr );                                            \
-    delete cov_ptr;                                                               \
+    delete cov_ptr;                                                                  \
   );                                                                                 \
 }                                                                                    \
                                                                                      \

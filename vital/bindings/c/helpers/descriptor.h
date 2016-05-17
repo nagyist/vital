@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,87 +30,25 @@
 
 /**
  * \file
- * \brief Structs for representing color
+ * \brief C Interface vital::descriptor helpers
  */
 
-#ifndef VITAL_COLOR_H_
-#define VITAL_COLOR_H_
+#ifndef VITAL_C_HELPERS_DESCRIPTOR_H_
+#define VITAL_C_HELPERS_DESCRIPTOR_H_
 
-
-#include <iostream>
+#include <vital/types/descriptor.h>
+#include <vital/bindings/c/types/descriptor.h>
+#include <vital/bindings/c/helpers/c_utils.h>
 
 
 namespace kwiver {
-namespace vital {
+namespace vital_c {
 
-/// Struct to represent an RGB tuple
-struct rgb_color
-{
-  /// Default constructor - set the color to white
-  rgb_color() : r(255), g(255), b(255) {}
+extern SharedPointerCache< kwiver::vital::descriptor, vital_descriptor_t >
+  DESCRIPTOR_SPTR_CACHE;
 
-  /// Constructor
-  rgb_color(unsigned char const &cr,
-            unsigned char const &cg,
-            unsigned char const &cb)
-    : r(cr), g(cg), b(cb) {}
-
-  /// Copy Constructor
-  rgb_color( rgb_color const &c )
-    : r(c.r), g(c.g), b(c.b) {}
-
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-};
-
-
-/// comparison operator for an rgb_color
-inline
-bool
-operator==( rgb_color const& c1, rgb_color const& c2 )
-{
-  return (c1.r == c2.r) && (c1.g == c2.g) && (c1.b == c2.b);
+}
 }
 
 
-/// comparison operator for an rgb_color
-inline
-bool
-operator!=( rgb_color const& c1, rgb_color const& c2 )
-{
-  return !(c1 == c2);
-}
-
-
-/// output stream operator for an rgb_color
-inline
-std::ostream&
-operator<<( std::ostream& s, const rgb_color& c )
-{
-  // Note the '+' prefix here is used to print characters
-  // as decimal number, not ASCII characters
-  s << +c.r << " " << +c.g << " " << +c.b;
-  return s;
-}
-
-
-/// input stream operator for an rgb_color
-inline
-std::istream&
-operator>>( std::istream& s, rgb_color& c )
-{
-  int rv = 255, gv = 255, bv = 255;
-  s >> rv >> gv >> bv;
-  c.r = static_cast<unsigned char>( rv );
-  c.g = static_cast<unsigned char>( gv );
-  c.b = static_cast<unsigned char>( bv );
-  return s;
-}
-
-
-
-
-} } // end namespace vital
-
-#endif // VITAL_COLOR_H_
+#endif //VITAL_C_HELPERS_DESCRIPTOR_H_

@@ -130,24 +130,40 @@ static auto m_logger( kwiver::vital::get_logger( "vital.c_utils" ) );
 /// Convenience macro for reinterpret cast pointer to a different type
 /**
  * Most commonly used for conveniently converting C opaque pointer types into
- * their concrete C++ type. We check that the reinterpret cast yielded a
- * non-null pointer.
+ * their concrete C++ type when not shared_ptr controlled. We check that the
+ * reinterpret cast yielded a non-null pointer.
  *
  * \param new_type The new type to reinterp cast \c ptr to. This should not
  *                 include the "*" as that is added in the macro.
  * \param ptr The pointer to convert.
  * \param var The variable to define in this macro. This should also be devoid
- *            of and "*" (controlled by macro).
+ *            of the "*" (controlled by macro).
  */
-#define REINTERP_TYPE( new_type, ptr, var )           \
-  new_type *var = reinterpret_cast<new_type*>( ptr ); \
-  do                                                  \
-  {                                                   \
-    if( var == 0 )                                    \
-    {                                                 \
-      throw "Null pointer";                           \
-    }                                                 \
+#define REINTERP_TYPE( new_type, ptr, var )             \
+  new_type *var = reinterpret_cast< new_type* >( ptr ); \
+  do                                                    \
+  {                                                     \
+    if( var == 0 )                                      \
+    {                                                   \
+      throw "Failed reinterpret cast";                  \
+    }                                                   \
   } while(0)
+
+
+/**
+ * Convenience macro for dynamic casting a pointer to a different type with
+ * error checking. This macro expects a {} block after its invocations that is
+ * executed if the dynamic cast resulted in a NULL pointer (cast failure)
+ *
+ * \param new_type The new type to dynamic cast \c ptr to. This should not
+ *                 include the "*" as that is controlled by the macro.
+ * \param ptr The pointer to convert
+ * \param var The variable to define in the macro. This should also be devoid of
+ *            the "*" (controlled by macro).
+ */
+#define TRY_DYNAMIC_CAST( new_type, ptr, var )      \
+  new_type *var = dynamic_cast< new_type* >( ptr ); \
+  if( var == NULL )                                 \
 
 
 namespace kwiver {

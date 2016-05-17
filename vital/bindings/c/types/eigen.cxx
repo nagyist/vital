@@ -194,27 +194,31 @@ vital_eigen_matrix##R##x##C##S##_data( vital_eigen_matrix##R##x##C##S##_t *m, \
 }
 
 
+/// Define operations for both combinations of X and Y
+#define DEFINE_EIGEN_RECTANGLES( T, S, X, Y )\
+DEFINE_EIGEN_OPERATIONS( T, S, X, Y ) \
+DEFINE_EIGEN_OPERATIONS( T, S, Y, X )
+
 /// DEFINE operations for all shapes
 /**
  * \param T Data type
  * \param S Type suffix
  */
 #define DEFINE_EIGEN_ALL_SHAPES( T, S ) \
-/* "Vector" types */                    \
-DEFINE_EIGEN_OPERATIONS( T, S, 2, 1 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 3, 1 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 4, 1 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, X, 1 )   \
-/* Other matrix shapes */               \
+/* Vector shapes */                      \
+DEFINE_EIGEN_RECTANGLES( T, S, 2, 1 )   \
+DEFINE_EIGEN_RECTANGLES( T, S, 3, 1 )   \
+DEFINE_EIGEN_RECTANGLES( T, S, 4, 1 )   \
+DEFINE_EIGEN_RECTANGLES( T, S, X, 1 )   \
+/* Square shapes */                      \
 DEFINE_EIGEN_OPERATIONS( T, S, 2, 2 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 2, 3 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 3, 2 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 3, 3 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 3, 4 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, 4, 3 )   \
 DEFINE_EIGEN_OPERATIONS( T, S, 4, 4 )   \
-DEFINE_EIGEN_OPERATIONS( T, S, X, X )
-
+DEFINE_EIGEN_OPERATIONS( T, S, X, X )   \
+/* Other Rectangular shapes */           \
+DEFINE_EIGEN_RECTANGLES( T, S, 3, 2 )   \
+DEFINE_EIGEN_RECTANGLES( T, S, 4, 2 )   \
+DEFINE_EIGEN_RECTANGLES( T, S, 4, 3 )
 
 
 // Set a constant X for convenience in struct/function naming
@@ -228,4 +232,5 @@ DEFINE_EIGEN_ALL_SHAPES( float,  f )
 
 
 #undef DEFINE_EIGEN_OPERATIONS
+#undef DEFINE_EIGEN_RECTANGLES
 #undef DEFINE_EIGEN_ALL_SHAPES

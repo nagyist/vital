@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief File description here.
+ * \brief Implementation of C Interface to \p vital::rotation_<T> class
  */
 
 #include "rotation.h"

@@ -30,7 +30,7 @@
 
 /**
  * \file
- * \brief File description here.
+ * \brief C Interface to \p vital::rotation_<T> class
  */
 
 #ifndef VITAL_C_ROTATION_H_

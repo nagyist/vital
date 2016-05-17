@@ -48,7 +48,7 @@ class CameraMap (VitalObject):
     def __init__(self, frame2cam_map, from_cptr=None):
         """
         :param frame2cam_map: Association of frame number to camera instance
-        :type frame2cam_map: dict of (int, vital.types.Camera)
+        :type frame2cam_map: dict[int, vital.types.Camera]
 
         """
         super(CameraMap, self).__init__(from_cptr, frame2cam_map)
@@ -58,7 +58,7 @@ class CameraMap (VitalObject):
         :type frame2cam_map: dict[int, vital.types.Camera]
         """
         cm_new = self.VITAL_LIB.vital_camera_map_new
-        cm_new.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint),
+        cm_new.argtypes = [ctypes.c_size_t, ctypes.POINTER(ctypes.c_int64),
                            ctypes.POINTER(Camera.C_TYPE_PTR)]
         cm_new.restype = self.C_TYPE_PTR
 
@@ -68,7 +68,7 @@ class CameraMap (VitalObject):
         for fn, c in frame2cam_map.iteritems():
             fn_list.append(fn)
             cam_list.append(c)
-        fn_array_t = ctypes.c_uint * len(frame2cam_map)
+        fn_array_t = ctypes.c_int64 * len(frame2cam_map)
         cam_array_t = Camera.C_TYPE_PTR * len(frame2cam_map)
         # noinspection PyCallingNonCallable
         c_fn_array = fn_array_t(*fn_list)
@@ -83,6 +83,7 @@ class CameraMap (VitalObject):
         with VitalErrorHandle() as eh:
             cm_del(self, eh)
 
+    @property
     def size(self):
         """
         :return: Number of elements in this mapping.
@@ -93,3 +94,39 @@ class CameraMap (VitalObject):
         cm_size.restype = ctypes.c_size_t
         with VitalErrorHandle() as eh:
             return cm_size(self, eh)
+
+    def to_dict(self):
+        """
+        :return: Internal frame-number to cameras mapping
+        :rtype: dict[int, Camera]
+        """
+        cm_get_map = self.VITAL_LIB['vital_camera_map_get_map']
+        cm_get_map.argtypes = [self.c_ptr_type(),
+                               ctypes.POINTER(ctypes.c_size_t),
+                               ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
+                               ctypes.POINTER(ctypes.POINTER(Camera.c_ptr_type())),
+                               VitalErrorHandle.c_ptr_type()]
+
+        length = ctypes.c_size_t()
+        frame_numbers = ctypes.POINTER(ctypes.c_int64)()
+        cameras = ctypes.POINTER(Camera.c_ptr_type())()
+
+        with VitalErrorHandle() as eh:
+            cm_get_map(self,
+                       ctypes.byref(length),
+                       ctypes.byref(frame_numbers),
+                       ctypes.byref(cameras),
+                       eh)
+
+        m = {}
+        for i in xrange(length.value):
+            # copy camera cptr so we don't
+            cptr = Camera.c_ptr_type()(cameras[i].contents)
+            m[frame_numbers[i]] = Camera(from_cptr=cptr)
+
+        # Free frame number and camera pointer arrays
+        free_ptr = self.VITAL_LIB['vital_free_pointer']
+        free_ptr(frame_numbers)
+        free_ptr(cameras)
+
+        return m

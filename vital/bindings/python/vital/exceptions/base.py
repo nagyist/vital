@@ -50,3 +50,7 @@ class VitalInvalidValue(VitalBaseException):
 class VitalNullPointerException (VitalBaseException):
     """ When an error occurs due to use of a NULL pointer """
     pass
+
+
+class VitalDynamicCastException (VitalBaseException):
+    """ When a casting error occurred dynamic casting a pointer """

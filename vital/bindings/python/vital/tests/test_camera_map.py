@@ -1,6 +1,6 @@
 """
 ckwg +31
-Copyright 2015-2016 by Kitware, Inc.
+Copyright 2016 by Kitware, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,23 +30,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==============================================================================
 
-vital.util module
+Tests for CameraMap interface
 
 """
-import ctypes
+import unittest
 
-from .VitalObject import VitalObject, OpaqueTypeCache
-from .error_handle import VitalErrorHandle
+import nose.tools
+
+from vital.types import Camera, CameraMap
 
 
-def free_void_ptr(ptr):
-    """
-    Free a C pointer as a void pointer.
+class TestCameraMap (unittest.TestCase):
 
-    :param ptr: Ctypes pointer instance
-    :type ptr: _ctypes._Pointer
+    def test_size(self):
+        m = {
+            0: Camera(),
+            1: Camera(),
+            5: Camera()
+        }
+        cm = CameraMap(m)
+        nose.tools.assert_equal(cm.size, 3)
 
-    """
-    c_free_ptr = VitalObject.VITAL_LIB['vital_free_pointer']
-    c_free_ptr.argtypes = [ctypes.c_void_p]
-    c_free_ptr(ptr)
+    def test_to_dict(self):
+        m = {
+            0: Camera(),
+            1: Camera(),
+            5: Camera()
+        }
+        cm = CameraMap(m)
+        m2 = cm.to_dict()
+        nose.tools.assert_equal(m, m2)

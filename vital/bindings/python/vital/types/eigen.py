@@ -193,6 +193,9 @@ class EigenArray (numpy.ndarray, VitalObject):
         """
         Try to create an EigenArray given an iterable of values.
 
+        1-dimensional iterables are interpreted as column-vectors, unless `i` is
+        an EigenArray, in which case it is returned as is.
+
         This function is limited to Eigen statically defined matrix shapes
         (dynamic rows / cols not used).
 
@@ -217,6 +220,8 @@ class EigenArray (numpy.ndarray, VitalObject):
         # Make input iterable into an actual numpy.ndarray if it wasn't already
         #: :type: numpy.ndarray | EigenArray
         vec = numpy.array(i, copy=False, subok=True)
+        if vec.ndim == 1:
+            vec = vec[:, numpy.newaxis]
 
         # Transform into EigenArray if not already
         if not isinstance(vec, EigenArray) or vec._c_type != target_ctype:
@@ -316,9 +321,9 @@ class EigenArray (numpy.ndarray, VitalObject):
         obj._c_type = c_type
         obj._owns_data = owns_data
 
-        VitalObject.__init__(obj, from_cptr=from_cptr)
-        # obj._inst_ptr at this point is None due to empty _new method
-        obj._inst_ptr = inst_ptr
+        # Always going to have an instance pointer at this point due to above
+        # logic
+        VitalObject.__init__(obj, from_cptr=inst_ptr)
 
         return obj
 
@@ -394,8 +399,8 @@ class EigenArray (numpy.ndarray, VitalObject):
 
     def __array_prepare__(self, obj, context=None):
         # Don't propagate this class and its stored references needlessly
-        # NOTE: could make a new EigenArray of the same shape here and return
-        #       that.
+        # NOTE: could make a new EigenArray of the same shape (separate memory)
+        #       here and return that.
         return obj
 
     def __array_wrap__(self, out_arr, context=None):
@@ -407,10 +412,6 @@ class EigenArray (numpy.ndarray, VitalObject):
         Spoof method because we're descending from numpy.ndarray, which changes
         how construction occurs.
         """
-        # Return a true-evaluating value so as to pass base-class constructor
-        # check so that we can manually assign opaque pointer after construction
-        # in __new__.
-        return 1
 
     def _destroy(self):
         # We're only in this function because we don't have a parent.

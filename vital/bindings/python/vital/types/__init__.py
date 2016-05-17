@@ -36,13 +36,18 @@ vital.types module
 
 # Common VITAL Components for easy access
 from .camera_intrinsics import CameraIntrinsics
+from .color import RGBColor
 from .covariance import Covariance
+from .descriptor import Descriptor
 from .eigen import EigenArray
 from .image import Image
 from .image_container import ImageContainer
 from .rotation import Rotation
 from .track import Track
 from .track_set import TrackSet
+
+# Required EigenArray and RGBColor
+from .feature import Feature
 
 # Requires CameraIntrinsics, Covariance, EigenArray, Rotation
 from .camera import Camera

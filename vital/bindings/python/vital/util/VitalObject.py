@@ -65,6 +65,14 @@ class VitalClassMeta (abc.ABCMeta):
 class VitalObject (object):
     """
     Basic VITAL python interface class.
+
+    Guarantees that should be maintained:
+        - c_type() and c_ptr_type() should be used when trying to get C types
+          from class types.
+        - C_TYPE and C_TYPE_PTR should be used when trying to get C types from
+          class instances, and thus should only refer to a single type in an
+          instance. Value undefined defined on the class level.
+
     """
     __metaclass__ = VitalClassMeta
 
@@ -83,6 +91,37 @@ class VitalObject (object):
     def c_ptr_type(cls, *args):
         """ Get the C opaque pointer type """
         return cls.C_TYPE_PTR
+
+    @classmethod
+    def _call_cfunc(cls, func_name, argtypes, restype, *args):
+        """
+        Extract function from vital library and call it with a VitalErrorHandle.
+
+        This assumes that the C function takes an additional parameter than what
+        is given to this function that is the error handle.
+
+        :param func_name: C function name to pull from library
+        :type func_name: str
+
+        :param argtypes: Ctypes argument type array
+        :type argtypes: list | tuple
+
+        :param restype: Ctypes return type
+
+        :param args: iterable of positional arguments to the C function
+        :param args: tuple
+
+        :return: Result of the c function call
+
+        """
+        # local import to prevent circular import
+        from vital.util import VitalErrorHandle
+        f = cls.VITAL_LIB[func_name]
+        if argtypes:
+            f.argtypes = list(argtypes) + [VitalErrorHandle.c_ptr_type()]
+        f.restype = restype
+        with VitalErrorHandle() as eh:
+            return f(*(args + (eh,)))
 
     def __init__(self, from_cptr=None, *args, **kwds):
         """
@@ -132,7 +171,7 @@ class VitalObject (object):
                                    % self.__class__.__name__)
 
     def __del__(self):
-        if hasattr(self, '_inst_ptr'):
+        if hasattr(self, '_inst_ptr') and self._inst_ptr is not None:
             self._destroy()
 
     def __nonzero__(self):
@@ -165,6 +204,7 @@ class VitalObject (object):
     def c_pointer(self):
         """
         :return: The ctypes opaque structure pointer
+        :rtype: _ctypes._Pointer
         """
         return self._inst_ptr
 
@@ -175,8 +215,11 @@ class VitalObject (object):
         initializing any other necessary object properties
 
         :returns: New C opaque structure pointer.
+        :rtype: _ctypes._Pointer
 
         """
+        raise NotImplementedError("Calling VitalObject class abstract _new "
+                                  "method.")
 
     @abc.abstractmethod
     def _destroy(self):
@@ -184,7 +227,7 @@ class VitalObject (object):
         Call C API destructor for derived class
         """
         raise NotImplementedError("Calling VitalObject class abstract _destroy "
-                                  "function.")
+                                  "method.")
 
     # TODO: Serialization hooks?
 
