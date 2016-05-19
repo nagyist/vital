@@ -177,7 +177,6 @@ set( vital_public_headers
 
   plugin_loader/plugin_factory.h
   plugin_loader/plugin_manager.h
-  plugin_loader/plugin_config_util.h
 )
 
 # ----------------------
@@ -247,7 +246,6 @@ set( vital_sources
 
   plugin_loader/plugin_manager.cxx
   plugin_loader/plugin_factory.cxx
-  plugin_loader/plugin_config_util.cxx
 )
 
 kwiver_install_headers(

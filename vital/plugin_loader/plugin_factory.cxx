@@ -38,7 +38,6 @@ const std::string plugin_factory::CONCRETE_TYPE( "concrete-type" );
 const std::string plugin_factory::PLUGIN_FILE_NAME( "plugin-file-name" );
 const std::string plugin_factory::PLUGIN_NAME( "plugin-name" );
 const std::string plugin_factory::PLUGIN_DESCRIPTION( "plugin-descrip" );
-const std::string plugin_factory::CONFIG_HELP( "config-help" );
 
 typedef std::map< std::string, std::string>::iterator map_it;
 typedef std::map< std::string, std::string>::const_iterator const_map_it;

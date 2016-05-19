@@ -71,7 +71,6 @@ public:
   static const std::string PLUGIN_FILE_NAME;
   static const std::string PLUGIN_NAME;
   static const std::string PLUGIN_DESCRIPTION;
-  static const std::string CONFIG_HELP;
 
   /**
    * @brief Get attribute from factory
