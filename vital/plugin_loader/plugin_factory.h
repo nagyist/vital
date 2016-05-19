@@ -39,6 +39,7 @@
 #include <typeinfo>
 #include <memory>
 
+#include <vital/vital_config.h>
 #include <vital/noncopyable.h>
 #include <vital/vital_foreach.h>
 

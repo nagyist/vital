@@ -31,6 +31,8 @@
 #ifndef KWIVER_VITAL_PLUGIN_MANAGER_H_
 #define KWIVER_VITAL_PLUGIN_MANAGER_H_
 
+#include <vital/vital_config.h>
+#include <vital/vital_export.h>
 #include <vital/vital_types.h>
 
 #include <kwiversys/DynamicLoader.hxx>
@@ -61,7 +63,7 @@ class plugin_manager_impl;
  * are discovered on the disk.
  *
  */
-class plugin_manager
+class VITAL_EXPORT plugin_manager
 {
 public:
   typedef kwiversys::DynamicLoader   DL;
@@ -76,6 +78,16 @@ public:
    */
   plugin_manager( std::string const& init_function );
   virtual ~plugin_manager();
+
+  /**
+   * @brief Load all reachable plugins.
+   *
+   * This method loads all plugins that can be discovered on the
+   * currently active search path. This method is called after all
+   * search paths have been added with the add_search_path() method.
+   *
+   */
+  void load_plugins();
 
   /**
    * @brief Add an additional directories to search for plugins in.
@@ -155,7 +167,7 @@ public:
    * @brief Get list of files loaded.
    *
    * This method returns the list of shared object file names that
-   * successfully re loaded.
+   * successfully loaded.
    *
    * @return List of file names.
    */

@@ -226,6 +226,15 @@ plugin_manager
 }
 
 
+// ------------------------------------------------------------------
+void
+plugin_manager
+::load_plugins()
+{
+  m_impl->load_known_modules();
+}
+
+
 // ==================================================================
 /**
  * @brief Load all known modules.
