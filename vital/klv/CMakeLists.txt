@@ -8,6 +8,7 @@ set( sources
   klv_key.cxx
   klv_0601.cxx
   klv_0104.cxx
+  misp_time.cxx
   )
 
 set( public_headers
@@ -16,6 +17,7 @@ set( public_headers
   klv_key.h
   klv_0601.h
   klv_0104.h
+  misp_time.h
   )
 
 set( private_headers

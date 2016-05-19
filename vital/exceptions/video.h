@@ -93,6 +93,24 @@ public:
 };
 
 
+// ------------------------------------------------------------------
+/// Video config error.
+/*
+ * This exception is thrown when there is exceptional condition while
+ * processing the configuration for a  video.
+ */
+class VITAL_EXPORT video_config_exception
+  : public video_exception
+{
+public:
+  /// Constructor
+  video_config_exception( std::string const& msg ) VITAL_NOTHROW;
+
+  /// Destructor
+  virtual ~video_config_exception() VITAL_NOTHROW;
+};
+
+
 } } // end namespace
 
 

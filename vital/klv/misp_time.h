@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2015 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,70 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * \brief Implementation for image exceptions
- */
+#ifndef VITAL_KLV_MISP_TIME_H
+#define VITAL_KLV_MISP_TIME_H
 
-#include "video.h"
+#include <vital/klv/vital_klv_export.h>
+
+#include <vector>
+#include <cstdint>
 
 namespace kwiver {
 namespace vital {
 
-
-// ------------------------------------------------------------------
-video_exception
-::video_exception() VITAL_NOTHROW
-{
-  m_what = "Yo, Yo, we have a Vide-o exception";
-}
-
-video_exception
-::~video_exception() VITAL_NOTHROW
-{
-}
-
-// ------------------------------------------------------------------
-video_input_timeout_exception
-::video_input_timeout_exception() VITAL_NOTHROW
-{
-  m_what = "End of video exception";
-}
+/**
+ * @brief Find MISP time packet in raw buffer and convert.
+ *
+ * This function scans the supplied raw video metadata buffer to see
+ * if it contains a MISP time packet. If it does, the packet is
+ * converted to a time value and returned.
+ *
+ * @param[in] raw_data Raw metadatadata buffer
+ * @param[out] ts Time from MISP packet.
+ *
+ * @return \b true if MISP time packet found in buffer.
+ */
+VITAL_KLV_EXPORT
+bool find_MISP_microsec_time(  std::vector< unsigned char > const& raw_data, std::int64_t& ts );
 
 
-video_input_timeout_exception
-::~video_input_timeout_exception() VITAL_NOTHROW
-{
-}
-
-
-// ------------------------------------------------------------------
-video_stream_exception
-::video_stream_exception( std::string const& msg) VITAL_NOTHROW
-{
-  m_what = "Video stream exception:" + msg;
-}
-
-
-video_stream_exception
-::~video_stream_exception() VITAL_NOTHROW
-{
-}
-
-
-// ------------------------------------------------------------------
-video_config_exception
-::video_config_exception( std::string const& msg) VITAL_NOTHROW
-{
-  m_what = "Video config exception:" + msg;
-}
-
-
-video_config_exception
-::~video_config_exception() VITAL_NOTHROW
-{
-}
-
+/**
+ * @brief Convert MISP time packet to uSec
+ *
+ * This function converts the supplied MIST time packet to
+ * microseconds.
+ *
+ * @param[in] buf Raw packet to convert
+ * @param[out] ts Time from packet in microseconds
+ *
+ * @return \b true if the buffer passes validity checks.
+ */
+VITAL_KLV_EXPORT
+bool convert_MISP_microsec_time( std::vector< unsigned char > const& buf, std::int64_t& ts );
 
 
 } } // end namespace
+
+#endif /* VITAL_KLV_MISP_TIME_H */
