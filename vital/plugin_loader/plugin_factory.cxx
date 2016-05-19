@@ -39,8 +39,6 @@ const std::string plugin_factory::PLUGIN_FILE_NAME( "plugin-file-name" );
 const std::string plugin_factory::PLUGIN_NAME( "plugin-name" );
 const std::string plugin_factory::PLUGIN_DESCRIPTION( "plugin-descrip" );
 
-typedef std::map< std::string, std::string>::iterator map_it;
-typedef std::map< std::string, std::string>::const_iterator const_map_it;
 
 // ------------------------------------------------------------------
 plugin_factory::
@@ -60,7 +58,7 @@ plugin_factory::
 bool plugin_factory::
 get_attribute( std::string const& attr, std::string& val ) const
 {
-  const_map_it it = m_attribute_map.find( attr );
+  auto const it = m_attribute_map.find( attr );
   if ( it != m_attribute_map.end() )
   {
     val = it->second;

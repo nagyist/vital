@@ -63,7 +63,6 @@ static std::string const shared_library_suffix = std::string( SHARED_LIB_SUFFIX 
 } // end anon namespace
 
 
-
 // ==================================================================
 /**
  * @brief Plugin manager private implementation.
@@ -134,7 +133,7 @@ plugin_manager
 {
   static plugin_factory_vector_t empty; // needed for error case
 
-  plugin_map_t::const_iterator it = m_impl->m_plugin_map.find(type_name);
+  auto const it = m_impl->m_plugin_map.find(type_name);
   if ( it == m_impl->m_plugin_map.end() )
   {
     return empty;
@@ -157,8 +156,8 @@ plugin_manager
   std::string interface_type;
   fact->get_attribute( plugin_factory::INTERFACE_TYPE, interface_type );
 
-  std::string ct;
-  fact->get_attribute( plugin_factory::CONCRETE_TYPE, ct );
+  std::string concrete_type;
+  fact->get_attribute( plugin_factory::CONCRETE_TYPE, concrete_type );
 
   // If the hook has declined to register the factory, just return.
   if ( ! this->add_factory_hook( fact_handle ) )
@@ -166,18 +165,40 @@ plugin_manager
     LOG_TRACE( m_impl->m_logger, "add_factory_hook() declined to have this factory registered"
                << " from file \"" << m_impl->m_current_filename << "\""
                << " for interface: \"" << interface_type
-               << "\" for derived type: \"" << ct << "\""
+               << "\" for derived type: \"" << concrete_type << "\""
       );
     return fact_handle;
   }
 
-  /// @todo make sure factory is not already in the list
-  /// Check the two types as a signature.
+  // Make sure factory is not already in the list.
+  // Check the two types as a signature.
+  if ( m_impl->m_plugin_map.count( interface_type ) != 0)
+  {
+    VITAL_FOREACH( auto const fact, m_impl->m_plugin_map[interface_type] )
+    {
+      std::string interf;
+      fact->get_attribute( plugin_factory::INTERFACE_TYPE, interf );
+
+      std::string inst;
+      fact->get_attribute( plugin_factory::CONCRETE_TYPE, inst );
+
+      if ( (interface_type == interf) && (concrete_type == inst) )
+      {
+        LOG_WARN( m_impl->m_logger, "Factory for \"" << interface_type << "\" : \""
+                  << concrete_type << "\" already has been registered.  This factory from "
+                  << m_impl->m_current_filename << " will not be registered."
+          );
+        return fact_handle;
+      }
+    } // end foreach
+  }
+
+  // Add factory to rest of its family
   m_impl->m_plugin_map[interface_type].push_back( fact_handle );
 
   LOG_TRACE( m_impl->m_logger,
              "Adding plugin to create interface: " << interface_type
-             << " from derived type: " << ct
+             << " from derived type: " << concrete_type
              << " from file: " << m_impl->m_current_filename );
 
   return fact_handle;
@@ -193,15 +214,19 @@ plugin_manager
 }
 
 
+// ------------------------------------------------------------------
 void
 plugin_manager
 ::add_search_path( path_t const& path)
 {
   // Split supplied path into separate items using PATH_SEPARATOR_CHAR as delimiter
+  // and add to search paths.
   ST::Split( path, m_impl->m_search_paths, PATH_SEPARATOR_CHAR );
+
 }
 
 
+// ------------------------------------------------------------------
 std::vector< path_t > const&
 plugin_manager
 ::get_search_path() const
@@ -211,13 +236,14 @@ plugin_manager
 }
 
 
+// ------------------------------------------------------------------
 std::vector< std::string >
 plugin_manager
 ::get_file_list() const
 {
   std::vector< std::string > retval;
 
-  VITAL_FOREACH( plugin_manager_impl::library_map_t::value_type it, m_impl->m_library_map )
+  VITAL_FOREACH( auto const it, m_impl->m_library_map )
   {
     retval.push_back( it.first );
   } // end foreach
@@ -264,11 +290,13 @@ plugin_manager_impl
     LOG_DEBUG( m_logger, "Empty directory in the search path. Ignoring." );
     return;
   }
+
   if ( ! ST::FileExists( dir_path ) )
   {
     LOG_DEBUG( m_logger, "Path " << dir_path << " doesn't exist. Ignoring." );
     return;
   }
+
   if ( ! ST::FileIsDirectory( dir_path ) )
   {
     LOG_DEBUG( m_logger, "Path " << dir_path << " is not a directory. Ignoring." );
@@ -343,7 +371,7 @@ plugin_manager_impl
       str = std::string( last_error );
     }
 
-    LOG_WARN( m_logger, "plugin_manager:: Unable to bind to function \"register_factories()\" : "
+    LOG_WARN( m_logger, "plugin_manager:: Unable to bind to function \"" << m_init_function << "()\" : "
               << last_error );
 
     DL::CloseLibrary( lib_handle );
