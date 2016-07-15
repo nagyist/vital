@@ -50,27 +50,62 @@ namespace {
 // A function type that converts raw byte streams to kwiver::vital::any
 typedef std::function< kwiver::vital::any( const uint8_t*, std::size_t ) > klv_decode_func_t;
 
+
+// ------------------------------------------------------------------
+// Helper to specialize on sizeof(T) the parsing of type T from a byte stream
+template < typename T, size_t n >
+struct klv_convert_bytes
+{
+  kwiver::vital::any
+  operator ()( const uint8_t* data, std::size_t length ) const
+  {
+    if ( n != length )
+    {
+      kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_0601" ) );
+      LOG_DEBUG( logger, "Data type (" <<  n << " bytes) and length ("
+                << length << " bytes) differ in size." );
+    }
+
+    T value = *( data++ );
+    for ( std::size_t i = 1; i < length; ++i, ++data )
+    {
+      value <<= 8;
+      value |= *data;
+    }
+
+    return value;
+  }
+};
+
+
+// ------------------------------------------------------------------
+// Specialization for a single byte (sizeof(T)==1) from a raw byte stream
+template < typename T >
+struct klv_convert_bytes< T, 1 >
+{
+  kwiver::vital::any
+  operator ()( const uint8_t* data, std::size_t length ) const
+  {
+    if ( length > 1 )
+    {
+      kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_0601" ) );
+      LOG_DEBUG( logger, "Attempting to parse one byte from an array of length "
+                         << length );
+    }
+
+    T value = *reinterpret_cast<const T*>(data);
+    return value;
+  }
+};
+
+
 // ------------------------------------------------------------------
 // Parse type T from a raw byte stream in MSB (most significant byte first) order
 template < typename T >
 kwiver::vital::any
 klv_convert( const uint8_t* data, std::size_t length )
 {
-  if ( sizeof( T ) != length )
-  {
-    kwiver::vital::logger_handle_t logger( kwiver::vital::get_logger( "vital.klv_0601" ) );
-    LOG_DEBUG( logger, "Data type (" <<  sizeof(T) << " bytes) and length ("
-              << length << " bytes) differ in size." );
-  }
-
-  T value = *( data++ );
-  for ( std::size_t i = 1; i < length; ++i, ++data )
-  {
-    value <<= 8;
-    value |= *data;
-  }
-
-  return value;
+  return klv_convert_bytes<T, sizeof(T)>()(data, length);
 }
 
 
