@@ -23,7 +23,7 @@ set(VITAL_VERSION "${VITAL_VERSION_MAJOR}.${VITAL_VERSION_MINOR}.${VITAL_VERSION
 ##
 # Look for and use Fletch to find dependencies
 #
-set( fletch_DIR "" CACHE PATH "Path to FLETCH packages" )
+set( fletch_DIR "fletch_DIR-NOTFOUND" CACHE PATH "Path to FLETCH packages" )
 if ( IS_DIRECTORY ${fletch_DIR} )
   find_package( fletch NO_MODULE )
 endif()
@@ -65,8 +65,7 @@ include( kwiver-configcheck )
 include( vital-depends )
 
 # set the export group name for our package exports
-set(kwiver_export_name
-  vital_exports)
+set(kwiver_export_name      vital_exports)
 
 # ================================================================
 # project global includes
@@ -95,7 +94,14 @@ set(VITAL_SETUP_SCRIPT_FILE  ${VITAL_BINARY_DIR}/setup_VITAL.sh )
 configure_file(
   ${VITAL_CMAKE_DIR}/setup_VITAL.sh.in
   ${VITAL_SETUP_SCRIPT_FILE}
+  @ONLY
   )
+
+# install testing infrastructure support
+kwiver_install_headers( tests/test_common.h
+  SUBDIR   vital/tests
+  NOPATH
+)
 
 # install set up script
 install( PROGRAMS   ${VITAL_SETUP_SCRIPT_FILE}
