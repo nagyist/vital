@@ -171,8 +171,6 @@ set( vital_public_headers
   util/demangle.h
   util/any_converter.h
   util/enumerate_matrix.h
-  util/cpu_timer.h
-  util/wall_timer.h
   util/enumerate_matrix.h
 
   plugin_loader/plugin_factory.h
