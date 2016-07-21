@@ -85,3 +85,11 @@ Build infrastructure
 * Added CMake and c++ code to detect
   - availablilty of symbol demangling support
   - compiler specific std::unique_ptr behaviour
+
+Fixes since v0.1.0
+---------------------------------
+
+Vital Types
+
+ * Fixed a bug in which distortion coefficients were not properly captured when
+   parsing a camera in KRTD format.
