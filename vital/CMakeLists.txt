@@ -172,6 +172,7 @@ set( vital_public_headers
   util/any_converter.h
   util/enumerate_matrix.h
   util/enumerate_matrix.h
+  util/tokenize.h
 
   plugin_loader/plugin_factory.h
   plugin_loader/plugin_manager.h
