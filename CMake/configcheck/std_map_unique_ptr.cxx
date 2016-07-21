@@ -16,6 +16,9 @@ int main(int argc, char *argv[])
   // insert method 2
   int *y = new int( 100 );
   test_map.insert( test_map_t::value_type( 1, ptr_t(y) ) );
+  // test replace
+  int *z = new int( 50 );
+  test_map[0] = ptr_t( z ); // replace
 
   return 0;
 }

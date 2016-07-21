@@ -94,6 +94,10 @@ try_compile( success
   OUTPUT_VARIABLE OUTPUT
   )
 set( VITAL_STD_MAP_UNIQUE_PTR_ALLOWED ${success} )
-message( STATUS "VITAL_STD_MAP_UNIQUE_PTR: ${VITAL_STD_MAP_UNIQUE_PTR_ALLOWED}" )
+
+# windows VS12, VS14 do not support this.
+if (MSVC)
+  set( VITAL_STD_MAP_UNIQUE_PTR_ALLOWED false )
+endif()
 
 #
