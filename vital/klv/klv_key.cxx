@@ -387,8 +387,8 @@ klv_lds_key
 
 
 #define INSTANTIATE_KLV_KEY(NUM)                                        \
-template class klv_key<NUM>;                                            \
-template std::ostream& operator <<(std::ostream& os, klv_key<NUM> const& key)
+template class VITAL_KLV_EXPORT klv_key<NUM>;                           \
+template VITAL_KLV_EXPORT std::ostream& operator <<(std::ostream& os, klv_key<NUM> const& key)
 
 INSTANTIATE_KLV_KEY(1);
 INSTANTIATE_KLV_KEY(16);
