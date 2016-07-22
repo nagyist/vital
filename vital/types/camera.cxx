@@ -155,7 +155,7 @@ operator>>( std::istream& s, simple_camera& k )
 
   Eigen::VectorXd d(dValues.size());
 
-  for (int i = 0; i < dValues.size(); ++i)
+  for (size_t i = 0; i < dValues.size(); ++i)
   {
     d(i) =  dValues[i];
   }
