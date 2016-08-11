@@ -89,6 +89,11 @@ Build infrastructure
 Fixes since v0.1.0
 ---------------------------------
 
+Bindings
+
+ * Fixed bugs in C/Python bindings for config_block involving string memory
+   management in C and fixing reading from file in Python.
+
 Vital Types
 
  * Fixed a bug in which distortion coefficients were not properly captured when
