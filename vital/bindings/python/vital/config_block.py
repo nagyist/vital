@@ -88,7 +88,8 @@ class ConfigBlock (VitalObject):
                 3: VitalConfigBlockIoFileNotParsed
             })
 
-            return cls(cb_read(filepath, eh))
+            cptr = cb_read(filepath, eh)
+        return cls(from_cptr=cptr)
 
     def __init__(self, name=None, from_cptr=None):
         """
@@ -488,12 +489,16 @@ class ConfigBlock (VitalObject):
 
         """
         fd, fp = tempfile.mkstemp()
-        self.write(fp)
-        with open(fp) as written_config:
-            s = written_config.read()
-        os.close(fd)
-        os.remove(fp)
+        try:
+            self.write(fp)
+            with open(fp) as written_config:
+                s = written_config.read()
+        finally:
+            os.close(fd)
+            os.remove(fp)
         return s
+
+    __str__ = as_string
 
 
 def _initialize_cb_statics():
