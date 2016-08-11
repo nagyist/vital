@@ -54,3 +54,7 @@ class VitalNullPointerException (VitalBaseException):
 
 class VitalDynamicCastException (VitalBaseException):
     """ When a casting error occurred dynamic casting a pointer """
+
+
+class VitalNoTypeInfoException (VitalBaseException):
+    pass

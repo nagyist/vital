@@ -191,14 +191,20 @@ class TestVitalConfigBlock (object):
         cb.set_value('a', '1')
         cb.mark_read_only('a')
         nose.tools.assert_equal(cb.get_value('a'), '1')
-        cb.set_value('a', '2')
+        nose.tools.assert_raises(
+            VitalConfigBlockReadOnlyException,
+            cb.set_value, 'a', '2'
+        )
         nose.tools.assert_equal(cb.get_value('a'), '1')
 
     def test_read_only_unset(self):
         cb = ConfigBlock()
         cb.set_value('a', '1')
         cb.mark_read_only('a')
-        cb.unset_value('a')
+        nose.tools.assert_raises(
+            VitalConfigBlockReadOnlyException,
+            cb.unset_value, 'a'
+        )
         nose.tools.assert_true(cb.has_value('a'))
         nose.tools.assert_equal(cb.get_value('a'), '1')
 
