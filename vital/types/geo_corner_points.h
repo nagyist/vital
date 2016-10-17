@@ -35,6 +35,7 @@
 #include <vital/types/geo_lat_lon.h>
  #include <vital/config/config_block.h>
 
+#include <cstdio>
 #include <ostream>
 
 namespace kwiver {
