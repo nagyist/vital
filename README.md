@@ -1,6 +1,14 @@
 # vital #
 
+##NOTE##
+
+There will be no more active development in this repository. The VITAL souce code has been merged with KWIVER in
+the repository:
+
+https://github.com/Kitware/kwiver.git
+
 Vital is an open source C++ collection of libraries and tools that supply basic types and services to the Kitware KWIVER imagery tool kit.
+
 
 ## Overview of Directories ##
 
